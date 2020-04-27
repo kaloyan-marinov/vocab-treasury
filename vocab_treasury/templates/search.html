@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block content %}
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset>
+            <div>
+                {{ form.search.label() }}
+
+                {{ form.search() }}
+
+                {% if form.search.errors %}
+                    {% for error in form.search.errors %}
+                        <span style="color:red">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div>
+                {{ form.submit() }}
+            </div>
+        </fieldset>
+    </form>
+
+    {% if examples %}
+        <table style="width:100%" border="1px solid black">
+            <tr>
+                <th>ID</th>
+                <th>SOURCE LANGUAGE</th>
+                <th>NEW WORD</th>
+                <th>EXAMPLE</th>
+                <th>TRANSLATION</th>
+            </tr>
+            {% for example in examples.items %}
+                <tr>
+                    <th><a href="{{ url_for('examples.example', example_id=example.id) }}">{{ example.id }}</a></th>
+                    <th>{{ example.source_language }}</th>
+                    <th>{{ example.new_word }}</th>
+                    <th>{{ example.content }}</th>
+                    <th>{{ example.content_translation }}</th>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% for page_num in examples.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if examples.page == page_num %}
+                    <font size=14>
+                        <a href="{{ url_for('users.search_results', query=form.search.data, page=page_num) }}">{{ page_num }}</a>
+                    </font>
+                {% else %}
+                    <a href="{{ url_for('users.search_results', query=form.search.data, page=page_num) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                ...
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock content %}

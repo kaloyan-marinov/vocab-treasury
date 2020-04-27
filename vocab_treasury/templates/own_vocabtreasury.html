@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Own VocabTreasury for {{ current_user.email }}</h1>
+
+    <div>
+        <a href="{{ url_for('examples.new_example') }}">Record new example</a>
+    </div>
+    <div>
+        <a href="{{ url_for('users.search_query') }}">Search</a>
+    </div>
+
+    <br>
+    <table style="width:100%" border="1px solid black">
+        <tr>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
+        </tr>
+        {% for example in examples.items %}
+            <tr>
+                <th><a href="{{ url_for('examples.example', example_id=example.id) }}">{{ example.id }}</a></th>
+                <th>{{ example.source_language }}</th>
+                <th>{{ example.new_word }}</th>
+                <th>{{ example.content }}</th>
+                <th>{{ example.content_translation }}</th>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for page_num in examples.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if examples.page == page_num %}
+                <font size=14>
+                    <a href="{{ url_for('users.own_vocabtreasury', page=page_num) }}">{{ page_num }}</a>
+                </font>
+            {% else %}
+                <a href="{{ url_for('users.own_vocabtreasury', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+{% endblock %}

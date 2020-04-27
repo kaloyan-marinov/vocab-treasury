@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <br>
+    <div>
+        You have selected the following Example from your Own VocabTreasury:
+    </div>
+
+    <table style="width:100%" border="1px solid black">
+        <tr>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
+        </tr>
+        <tr>
+            <th><a href="{{ url_for('examples.example', example_id=example.id) }}">{{ example.id }}</a></th>
+            <th>{{ example.source_language }}</th>
+            <th>{{ example.new_word }}</th>
+            <th>{{ example.content }}</th>
+            <th>{{ example.content_translation }}</th>
+        </tr>
+    </table>
+
+    <br>
+    <div>
+        <a href="{{ url_for('examples.edit_example', example_id=example.id) }}">Edit this example</a>
+    </div>
+
+    <br>
+    <form action="{{ url_for('examples.delete_example', example_id=example.id) }}" method="POST">
+        <input type="submit" value="Delete this example">
+    </form>
+{% endblock content %}
