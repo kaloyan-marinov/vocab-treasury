@@ -84,7 +84,7 @@ class FlaskTestCase(unittest.TestCase):
                               follow_redirects=True)
         response = self.tester.get('/own-vocabtreasury/search')
         self.assertEqual(200, response.status_code)
-        self.assertIn(b'SEARCH IN "TRANSLATION" FOR:', response.data)
+        self.assertIn(b'SEARCH', response.data)
 
     def test_search_query_3(self):
         """Ensure that, after a successful log-in, the user can use the search functionality."""
@@ -93,45 +93,38 @@ class FlaskTestCase(unittest.TestCase):
                                     'password': 'testing'},
                               follow_redirects=True)
         response = self.tester.post('/own-vocabtreasury/search',
-                                    data={'search': 'pasta on the plate'},
+                                    data={'content_translation': 'pasta on the plate'},
                                     follow_redirects=True)
         self.assertEqual(200, response.status_code)
         self.assertIn(b'Lautasella on spagettia.', response.data)
 
-    def test_search_results_1(self):
-        """Ensure that viewing search results and running a new query require a log-in."""
-        query = 'pasta on the plate'
-        with self.subTest('make a GET request'):
-            response = self.tester.get(f'/own-vocabtreasury/search/{query}',
-                                       follow_redirects=True)
-            self.assertIn(b'Please log in to access this page.', response.data)
-
-        with self.subTest('make a POST request'):
-            response = self.tester.post(f'/own-vocabtreasury/search/{query}',
-                                        data={'search': 'excuse me'},
-                                        follow_redirects=True)
-            self.assertIn(b'Please log in to access this page.', response.data)
-
-    def test_search_results_2(self):
-        """Ensure that, after a successful log-in, the user can view search results."""
-        __ = self.tester.post('/login',
-                              data={'email': 'DeployedUser@test.com',
-                                    'password': 'testing'},
-                              follow_redirects=True)
-        response = self.tester.get('/own-vocabtreasury/search/pasta on the plate',
-                                   follow_redirects=True)
-        self.assertEqual(200, response.status_code)
-        self.assertIn(b'Lautasella on spagettia.', response.data)
-
-    def test_search_results_3(self):
-        """Ensure that, after a successful log-in, the user can use the search functionality
-        from the results of a previous search."""
-        __ = self.tester.post('/login',
-                              data={'email': 'DeployedUser@test.com',
-                                    'password': 'testing'},
-                              follow_redirects=True)
-        response = self.tester.post('/own-vocabtreasury/search/pasta on the plate',
-                                    data={'search': 'excuse me'},
-                                    follow_redirects=True)
-        self.assertEqual(200, response.status_code)
-        self.assertIn('Pyydän anteeksi, en aikonut häiritä.', response.data.decode('utf-8'))
+    def test_search_query_4(self):
+        """Ensure that, after a successful log-in, the user can use the search functionality's various forms."""
+        __ = self.tester.post(
+            '/login',
+            data={'email': 'DeployedUser@test.com', 'password': 'testing'},
+            follow_redirects=True
+        )
+        search_payloads = (
+            {'new_word': 'ABC', 'content': 'PQR', 'content_translation': 'XYZ'},
+            {'new_word': 'ABC', 'content': 'PQR'},
+            {'new_word': 'ABC',                   'content_translation': 'XYZ'},
+            {                   'content': 'PQR', 'content_translation': 'XYZ'},
+            {'new_word': 'ABC'},
+            {                   'content': 'PQR'},
+            {                                     'content_translation': 'XYZ'}
+        )
+        expected_id_tuples = (
+            (1144,),
+            (1144, 1145),
+            (1144,       1146),
+            (1144,             1147),
+            (1144, 1145, 1146,       1148),
+            (1144, 1145,       1147,       1149),
+            (1144,       1146, 1147,             1150)
+        )
+        for search_payload, expected_id_tuple in zip(search_payloads, expected_id_tuples):
+            response = self.tester.post('/own-vocabtreasury/search', data=search_payload, follow_redirects=True)
+            self.assertEqual(200, response.status_code)
+            for expected_id in expected_id_tuple:
+                self.assertIn(str(expected_id).encode(), response.data)

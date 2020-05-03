@@ -1,5 +1,6 @@
 from flask import Blueprint, flash, redirect, url_for, render_template, request
 from flask_login import login_user, current_user, logout_user, login_required
+from werkzeug.exceptions import HTTPException
 
 from vocab_treasury import db, bcrypt
 from vocab_treasury.constants import EXAMPLES_PER_PAGE
@@ -79,9 +80,17 @@ def account():
 @login_required
 def own_vocabtreasury():
     page = request.args.get('page', default=1, type=int)
-    examples = Example.query.filter_by(user_id=current_user.id).paginate(page=page, per_page=EXAMPLES_PER_PAGE)
-    return render_template('own_vocabtreasury.html',
-                           title='OWN VOCABTREASURY', examples=examples)
+    query = Example.query.filter_by(user_id=current_user.id)
+    try:
+        examples = query.paginate(page=page, per_page=EXAMPLES_PER_PAGE)
+    except HTTPException:
+        # occurs in either of the following scenarios:
+        # - a user had a single example on the past page in their VocabTreasury, and they deleted that example
+        # - a user requests a page in their VocabTreasury that's bigger than its number of pages
+        last_page = query.paginate(page=1, per_page=EXAMPLES_PER_PAGE).pages
+        return redirect(url_for('users.own_vocabtreasury', page=last_page))
+    else:
+        return render_template('own_vocabtreasury.html', title='OWN VOCABTREASURY', examples=examples)
 
 
 @users.route('/own-vocabtreasury/search', methods=['GET', 'POST'])
@@ -89,25 +98,41 @@ def own_vocabtreasury():
 def search_query():
     form = SearchForm()
     if form.validate_on_submit():
-        return redirect(url_for('users.search_results', query=form.search.data))
+        return redirect(url_for(
+            'users.search_query', new_word=form.new_word.data, content=form.content.data,
+            content_translation=form.content_translation.data
+        ))
 
-    return render_template('search.html', title='SEARCH OWN VOCABTREASURY',
-                           form=form)
+    query_for_current_user_examples = Example.query.filter_by(user_id=current_user.id)
 
+    new_word = request.args.get('new_word')
+    if new_word:
+        form.new_word.data = new_word
+        query = query_for_current_user_examples.filter(Example.new_word.like(f'%{new_word}%'))
+    else:
+        query = None
 
-@users.route('/own-vocabtreasury/search/<query>', methods=['GET', 'POST'])
-@login_required
-def search_results(query):
-    form = SearchForm()
-    if form.validate_on_submit():
-        return redirect(url_for('users.search_results', query=form.search.data))
+    content = request.args.get('content')
+    if content:
+        form.content.data = content
+        if query is None:
+            query = query_for_current_user_examples
+        query = query.filter(Example.content.like(f'%{content}%'))
 
-    form.search.data = query
-    page = request.args.get('page', default=1, type=int)
-    examples = Example.query.filter_by(user_id=current_user.id).\
-        filter(Example.content_translation.like(f'%{query}%')).paginate(page=page, per_page=EXAMPLES_PER_PAGE)
-    return render_template('search.html', title='SEARCH RESULTS',
-                           form=form, examples=examples)
+    content_translation = request.args.get('content_translation')
+    if content_translation:
+        form.content_translation.data = content_translation
+        if query is None:
+            query = query_for_current_user_examples
+        query = query.filter(Example.content_translation.like(f'%{content_translation}%'))
+
+    if query:
+        page = request.args.get('page', default=1, type=int)
+        examples = query.paginate(page=page, per_page=EXAMPLES_PER_PAGE)
+    else:
+        examples = None
+
+    return render_template('search.html', title='SEARCH OWN VOCABTREASURY', form=form, examples=examples)
 
 
 @users.route('/reset_password', methods=['GET', 'POST'])

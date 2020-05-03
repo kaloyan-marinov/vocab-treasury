@@ -13,7 +13,8 @@ class ExampleForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    search = StringField('SEARCH IN "TRANSLATION" FOR:',
-                         validators=[DataRequired()])
+    new_word = StringField('NEW WORD')
+    content = StringField('EXAMPLE')
+    content_translation = StringField('TRANSLATION')
 
     submit = SubmitField('SEARCH')

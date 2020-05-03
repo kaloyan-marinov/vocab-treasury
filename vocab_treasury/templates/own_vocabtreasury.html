@@ -20,7 +20,7 @@
         </tr>
         {% for example in examples.items %}
             <tr>
-                <th><a href="{{ url_for('examples.example', example_id=example.id) }}">{{ example.id }}</a></th>
+                <th><a href="{{ url_for('examples.example', example_id=example.id, page=examples.page) }}">{{ example.id }}</a></th>
                 <th>{{ example.source_language }}</th>
                 <th>{{ example.new_word }}</th>
                 <th>{{ example.content }}</th>
