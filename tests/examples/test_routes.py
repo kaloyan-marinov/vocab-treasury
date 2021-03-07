@@ -34,10 +34,10 @@ class FlaskTestCase(unittest.TestCase):
     def test_example_2(self):
         """Ensure that, after a successful log-in, the user can view a specific example in his/her own VocabTreasury."""
         __ = self.tester.post('/login',
-                              data={'email': 'DeployedUser@test.com',
-                                    'password': 'testing'},
+                              data={'email': 'john.doe@gmail.com',
+                                    'password': 'a'},
                               follow_redirects=True)
-        example_id = 134
+        example_id = 1
         response = self.tester.get(f'/example/{example_id}',
                                    follow_redirects=True)
         self.assertEqual(200, response.status_code)
@@ -47,10 +47,10 @@ class FlaskTestCase(unittest.TestCase):
     def test_example_3(self):
         """Ensure that, after a successful log-in, the user can't view an example from another user's VocabTreasury."""
         __ = self.tester.post('/login',
-                              data={'email': 'DeployedUser@test.com',
-                                    'password': 'testing'},
+                              data={'email': 'john.doe@gmail.com',
+                                    'password': 'a'},
                               follow_redirects=True)
-        example_id = 1
+        example_id = 2
         response = self.tester.get(f'/example/{example_id}',
                                    follow_redirects=True)
         self.assertEqual(403, response.status_code)
@@ -87,7 +87,7 @@ class FlaskTestCase(unittest.TestCase):
 
     def test_delete_example_1(self):
         """Ensure that the route for deleting an example requires a log-in."""
-        test_user_id = 3
+        test_user_id = 1
         with self.app.app_context():
             e = Example.query.filter_by(user_id=test_user_id).order_by(Example.id).all()[-1]
             print(e.content)
@@ -111,7 +111,7 @@ class FlaskTestCase(unittest.TestCase):
 
     def test_delete_example_3(self):
         """Ensure that, after a successful log-in, the user can delete examples in his/her own VocabTreasury."""
-        test_user_id = 3
+        test_user_id = 1
         __ = self.tester.post('/login',
                               data={'email': 'DeployedUser@test.com',
                                     'password': 'testing'},
@@ -162,7 +162,7 @@ class FlaskTestCase(unittest.TestCase):
         """Ensure that, after a successful log-in,
         the user can access the page for editing an example in his/her own VocabTreasury.
         """
-        test_user_id = 3
+        test_user_id = 1
         __ = self.tester.post('/login',
                               data={'email': 'DeployedUser@test.com',
                                     'password': 'testing'})
@@ -177,7 +177,7 @@ class FlaskTestCase(unittest.TestCase):
         """
         Ensure that, after a successful log-in, the user can edit an example in his/her own VocabTreasury.
         """
-        test_user_id = 3
+        test_user_id = 1
         __ = self.tester.post('/login',
                               data={'email': 'DeployedUser@test.com',
                                     'password': 'testing'},
