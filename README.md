@@ -29,27 +29,23 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 1. clone this repository, and navigate into your local repository
 
-2. install the `conda` package manager
-
-    The version I used is:
+2. create a Python virtual environment, activate it, and install all dependencies:
     ```
-    $ conda --version
-    conda 4.5.12
-    ```
+    $ python3 --version
+    Python 3.8.3
 
-3. create a `conda` environment, install the project dependencies, and activate the environment:
-    ```
-    $ conda env create --file environment.yml
+    $ python3 -m venv venv
 
-    $ conda activate repo_vocab_treasury
-
-    (repo_vocab_treasury) $ 
+    $ source venv/bin/activate
+    (venv) $ pip install --upgrade pip
+    (venv) $ pip install -r requirements.txt
     ```
 
-4. at the the root of your local repository, create a `.env` file with the following structure:
+3. at the the root of your local repository, create a `.env` file with the following structure:
     ```
     SECRET_KEY=<specify-a-good-secret-key-here>
-    SQLALCHEMY_DATABASE_URI=sqlite:///site.db
+    SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
+
 
     EMAIL_USER=<email-account-that-you-are-in-charge-of>
     EMAIL_PASS=<the-password-associated-with-the-email-account>
@@ -57,16 +53,16 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     (For deployment, you should generate a "good secret key" and store that value in `SECRET_KEY` within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
 
-5. create a SQLite3 database and insert some data into it:
+4. create a SQLite3 database and insert some data into it:
     ```
-    (repo_vocab_treasury) $ python create_and_populate_db.py
+    (venv) $ python create_and_populate_db.py
     ```
 
-6. verify that the database was created successfully:
+5. verify that the database was created successfully:
     ```
-    (repo_vocab_treasury) $ ll vocab_treasury/site.db 
-    -rw-r--r--  1 <your-user>  <your-group>    20K Mar  5 15:03 vocab_treasury/site.db
-    (repo_vocab_treasury) $ sqlite3 vocab_treasury/site.db 
+    (venv) $ ll <the-value-of-DATABASE_URL-in-your-.env-file> 
+    -rw-r--r--  1 <your-user>  <your-group>    20K Mar  5 15:03 <the-value-of-DATABASE_URL-in-your-.env-file>
+    (venv) $ sqlite3 <the-value-of-DATABASE_URL-in-your-.env-file> 
     SQLite version 3.30.1 2019-10-10 20:19:45
     Enter ".help" for usage hints.
     sqlite> .tables
@@ -95,41 +91,36 @@ Another aspect of the reality of purposeful language learning is that it takes a
     );
     ```
 
-7. optionally, take a look at the data that has just been inserted into the database:
+6. optionally, take a look at the data that has just been inserted into the database:
     ```
-    $ sqlite3 vocab_treasury/site.db 
+    $ sqlite3 <the-value-of-DATABASE_URL-in-your-.env-file> 
     SQLite version 3.30.1 2019-10-10 20:19:45
     Enter ".help" for usage hints.
     sqlite> .tables
     example  user   
-    sqlite> .schema user
-    CREATE TABLE user (
-            id INTEGER NOT NULL, 
-            username VARCHAR(20) NOT NULL, 
-            email VARCHAR(120) NOT NULL, 
-            password VARCHAR(60) NOT NULL, 
-            PRIMARY KEY (id), 
-            UNIQUE (username), 
-            UNIQUE (email)
-    );
-    sqlite> .schema example 
-    CREATE TABLE example (
-            id INTEGER NOT NULL, 
-            created DATETIME NOT NULL, 
-            user_id INTEGER NOT NULL, 
-            source_language VARCHAR(30), 
-            new_word VARCHAR(30) NOT NULL, 
-            content TEXT NOT NULL, 
-            content_translation TEXT, 
-            PRIMARY KEY (id), 
-            FOREIGN KEY(user_id) REFERENCES user (id)
-    );
+    sqlite> SELECT * FROM user;
+    id          username    email                  password                                                    
+    ----------  ----------  ---------------------  ------------------------------------------------------------
+    1           du          DeployedUser@test.com  $2b$12$JxB1yI2QX1NL26dsIFbbDOUrH3oDMN3QdKUicyX1L62b5oOzRLNjm
+    2           jd          john.doe@gmail.com     $2b$12$j7ljn7S3gTh9z/obSRSLJuwHMnLCSqqrLOguqZdR2Unr1VPz2/gnS
+    3           ms          mary.smith@yahoo.com   $2b$12$U0S6cEuZkuJbQJlqpGj66u9kFA/16mQsCpRfYx.0Kgbm0bIjtQWFq
+    sqlite> SELECT * FROM example;
+    id          created                     user_id     source_language  new_word    content                   content_translation         
+    ----------  --------------------------  ----------  ---------------  ----------  ------------------------  ----------------------------
+    1           2021-03-22 14:21:57.850175  2           Finnish          lautanen    Lautasella on spagettia.  There is pasta on the plate.
+    2           2021-03-22 14:21:57.851096  1           l-1              ABC         PQR                       XYZ                         
+    3           2021-03-22 14:21:57.851227  1           l-2              ABC         XYZ                       PQR                         
+    4           2021-03-22 14:21:57.851321  1           l-3              PQR         ABC                       XYZ                         
+    5           2021-03-22 14:21:57.851410  1           l-4              PQR         XYZ                       ABC                         
+    6           2021-03-22 14:21:57.851498  1           l-5              XYZ         ABC                       PQR                         
+    7           2021-03-22 14:21:57.851582  1           l-6              XYZ         PQR                       ABC                         
+    8           2021-03-22 14:21:57.851664  2           German           sich (A) z  Ich finde mich gar nicht  I can't manage anymore.
     ```
 
-8. ensure that running the tests results in a PASS:
+7. ensure that running the tests results in a PASS:
     ```
     sqlite> .quit
-    (repo_vocab_treasury) $ python -m unittest discover -v tests/
+    (venv) $ python -m unittest discover -v tests/
     .
     .
     .
@@ -139,14 +130,14 @@ Another aspect of the reality of purposeful language learning is that it takes a
     OK
     ```
 
-9. start a process responsible for serving the application instance:
+8. start a process responsible for serving the application instance:
     ```
-    (repo_vocab_treasury) $ python run.py
+    (venv) $ python run.py
     ```
 
-    (alternatively, if you wish to perform this step through VS Code's GUI, modify `.vscode/settings.json` by replacing the value associated to the `"python.pythonPath"` key with the location of your conda environment's Python executable)
+    (alternatively, if you wish to perform this step through VS Code's GUI, modify `.vscode/settings.json` by replacing the value associated to the `"python.pythonPath"` key with the location of the Python executable in your Python virtual environment)
 
-10. launch a web browser, navigate to `localhost:5000`, and interact with the web interface
+9. launch a web browser, navigate to `localhost:5000`, and interact with the web interface
 
 # Future plans
 
