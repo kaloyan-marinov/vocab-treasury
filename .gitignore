@@ -6,4 +6,6 @@
 
 .idea/*
 
+venv/
+
 site.db
