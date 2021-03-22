@@ -2,7 +2,7 @@
 
 This is the first web application that I have developed on my own.
 
-It is currently deployed and hosted at https://vocabtreasury.com
+It is currently deployed and hosted at https://vocab-treasury.kaloyan-marinov.com
 
 The rest of this repository's documentation is organized as follows.
 
