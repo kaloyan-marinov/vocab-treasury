@@ -4,8 +4,4 @@
 
 .env
 
-.idea/*
-
 venv/
-
-site.db
