@@ -72,6 +72,24 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $
     ```
 
+    upon making the previous commit, the following notification was printed in the terminal window:
+    ```
+    (venv) vocab-treasury $ git commit -m '19: pip install coverage'
+    [WARNING] The 'rev' field of repo 'https://github.com/ambv/black' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this.
+    black................................................(no files to check)Skipped
+    [2021/03/23/13_46/19/build-a-brand-new-backend 9b3ad00] 19: pip install coverage
+    3 files changed, 23 insertions(+), 2 deletions(-)
+    ```
+    so I issued:
+    ```
+    (venv) vocab-treasury $ pre-commit autoupdate
+    [WARNING] The 'rev' field of repo 'https://github.com/ambv/black' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this.
+    [WARNING] The 'rev' field of repo 'https://github.com/ambv/black' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this.
+    Updating https://github.com/ambv/black ... [INFO] Initializing environment for https://github.com/ambv/black.
+    updating stable -> 20.8b1.
+    ```
+    which made a change to the `.pre-commit-config.yaml` file; that change and the change introducing this comment are committed in the repository with a single/common changeset
+
 5. start a process responsible for serving the application instance by issuing either one of the following commands:
     ```
     (venv) $ python backend/vocab_treasury.py
