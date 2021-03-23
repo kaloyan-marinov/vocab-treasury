@@ -41,11 +41,28 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $ pip install -r requirements.txt
     ```
 
-3. ensure that running the tests results in a PASS by issuing either one of the following commands:
+3. ensure that running the tests results in a PASS by issuing one of the following - either:
     ```
     (venv) $ python -m unittest backend/tests.py
 
-    (venv) $ python -m unittest discover -v backend/
+    (venv) $ python \
+        -m unittest \
+        discover -v \
+        backend/
+    ```
+
+    or, even better:
+    ```
+    (venv) $ coverage run \
+        --source=backend/ \
+        --omit=backend/tests.py \
+        -m unittest \
+        discover -v \
+        backend/
+
+    (venv) $ coverage report
+
+    (venv) $ coverage html
     ```
 
 4. create a pre-commit Git hook that runs the `black` formatter for Python code:
