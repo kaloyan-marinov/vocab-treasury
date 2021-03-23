@@ -5,3 +5,6 @@
 .env
 
 venv/
+
+.coverage
+htmlcov/
