@@ -41,18 +41,25 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $ pip install -r requirements.txt
     ```
 
-3. create a pre-commit Git hook that runs the `black` formatter for Python code:
+3. ensure that running the tests results in a PASS by issuing either one of the following commands:
+    ```
+    (venv) $ python -m unittest backend/tests.py
+
+    (venv) $ python -m unittest discover -v backend/
+    ```
+
+4. create a pre-commit Git hook that runs the `black` formatter for Python code:
     ```
     (venv) $ pre-commit install
     pre-commit installed at .git/hooks/pre-commit
     (venv) $
     ```
 
-4. start a process responsible for serving the application instance by issuing either one of the following commands:
+5. start a process responsible for serving the application instance by issuing either one of the following commands:
     ```
     (venv) $ python backend/vocab_treasury.py
 
     (venv) $ FLASK_APP=backend/vocab_treasury.py flask run
     ```
 
-5. launch a web browser, navigate to `localhost:5000`, and make sure that "Hello world!" is rendered on the screen
+6. launch a web browser, navigate to `localhost:5000`, and make sure that "Hello world!" is rendered on the screen
