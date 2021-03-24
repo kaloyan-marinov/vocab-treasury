@@ -110,6 +110,9 @@ class TestApp(unittest.TestCase):
                 data=data_str,
                 headers={"Content-Type": "application/json"},
             )
+
+            user_created_by_1 = users["18"]
+
             rv_2 = self.client.get("/api/users")
 
         body_str_1 = rv_1.get_data(as_text=True)
@@ -117,6 +120,14 @@ class TestApp(unittest.TestCase):
         self.assertEqual(rv_1.status_code, 201)
         self.assertEqual(
             body_1,
+            {
+                "id": "18",
+                "username": "fl",
+            },
+        )
+
+        self.assertEqual(
+            user_created_by_1,
             {
                 "id": "18",
                 "username": "fl",
