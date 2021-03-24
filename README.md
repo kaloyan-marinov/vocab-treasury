@@ -86,4 +86,10 @@ Another aspect of the reality of purposeful language learning is that it takes a
         localhost:5000/api/users
 
     200
+
+    $ curl -v \
+        -X GET
+        localhost:5000/api/users/1
+    
+    200
     ```
