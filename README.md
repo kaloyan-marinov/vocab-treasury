@@ -72,11 +72,18 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $
     ```
 
-5. start a process responsible for serving the application instance by issuing either one of the following commands:
+5. launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
     ```
     (venv) $ python backend/vocab_treasury.py
 
     (venv) $ FLASK_APP=backend/vocab_treasury.py flask run
     ```
 
-6. launch a web browser, navigate to `localhost:5000`, and make sure that "Hello world!" is rendered on the screen
+6. launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
+    ```
+    $ curl -v \
+        -X GET \
+        localhost:5000/api/users
+
+    200
+    ```
