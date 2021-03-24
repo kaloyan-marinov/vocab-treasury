@@ -111,4 +111,29 @@ Another aspect of the reality of purposeful language learning is that it takes a
         localhost:5000/api/users
     
     201
+
+    ----
+
+    $ curl -v \
+        -X PUT \
+        -d '{"username": "j-d"}' \
+        localhost:5000/api/users/1
+
+    400
+
+    $ curl -v \
+        -X PUT \
+        -H "Content-Type: application/json" \
+        -d '{"username": "j-d"}' \
+        localhost:5000/api/users/17
+
+    404
+
+    $ curl -v \
+        -X PUT \
+        -H "Content-Type: application/json" \
+        -d '{"username": "j-d"}' \
+        localhost:5000/api/users/1
+    
+    200
     ```
