@@ -39,8 +39,6 @@ class TestApp(unittest.TestCase):
             {
                 "id": "1",
                 "username": "jd",
-                "email": "john.doe@gmail.com",
-                "password": "123",
             },
         )
 

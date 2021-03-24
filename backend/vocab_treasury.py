@@ -33,7 +33,8 @@ def get_users():
 @app.route("/api/users/<int:user_id>", methods=["GET"])
 def get_user(user_id):
     user_id_str = str(user_id)
-    return users[user_id_str]
+    u = users[user_id_str]
+    return {"id": u["id"], "username": u["username"]}
 
 
 @app.route("/api/users", methods=["POST"])
