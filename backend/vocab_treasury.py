@@ -25,7 +25,9 @@ users = {u["id"]: u for u in users_list}
 
 @app.route("/api/users", methods=["GET"])
 def get_users():
-    return users
+    return {
+        u_id: {"id": u["id"], "username": u["username"]} for u_id, u in users.items()
+    }
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
