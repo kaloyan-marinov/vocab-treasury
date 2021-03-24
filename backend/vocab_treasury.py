@@ -88,5 +88,23 @@ def edit_user(user_id):
     return edited_user
 
 
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    user_id_str = str(user_id)
+    if user_id_str not in users:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": f"There doesn't exist a User resource with an id of {user_id}",
+            }
+        )
+        r.status_code = 404
+        return r
+
+    del users[user_id_str]
+
+    return "", 204
+
+
 if __name__ == "__main__":
     app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)

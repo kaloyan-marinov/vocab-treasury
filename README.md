@@ -136,4 +136,18 @@ Another aspect of the reality of purposeful language learning is that it takes a
         localhost:5000/api/users/1
     
     200
+
+    ---
+
+    $ curl -v \
+        -X DELETE \
+        localhost:5000/api/users/17
+
+    404
+
+    $ curl -v \
+        -X DELETE \
+        localhost:5000/api/users/1
+
+    204
     ```
