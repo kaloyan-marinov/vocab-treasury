@@ -21,14 +21,10 @@ class TestApp(unittest.TestCase):
                 "1": {
                     "id": "1",
                     "username": "jd",
-                    "email": "john.doe@gmail.com",
-                    "password": "123",
                 },
                 "2": {
                     "id": "2",
                     "username": "ms",
-                    "email": "mary.smith@yahoo.com",
-                    "password": "456",
                 },
             },
         )
@@ -140,26 +136,18 @@ class TestApp(unittest.TestCase):
                 "1": {
                     "id": "1",
                     "username": "jd",
-                    "email": "john.doe@gmail.com",
-                    "password": "123",
                 },
                 "2": {
                     "id": "2",
                     "username": "ms",
-                    "email": "mary.smith@yahoo.com",
-                    "password": "456",
                 },
                 "17": {
                     "id": "17",
                     "username": "eu",
-                    "email": "extra.user@mock.com",
-                    "password": "10,11,12",
                 },
                 "18": {
                     "id": "18",
                     "username": "fl",
-                    "email": "first.last@protonmail.com",
-                    "password": "789",
                 },
             },
         )
@@ -173,14 +161,10 @@ class TestApp(unittest.TestCase):
                 "1": {
                     "id": "1",
                     "username": "jd",
-                    "email": "john.doe@gmail.com",
-                    "password": "123",
                 },
                 "2": {
                     "id": "2",
                     "username": "ms",
-                    "email": "mary.smith@yahoo.com",
-                    "password": "456",
                 },
             },
         )
@@ -299,8 +283,6 @@ class TestApp(unittest.TestCase):
                 "2": {
                     "id": "2",
                     "username": "ms",
-                    "email": "mary.smith@yahoo.com",
-                    "password": "456",
                 }
             },
         )
