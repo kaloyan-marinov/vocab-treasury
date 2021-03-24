@@ -58,5 +58,35 @@ def create_user():
     return r
 
 
+@app.route("/api/users/<int:user_id>", methods=["PUT"])
+def edit_user(user_id):
+    if not request.json:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": 'Your request did not include a "Content-Type: application/json" header.',
+            }
+        )
+        r.status_code = 400
+        return r
+
+    user_id_str = str(user_id)
+    if user_id_str not in users:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": f"There doesn't exist a User resource with an id of {user_id_str}",
+            }
+        )
+        r.status_code = 404
+        return r
+
+    original_user = users[user_id_str]
+    edited_user = {**original_user, **request.json}
+    users[user_id_str] = edited_user
+
+    return edited_user
+
+
 if __name__ == "__main__":
     app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)

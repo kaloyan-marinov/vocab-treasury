@@ -156,3 +156,61 @@ class TestApp(unittest.TestCase):
                 },
             },
         )
+
+    def test_edit_user(self):
+        data = {"username": "JD", "email": "JOHN.DOE@GMAIL.COM", "password": "!@#"}
+        data_str = json.dumps(data)
+
+        with patch.dict("backend.vocab_treasury.users") as users_mock:
+            # Attempt to edit a User resource without providing a
+            # 'Content-Type: application/json' header.
+            rv_1 = self.client.put("/api/users/1", data=data_str)
+
+            # Attempt to edit a User resource that doesn't exist.
+            rv_2 = self.client.put(
+                "/api/users/17",
+                data=data_str,
+                headers={"Content-Type": "application/json"},
+            )
+
+            # Edit a User resource.
+            rv_3 = self.client.put(
+                "/api/users/1",
+                data=data_str,
+                headers={"Content-Type": "application/json"},
+            )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        self.assertEqual(rv_1.status_code, 400)
+        self.assertEqual(
+            body_1,
+            {
+                "error": "Bad Request",
+                "message": 'Your request did not include a "Content-Type: application/json" header.',
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 404)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 17",
+            },
+        )
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 200)
+        self.assertEqual(
+            body_3,
+            {
+                "id": "1",
+                "username": "JD",
+                "email": "JOHN.DOE@GMAIL.COM",
+                "password": "!@#",
+            },
+        )
