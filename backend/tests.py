@@ -214,3 +214,44 @@ class TestApp(unittest.TestCase):
                 "password": "!@#",
             },
         )
+
+    def test_delete_user(self):
+        with patch.dict("backend.vocab_treasury.users") as users_mock:
+            # Attempt to delete a User resource that doesn't exist.
+            rv_1 = self.client.delete("/api/users/17")
+
+            # Delete a User resource.
+            rv_2 = self.client.delete("/api/users/1")
+
+            # Get all remaining User resources.
+            rv_3 = self.client.get("/api/users")
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        self.assertEqual(rv_1.status_code, 404)
+        self.assertEqual(
+            body_1,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 17",
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        self.assertEqual(body_str_2, "")
+        self.assertEqual(rv_2.status_code, 204)
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(
+            body_3,
+            {
+                "2": {
+                    "id": "2",
+                    "username": "ms",
+                    "email": "mary.smith@yahoo.com",
+                    "password": "456",
+                }
+            },
+        )
+        self.assertEqual(rv_3.status_code, 200)
