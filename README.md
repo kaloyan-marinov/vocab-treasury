@@ -87,9 +87,28 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     200
 
+    ---------
+
     $ curl -v \
         -X GET
         localhost:5000/api/users/1
     
     200
+
+    ---------
+
+    $ curl -v \
+        -X POST \
+        -d '{"username": "fl", "email": "first.last@protonmail.com", "password": "789"}' \
+        localhost:5000/api/users
+
+    400
+
+    $ curl -v \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d '{"username": "fl", "email": "first.last@protonmail.com", "password": "789"}' \
+        localhost:5000/api/users
+    
+    201
     ```
