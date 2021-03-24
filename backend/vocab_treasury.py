@@ -45,17 +45,17 @@ def create_user():
         )
         r.status_code = 400
         return r
-    else:
-        new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
-        new_user_id_str = str(new_user_id)
-        payload = {k: v for k, v in request.json.items()}
-        payload["id"] = new_user_id_str
 
-        users[new_user_id_str] = payload
+    new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
+    new_user_id_str = str(new_user_id)
+    payload = {k: v for k, v in request.json.items()}
+    payload["id"] = new_user_id_str
 
-        r = jsonify(payload)
-        r.status_code = 201
-        return r
+    users[new_user_id_str] = payload
+
+    r = jsonify(payload)
+    r.status_code = 201
+    return r
 
 
 if __name__ == "__main__":

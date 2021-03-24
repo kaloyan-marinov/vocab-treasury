@@ -83,13 +83,32 @@ class TestApp(unittest.TestCase):
         with patch.dict(
             "backend.vocab_treasury.users", values=mock_of_extra_user
         ) as users_mock:
-            # This code block:
-            # (a) is not relevant or needed for testing the endpoint handler for POST
-            #     requests to /api/users,
-            # (b) belongs to a set of training wheels for understanding what the
-            #     `patch.dict` context manager, which is used a few lines above,
-            #     actually does.
-            expected_value_of_users_mock = {
+            rv_1 = self.client.post(
+                "/api/users",
+                data=data_str,
+                headers={"Content-Type": "application/json"},
+            )
+            rv_2 = self.client.get("/api/users")
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        self.assertEqual(rv_1.status_code, 201)
+        self.assertEqual(
+            body_1,
+            {
+                "id": "18",
+                "username": "fl",
+                "email": "first.last@protonmail.com",
+                "password": "789",
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2,
+            {
                 "1": {
                     "id": "1",
                     "username": "jd",
@@ -108,45 +127,32 @@ class TestApp(unittest.TestCase):
                     "email": "extra.user@mock.com",
                     "password": "10,11,12",
                 },
-            }
-            self.assertEqual(users_mock, expected_value_of_users_mock)
-            self.assertEqual(users, expected_value_of_users_mock)
+                "18": {
+                    "id": "18",
+                    "username": "fl",
+                    "email": "first.last@protonmail.com",
+                    "password": "789",
+                },
+            },
+        )
 
-            rv = self.client.post(
-                "/api/users",
-                data=data_str,
-                headers={"Content-Type": "application/json"},
-            )
-
-            # This code block:
-            # (a) is not relevant or needed for testing the endpoint handler for POST
-            #     requests to /api/users,
-            # (b) belongs to a set of training wheels for understanding what the
-            #     `patch.dict` context manager, which is used a few lines above,
-            #     actually does.
-            expected_value_of_users_mock.update(
-                {
-                    "18": {
-                        "id": "18",
-                        "username": "fl",
-                        "email": "first.last@protonmail.com",
-                        "password": "789",
-                    }
-                }
-            )
-            self.assertEqual(users_mock, expected_value_of_users_mock)
-            self.assertEqual(users, expected_value_of_users_mock)
-
-            rv_2 = self.client.get("/api/users")
-            body_str_2 = rv_2.get_data(as_text=True)
-            body_2 = json.loads(body_str_2)
-            self.assertEqual(rv_2.status_code, 200)
-            self.assertEqual(body_2, expected_value_of_users_mock)
-
-        body_str = rv.get_data(as_text=True)
-        self.assertEqual(rv.status_code, 201)
-
-        rv = self.client.get("/api/users")
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(body, users)
+        rv_3 = self.client.get("/api/users")
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(
+            body_3,
+            {
+                "1": {
+                    "id": "1",
+                    "username": "jd",
+                    "email": "john.doe@gmail.com",
+                    "password": "123",
+                },
+                "2": {
+                    "id": "2",
+                    "username": "ms",
+                    "email": "mary.smith@yahoo.com",
+                    "password": "456",
+                },
+            },
+        )
