@@ -100,6 +100,26 @@ def edit_user(user_id):
         r.status_code = 404
         return r
 
+    email = request.json.get("email")
+    if email:
+        is_email_taken = False
+        for user in users.values():
+            if user["email"] == email:
+                is_email_taken = True
+                break
+        if is_email_taken:
+            r = jsonify(
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        "There already exists a User resource with the same email as"
+                        " the one you provided."
+                    ),
+                }
+            )
+            r.status_code = 400
+            return r
+
     original_user = users[user_id_str]
     edited_user = {**original_user, **request.json}
     users[user_id_str] = edited_user
