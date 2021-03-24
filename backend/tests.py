@@ -208,6 +208,14 @@ class TestApp(unittest.TestCase):
                 headers={"Content-Type": "application/json"},
             )
 
+            # Attempt to edit a User resource in such a way that two different User
+            # resources would end up having the same username.
+            rv_4 = self.client.put(
+                "/api/users/2",
+                data=data_str,
+                headers={"Content-Type": "application/json"},
+            )
+
         body_str_1 = rv_1.get_data(as_text=True)
         body_1 = json.loads(body_str_1)
         self.assertEqual(rv_1.status_code, 400)
@@ -240,6 +248,20 @@ class TestApp(unittest.TestCase):
                 "username": "JD",
                 "email": "JOHN.DOE@GMAIL.COM",
                 "password": "!@#",
+            },
+        )
+
+        body_str_4 = rv_4.get_data(as_text=True)
+        body_4 = json.loads(body_str_4)
+        self.assertEqual(rv_4.status_code, 400)
+        self.assertEqual(
+            body_4,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same email as the"
+                    " one you provided."
+                ),
             },
         )
 
