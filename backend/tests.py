@@ -31,3 +31,18 @@ class TestApp(unittest.TestCase):
                 },
             },
         )
+
+    def test_get_user(self):
+        rv = self.client.get("/api/users/1")
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(
+            body,
+            {
+                "id": "1",
+                "username": "jd",
+                "email": "john.doe@gmail.com",
+                "password": "123",
+            },
+        )
