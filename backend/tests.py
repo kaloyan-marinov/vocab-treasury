@@ -201,6 +201,8 @@ class TestApp(unittest.TestCase):
                 headers={"Content-Type": "application/json"},
             )
 
+            edited_user_3 = users["1"]
+
             # Attempt to edit a User resource in such a way that two different User
             # resources would end up having the same username.
             rv_4 = self.client.put(
@@ -236,6 +238,14 @@ class TestApp(unittest.TestCase):
         self.assertEqual(rv_3.status_code, 200)
         self.assertEqual(
             body_3,
+            {
+                "id": "1",
+                "username": "JD",
+            },
+        )
+
+        self.assertEqual(
+            edited_user_3,
             {
                 "id": "1",
                 "username": "JD",

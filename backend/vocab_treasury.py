@@ -129,7 +129,8 @@ def edit_user(user_id):
     edited_user = {**original_user, **request.json}
     users[user_id_str] = edited_user
 
-    return edited_user
+    payload = {f: edited_user[f] for f in user_public_fields}
+    return payload
 
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
