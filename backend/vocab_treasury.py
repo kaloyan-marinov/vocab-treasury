@@ -21,6 +21,7 @@ users_list = [
 
 
 users = {u["id"]: u for u in users_list}
+user_public_fields = ["id", "username"]
 
 
 @app.route("/api/users", methods=["GET"])
@@ -70,11 +71,12 @@ def create_user():
 
     new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
     new_user_id_str = str(new_user_id)
-    payload = {k: v for k, v in request.json.items()}
-    payload["id"] = new_user_id_str
+    new_user = {k: v for k, v in request.json.items()}
+    new_user["id"] = new_user_id_str
 
-    users[new_user_id_str] = payload
+    users[new_user_id_str] = new_user
 
+    payload = {f: new_user[f] for f in user_public_fields}
     r = jsonify(payload)
     r.status_code = 201
     return r
