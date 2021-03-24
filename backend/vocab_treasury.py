@@ -46,6 +46,25 @@ def create_user():
         r.status_code = 400
         return r
 
+    email = request.json.get("email")
+    is_email_taken = False
+    for user in users.values():
+        if user["email"] == email:
+            is_email_taken = True
+            break
+    if is_email_taken:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same email as"
+                    " the one you provided."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
     new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
     new_user_id_str = str(new_user_id)
     payload = {k: v for k, v in request.json.items()}

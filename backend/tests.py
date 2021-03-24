@@ -71,6 +71,34 @@ class TestApp(unittest.TestCase):
             },
         )
 
+        # Attempt to create a User resource with the same email as an existing User
+        # resource.
+        data_2 = {
+            "id": 3,
+            "username": "dupicate.email",
+            "email": "john.doe@gmail.com",
+            "password": "dupicate.email",
+        }
+        data_2_str = json.dumps(data_2)
+
+        rv = self.client.post(
+            "api/users", data=data_2_str, headers={"Content-Type": "application/json"}
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same email as the"
+                    " one you provided."
+                ),
+            },
+        )
+
         # Create a User resource.
         mock_of_extra_user = {
             "17": {
