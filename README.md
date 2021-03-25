@@ -119,23 +119,66 @@ Another aspect of the reality of purposeful language learning is that it takes a
         -d '{"username": "j-d"}' \
         localhost:5000/api/users/1
 
+    401
+
+    $ curl -v \
+        -X PUT \
+        -u john.doe@gmail.com:123 \
+        -d '{"username": "j-d"}' \
+        localhost:5000/api/users/1
+
     400
 
     $ curl -v \
         -X PUT \
         -H "Content-Type: application/json" \
+        -u john.doe@gmail.com:123 \
         -d '{"username": "j-d"}' \
-        localhost:5000/api/users/17
+        localhost:5000/api/users/2
 
-    404
+    403
 
     $ curl -v \
         -X PUT \
         -H "Content-Type: application/json" \
+        -u john.doe@gmail.com:123 \
         -d '{"username": "j-d"}' \
+        localhost:5000/api/users/17
+
+    403
+
+    $ curl -v \
+        -X PUT \
+        -H "Content-Type: application/json" \
+        -u john.doe@gmail.com:123 \
+        -d '{"username": "JD", "email": "JOHN.DOE@GMAIL.COM"}' \
         localhost:5000/api/users/1
     
     200
+
+    $ curl -v \
+        -X GET \
+        localhost:5000/api/users
+
+    200
+
+    $ curl -v \
+        -X PUT \
+        -H "Content-Type: application/json" \
+        -u mary.smith@yahoo.com:456 \
+        -d '{"email": "JOHN.DOE@GMAIL.COM"}' \
+        localhost:5000/api/users/2
+
+    400
+
+    $ curl -v \
+        -X PUT \
+        -H "Content-Type: application/json" \
+        -u mary.smith@yahoo.com:wrong-password \
+        -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
+        localhost:5000/api/users/2
+
+    401
 
     ---
 

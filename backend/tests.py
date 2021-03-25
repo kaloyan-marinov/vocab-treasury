@@ -210,61 +210,152 @@ class TestApp(unittest.TestCase):
         data_str = json.dumps(data)
 
         with patch.dict("backend.vocab_treasury.users") as users_mock:
-            # Attempt to edit a User resource without providing a
-            # 'Content-Type: application/json' header.
+            # Attempt to edit a User resource
+            # without prodiving Basic Auth credentials.
             rv_1 = self.client.put("/api/users/1", data=data_str)
 
-            # Attempt to edit a User resource that doesn't exist.
+            # Attempt to edit a User resource without providing a
+            # 'Content-Type: application/json' header.
+            basic_auth_credentials = "john.doe@gmail.com:123"
+            b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode(
+                "utf-8"
+            )
+            authorization = "Basic " + b_a_c
             rv_2 = self.client.put(
+                "/api/users/1", data=data_str, headers={"Authorization": authorization}
+            )
+
+            # Attempt to edit a User resource, which does not correspond to
+            # the user authenticated by the issued request's header.
+            rv_3 = self.client.put(
+                "/api/users/2",
+                data=data_str,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
+            )
+
+            # Attempt to edit a User resource that doesn't exist.
+            rv_4 = self.client.put(
                 "/api/users/17",
                 data=data_str,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
             )
 
             # Edit a User resource.
-            rv_3 = self.client.put(
+            rv_5 = self.client.put(
                 "/api/users/1",
                 data=data_str,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
             )
 
-            edited_user_3 = users["1"]
+            # Get the edited User resource
+            # (by reaching directly into the application's persistence layer).
+            edited_user_5 = users["1"]
+
+            # Get the edited User resource
+            # (by having the test client issue an HTTP request).
+            rv_6 = self.client.get("/api/users/1")
 
             # Attempt to edit a User resource in such a way that two different User
-            # resources would end up having the same username.
-            rv_4 = self.client.put(
+            # resources would end up having the same email.
+            basic_auth_credentials_7 = "mary.smith@yahoo.com:456"
+            b_a_c_7 = base64.b64encode(basic_auth_credentials_7.encode("utf-8")).decode(
+                "utf-8"
+            )
+            authorization_7 = "Basic " + b_a_c_7
+
+            data_7 = {"email": edited_user_5["email"]}
+            data_str_7 = json.dumps(data_7)
+
+            rv_7 = self.client.put(
                 "/api/users/2",
-                data=data_str,
-                headers={"Content-Type": "application/json"},
+                data=data_str_7,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization_7,
+                },
+            )
+
+            # Attempt to edit a User resource
+            # by providing an incorrect set of Basic Auth credentials.
+            basic_auth_credentials_8 = "mary.smith@yahoo.com:wrong-password"
+            b_a_c_8 = base64.b64encode(basic_auth_credentials_8.encode("utf-8")).decode(
+                "utf-8"
+            )
+            authorization_8 = "Basic " + b_a_c_8
+
+            rv_8 = self.client.put(
+                "/api/users/2",
+                data=data_str_7,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization_8,
+                },
             )
 
         body_str_1 = rv_1.get_data(as_text=True)
         body_1 = json.loads(body_str_1)
-        self.assertEqual(rv_1.status_code, 400)
+        self.assertEqual(rv_1.status_code, 401)
         self.assertEqual(
             body_1,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 400)
+        self.assertEqual(
+            body_2,
             {
                 "error": "Bad Request",
                 "message": 'Your request did not include a "Content-Type: application/json" header.',
             },
         )
 
-        body_str_2 = rv_2.get_data(as_text=True)
-        body_2 = json.loads(body_str_2)
-        self.assertEqual(rv_2.status_code, 404)
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 403)
         self.assertEqual(
-            body_2,
+            body_3,
             {
-                "error": "Not Found",
-                "message": "There doesn't exist a User resource with an id of 17",
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to edit any User resource different from your"
+                    " own."
+                ),
             },
         )
 
-        body_str_3 = rv_3.get_data(as_text=True)
-        body_3 = json.loads(body_str_3)
-        self.assertEqual(rv_3.status_code, 200)
+        body_str_4 = rv_4.get_data(as_text=True)
+        body_4 = json.loads(body_str_4)
+        self.assertEqual(rv_4.status_code, 403)
         self.assertEqual(
-            body_3,
+            body_4,
+            {
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to edit any User resource different from your"
+                    " own."
+                ),
+            },
+        )
+
+        body_str_5 = rv_5.get_data(as_text=True)
+        body_5 = json.loads(body_str_5)
+        self.assertEqual(rv_5.status_code, 200)
+        self.assertEqual(
+            body_5,
             {
                 "id": "1",
                 "username": "JD",
@@ -272,7 +363,7 @@ class TestApp(unittest.TestCase):
         )
 
         self.assertEqual(
-            edited_user_3,
+            edited_user_5,
             {
                 "id": "1",
                 "username": "JD",
@@ -281,11 +372,16 @@ class TestApp(unittest.TestCase):
             },
         )
 
-        body_str_4 = rv_4.get_data(as_text=True)
-        body_4 = json.loads(body_str_4)
-        self.assertEqual(rv_4.status_code, 400)
+        body_str_6 = rv_6.get_data(as_text=True)
+        body_6 = json.loads(body_str_6)
+        self.assertEqual(rv_6.status_code, 200)
+        self.assertEqual(body_6, {"id": "1", "username": "JD"})
+
+        body_str_7 = rv_7.get_data(as_text=True)
+        body_7 = json.loads(body_str_7)
+        self.assertEqual(rv_7.status_code, 400)
         self.assertEqual(
-            body_4,
+            body_7,
             {
                 "error": "Bad Request",
                 "message": (
@@ -295,14 +391,25 @@ class TestApp(unittest.TestCase):
             },
         )
 
+        body_str_8 = rv_8.get_data(as_text=True)
+        body_8 = json.loads(body_str_8)
+        self.assertEqual(rv_8.status_code, 401)
+        self.assertEqual(
+            body_8,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
+
     def test_delete_user(self):
         with patch.dict("backend.vocab_treasury.users") as users_mock:
             # Attempt to delete a User resource
             # without providing Basic Auth credentials.
             rv_1 = self.client.delete("/api/users/1")
 
-            # Attempt to delete a User resource,
-            # which does not correspond to the user issuing the request.
+            # Attempt to delete a User resource, which does not correspond to
+            # the user authenticated by the issued request's header.
             basic_auth_credentials = "john.doe@gmail.com:123"
             b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode(
                 "utf-8"
