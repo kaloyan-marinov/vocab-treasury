@@ -32,6 +32,9 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
 
+    def public_representation(self):
+        return {"id": self.id, "username": self.username}
+
 
 users_list = [
     {
@@ -62,16 +65,21 @@ basic_auth = HTTPBasicAuth()
 
 @basic_auth.verify_password
 def verify_password(email, password):
+    # fmt: off
+    '''
     user = None
     for u in users.values():
         if u["email"] == email:
             user = u
             break
+    '''
+    # fmt: on
+    user = User.query.filter_by(email=email).first()
 
     if user is None:
         return None
 
-    if user["password"] != password:
+    if user.password != password:
         return None
 
     return user
@@ -141,27 +149,27 @@ def basic_auth_error():
 
 @app.route("/api/users", methods=["GET"])
 def get_users():
-    return {u_id: public_representation(u) for u_id, u in users.items()}
+    users = User.query.all()
+    return {u.id: u.public_representation() for u in users}
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
 def get_user(user_id):
-    user_id_str = str(user_id)
-    u = users.get(user_id_str)
+    u = User.query.get(user_id)
 
     if u is None:
         r = jsonify(
             {
                 "error": "Not Found",
                 "message": (
-                    f"There doesn't exist a User resource with an id of {user_id_str}"
+                    f"There doesn't exist a User resource with an id of {user_id}"
                 ),
             }
         )
         r.status_code = 404
         return r
 
-    return public_representation(u)
+    return u.public_representation()
 
 
 @app.route("/api/users", methods=["POST"])
@@ -176,13 +184,22 @@ def create_user():
         r.status_code = 400
         return r
 
+    username = request.json.get("username")
+    if username is None:
+        return "", 400
+
     email = request.json.get("email")
+    # fmt: off
+    '''
     is_email_taken = False
     for user in users.values():
         if user["email"] == email:
             is_email_taken = True
             break
     if is_email_taken:
+    '''
+    # fmt: on
+    if User.query.filter_by(email=email).first() is not None:
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -195,14 +212,26 @@ def create_user():
         r.status_code = 400
         return r
 
+    password = request.json.get("password")
+    if password is None:
+        return "", 400
+
+    # fmt: off
+    '''
     new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
     new_user_id_str = str(new_user_id)
     new_user = {k: v for k, v in request.json.items()}
     new_user["id"] = new_user_id_str
 
     users[new_user_id_str] = new_user
+    '''
+    # fmt: on
+    user = User(username=username, email=email, password=password)
 
-    payload = public_representation(new_user)
+    db.session.add(user)
+    db.session.commit()
+
+    payload = user.public_representation()
     r = jsonify(payload)
     r.status_code = 201
     return r
@@ -221,8 +250,12 @@ def edit_user(user_id):
         r.status_code = 400
         return r
 
+    # fmt: off
+    '''
     user_id_str = str(user_id)
-    if basic_auth.current_user()["id"] != user_id_str:
+    '''
+    # fmt: on
+    if basic_auth.current_user().id != user_id:
         r = jsonify(
             {
                 "error": "Forbidden",
@@ -235,14 +268,11 @@ def edit_user(user_id):
         r.status_code = 403
         return r
 
+    username = request.json.get("username")
+
     email = request.json.get("email")
     if email:
-        is_email_taken = False
-        for user in users.values():
-            if user["email"] == email:
-                is_email_taken = True
-                break
-        if is_email_taken:
+        if User.query.filter_by(email=email).first() is not None:
             r = jsonify(
                 {
                     "error": "Bad Request",
@@ -255,19 +285,27 @@ def edit_user(user_id):
             r.status_code = 400
             return r
 
-    original_user = users[user_id_str]
-    edited_user = {**original_user, **request.json}
-    users[user_id_str] = edited_user
+    password = request.json.get("password")
 
-    payload = public_representation(edited_user)
-    return payload
+    u = User.query.get(user_id)
+    if username is not None:
+        u.username = username
+    if email is not None:
+        u.email = email
+    if password is not None:
+        u.password = password
+
+    db.session.add(u)
+    db.session.commit()
+
+    return u.public_representation()
 
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 @basic_auth.login_required
 def delete_user(user_id):
-    user_id_str = str(user_id)
-    if basic_auth.current_user()["id"] != user_id_str:
+    # user_id_str = str(user_id)
+    if basic_auth.current_user().id != user_id:
         r = jsonify(
             {
                 "error": "Forbidden",
@@ -280,7 +318,10 @@ def delete_user(user_id):
         r.status_code = 403
         return r
 
-    del users[user_id_str]
+    # del users[user_id_str]
+    u = User.query.get(user_id)
+    db.session.delete(u)
+    db.session.commit()
 
     return "", 204
 

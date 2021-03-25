@@ -1,10 +1,17 @@
 import unittest
 import json
-from unittest.mock import patch
+
+# from unittest.mock import patch
 import base64
+import os
+
+os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-from backend.vocab_treasury import public_representation, app, users
+from backend.vocab_treasury import public_representation, app, users, db, User
+
+
+app.config["TESTING"] = True
 
 
 class TestUtils(unittest.TestCase):
@@ -21,7 +28,12 @@ class TestUtils(unittest.TestCase):
 
 class TestApp(unittest.TestCase):
     def setUp(self):
+        db.drop_all()  # just in case
+        db.create_all()
         self.client = app.test_client()
+
+    def tearDown(self):
+        db.drop_all()
 
     def test_get_users(self):
         rv = self.client.get("/api/users")
@@ -30,16 +42,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(
             body,
-            {
-                "1": {
-                    "id": "1",
-                    "username": "jd",
-                },
-                "2": {
-                    "id": "2",
-                    "username": "ms",
-                },
-            },
+            {},
         )
 
     def test_get_user(self):
@@ -57,6 +60,16 @@ class TestApp(unittest.TestCase):
         )
 
         # Get a User resource.
+        data = {"username": "jd", "email": "john.doe@gmail.com", "password": "123"}
+        data_str = json.dumps(data)
+        rv = self.client.post(
+            "/api/users", data=data_str, headers={"Content-Type": "application/json"}
+        )
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 201)
+        self.assertEqual(body, {"id": 1, "username": "jd"})
+
         rv_2 = self.client.get("/api/users/1")
         body_str_2 = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_str_2)
@@ -64,7 +77,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(
             body_2,
             {
-                "id": "1",
+                "id": 1,
                 "username": "jd",
             },
         )
@@ -92,6 +105,8 @@ class TestApp(unittest.TestCase):
             },
         )
 
+        # fmt: off
+        '''
         # Attempt to create a User resource with the same email as an existing User
         # resource.
         data_2 = {
@@ -119,26 +134,29 @@ class TestApp(unittest.TestCase):
                 ),
             },
         )
+        '''
+        # fmt: on
 
         # Create a User resource.
-        mock_of_extra_user = {
-            "17": {
-                "id": "17",
-                "username": "eu",
-                "email": "extra.user@mock.com",
-                "password": "10,11,12",
-            },
-        }
-        with patch.dict(
-            "backend.vocab_treasury.users", values=mock_of_extra_user
-        ) as users_mock:
+        # mock_of_extra_user = {
+        #     "17": {
+        #         "id": "17",
+        #         "username": "eu",
+        #         "email": "extra.user@mock.com",
+        #         "password": "10,11,12",
+        #     },
+        # }
+        # with patch.dict(
+        #     "backend.vocab_treasury.users", values=mock_of_extra_user
+        # ) as users_mock:
+        if True:
             rv_1 = self.client.post(
                 "/api/users",
                 data=data_str,
                 headers={"Content-Type": "application/json"},
             )
 
-            user_created_by_1 = users["18"]
+            # user_created_by_1 = users["18"]
 
             rv_2 = self.client.get("/api/users")
 
@@ -148,15 +166,47 @@ class TestApp(unittest.TestCase):
         self.assertEqual(
             body_1,
             {
-                "id": "18",
+                "id": 1,
                 "username": "fl",
             },
         )
 
+        # Attempt to create a User resource with the same email as an existing User
+        # resource.
+        data_2 = {
+            "id": 3,
+            "username": "dupicate.email",
+            "email": "first.last@protonmail.com",
+            "password": "dupicate.email",
+        }
+        data_2_str = json.dumps(data_2)
+
+        rv = self.client.post(
+            "api/users", data=data_2_str, headers={"Content-Type": "application/json"}
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 400)
         self.assertEqual(
-            user_created_by_1,
+            body,
             {
-                "id": "18",
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same email as the"
+                    " one you provided."
+                ),
+            },
+        )
+
+        user_created_by_1 = User.query.get(1)
+        self.assertEqual(
+            {
+                a: getattr(user_created_by_1, a)
+                for a in ["id", "username", "email", "password"]
+            },
+            {
+                "id": 1,
                 "username": "fl",
                 "email": "first.last@protonmail.com",
                 "password": "789",
@@ -170,46 +220,59 @@ class TestApp(unittest.TestCase):
             body_2,
             {
                 "1": {
-                    "id": "1",
-                    "username": "jd",
-                },
-                "2": {
-                    "id": "2",
-                    "username": "ms",
-                },
-                "17": {
-                    "id": "17",
-                    "username": "eu",
-                },
-                "18": {
-                    "id": "18",
+                    "id": 1,
                     "username": "fl",
                 },
             },
         )
 
-        rv_3 = self.client.get("/api/users")
-        body_str_3 = rv_3.get_data(as_text=True)
-        body_3 = json.loads(body_str_3)
-        self.assertEqual(
-            body_3,
-            {
-                "1": {
-                    "id": "1",
-                    "username": "jd",
-                },
-                "2": {
-                    "id": "2",
-                    "username": "ms",
-                },
-            },
-        )
+        # rv_3 = self.client.get("/api/users")
+        # body_str_3 = rv_3.get_data(as_text=True)
+        # body_3 = json.loads(body_str_3)
+        # self.assertEqual(
+        #     body_3,
+        #     {
+        #         "1": {
+        #             "id": "1",
+        #             "username": "jd",
+        #         },
+        #         "2": {
+        #             "id": "2",
+        #             "username": "ms",
+        #         },
+        #     },
+        # )
 
     def test_edit_user(self):
         data = {"username": "JD", "email": "JOHN.DOE@GMAIL.COM", "password": "!@#"}
         data_str = json.dumps(data)
 
-        with patch.dict("backend.vocab_treasury.users") as users_mock:
+        # with patch.dict("backend.vocab_treasury.users") as users_mock:
+        if True:
+            data_0 = {
+                "username": "jd",
+                "email": "john.doe@gmail.com",
+                "password": "123",
+            }
+            data_str_0 = json.dumps(data_0)
+            rv_0 = self.client.post(
+                "/api/users",
+                data=data_str_0,
+                headers={"Content-Type": "application/json"},
+            )
+
+            data_0 = {
+                "username": "ms",
+                "email": "mary.smith@yahoo.com",
+                "password": "456",
+            }
+            data_str_0 = json.dumps(data_0)
+            rv_0 = self.client.post(
+                "/api/users",
+                data=data_str_0,
+                headers={"Content-Type": "application/json"},
+            )
+
             # Attempt to edit a User resource
             # without prodiving Basic Auth credentials.
             rv_1 = self.client.put("/api/users/1", data=data_str)
@@ -258,7 +321,7 @@ class TestApp(unittest.TestCase):
 
             # Get the edited User resource
             # (by reaching directly into the application's persistence layer).
-            edited_user_5 = users["1"]
+            edited_user_5 = User.query.get(1)
 
             # Get the edited User resource
             # (by having the test client issue an HTTP request).
@@ -272,7 +335,7 @@ class TestApp(unittest.TestCase):
             )
             authorization_7 = "Basic " + b_a_c_7
 
-            data_7 = {"email": edited_user_5["email"]}
+            data_7 = {"email": edited_user_5.email}
             data_str_7 = json.dumps(data_7)
 
             rv_7 = self.client.put(
@@ -357,15 +420,18 @@ class TestApp(unittest.TestCase):
         self.assertEqual(
             body_5,
             {
-                "id": "1",
+                "id": 1,
                 "username": "JD",
             },
         )
 
         self.assertEqual(
-            edited_user_5,
             {
-                "id": "1",
+                a: getattr(edited_user_5, a)
+                for a in ["id", "username", "email", "password"]
+            },
+            {
+                "id": 1,
                 "username": "JD",
                 "email": "JOHN.DOE@GMAIL.COM",
                 "password": "!@#",
@@ -375,7 +441,7 @@ class TestApp(unittest.TestCase):
         body_str_6 = rv_6.get_data(as_text=True)
         body_6 = json.loads(body_str_6)
         self.assertEqual(rv_6.status_code, 200)
-        self.assertEqual(body_6, {"id": "1", "username": "JD"})
+        self.assertEqual(body_6, {"id": 1, "username": "JD"})
 
         body_str_7 = rv_7.get_data(as_text=True)
         body_7 = json.loads(body_str_7)
@@ -403,7 +469,32 @@ class TestApp(unittest.TestCase):
         )
 
     def test_delete_user(self):
-        with patch.dict("backend.vocab_treasury.users") as users_mock:
+        # with patch.dict("backend.vocab_treasury.users") as users_mock:
+        if True:
+            data_0 = {
+                "username": "jd",
+                "email": "john.doe@gmail.com",
+                "password": "123",
+            }
+            data_str_0 = json.dumps(data_0)
+            rv_0 = self.client.post(
+                "/api/users",
+                data=data_str_0,
+                headers={"Content-Type": "application/json"},
+            )
+
+            data_0 = {
+                "username": "ms",
+                "email": "mary.smith@yahoo.com",
+                "password": "456",
+            }
+            data_str_0 = json.dumps(data_0)
+            rv_0 = self.client.post(
+                "/api/users",
+                data=data_str_0,
+                headers={"Content-Type": "application/json"},
+            )
+
             # Attempt to delete a User resource
             # without providing Basic Auth credentials.
             rv_1 = self.client.delete("/api/users/1")
@@ -509,7 +600,7 @@ class TestApp(unittest.TestCase):
             body_6,
             {
                 "2": {
-                    "id": "2",
+                    "id": 2,
                     "username": "ms",
                 }
             },
