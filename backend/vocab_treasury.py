@@ -114,31 +114,6 @@ def basic_auth_error():
     return r
 
 
-@app.route("/api/users", methods=["GET"])
-def get_users():
-    users = User.query.all()
-    return {u.id: u.public_representation() for u in users}
-
-
-@app.route("/api/users/<int:user_id>", methods=["GET"])
-def get_user(user_id):
-    u = User.query.get(user_id)
-
-    if u is None:
-        r = jsonify(
-            {
-                "error": "Not Found",
-                "message": (
-                    f"There doesn't exist a User resource with an id of {user_id}"
-                ),
-            }
-        )
-        r.status_code = 404
-        return r
-
-    return u.public_representation()
-
-
 @app.route("/api/users", methods=["POST"])
 def create_user():
     if not request.json:
@@ -182,6 +157,31 @@ def create_user():
     r = jsonify(payload)
     r.status_code = 201
     return r
+
+
+@app.route("/api/users", methods=["GET"])
+def get_users():
+    users = User.query.all()
+    return {u.id: u.public_representation() for u in users}
+
+
+@app.route("/api/users/<int:user_id>", methods=["GET"])
+def get_user(user_id):
+    u = User.query.get(user_id)
+
+    if u is None:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": (
+                    f"There doesn't exist a User resource with an id of {user_id}"
+                ),
+            }
+        )
+        r.status_code = 404
+        return r
+
+    return u.public_representation()
 
 
 @app.route("/api/users/<int:user_id>", methods=["PUT"])
