@@ -29,7 +29,12 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 1. clone this repository, and navigate into your local repository
 
-2. create a Python virtual environment, activate it, and install all dependencies:
+2. at the root of your local repository, create a `.env` file with the following structure:
+    ```
+    SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
+    ```
+
+3. create a Python virtual environment, activate it, and install all dependencies:
     ```
     $ python3 --version
     Python 3.8.3
@@ -41,7 +46,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $ pip install -r requirements.txt
     ```
 
-3. ensure that running the tests results in a PASS by issuing one of the following - either:
+4. ensure that running the tests results in a PASS by issuing one of the following - either:
     ```
     (venv) $ python -m unittest backend/tests.py
 
@@ -65,21 +70,45 @@ Another aspect of the reality of purposeful language learning is that it takes a
     (venv) $ coverage html
     ```
 
-4. create a pre-commit Git hook that runs the `black` formatter for Python code:
+5. create an empty SQLite database and apply all database migrations:
+    ```
+    (venv) $ FLASK_APP=backend/vocab_treasury.py flask db upgrade
+    ```
+
+6. verify that the previous step was successful by issuing `$ sqlite3 <the-value-of-SQLALCHEMY_DATABASE_URI-in-your.env-file>` and then issuing:
+    ```
+    SQLite version 3.32.3 2020-06-18 14:16:19
+    Enter ".help" for usage hints.
+    sqlite> .tables
+    alembic_version  user           
+    sqlite> .schema user
+    CREATE TABLE user (
+            id INTEGER NOT NULL, 
+            username VARCHAR(20) NOT NULL, 
+            email VARCHAR(120) NOT NULL, 
+            password VARCHAR(60) NOT NULL, 
+            PRIMARY KEY (id), 
+            UNIQUE (email), 
+            UNIQUE (username)
+    );
+    sqlite> .quit
+    ```
+
+7. create a pre-commit Git hook that runs the `black` formatter for Python code:
     ```
     (venv) $ pre-commit install
     pre-commit installed at .git/hooks/pre-commit
     (venv) $
     ```
 
-5. launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
+8. launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
     ```
     (venv) $ python backend/vocab_treasury.py
 
     (venv) $ FLASK_APP=backend/vocab_treasury.py flask run
     ```
 
-6. launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
+9. launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
     ```
     $ curl -v \
         -X GET \
