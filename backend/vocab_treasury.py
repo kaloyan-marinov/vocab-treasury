@@ -1,8 +1,36 @@
 from flask import Flask, request, jsonify
 from flask_httpauth import HTTPBasicAuth
+from dotenv import find_dotenv, load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+
+dotenv_file = find_dotenv()
+load_dotenv(dotenv_file)
+import os
+
+print(
+    "os.environ.get('SQLALCHEMY_DATABASE_URI') - "
+    + os.environ.get("SQLALCHEMY_DATABASE_URI")
+)
 
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+
+db = SQLAlchemy(app)
+
+
+migrate = Migrate(app, db)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
 
 
 users_list = [
