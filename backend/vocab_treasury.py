@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_httpauth import HTTPBasicAuth
 
 
 app = Flask(__name__)
@@ -28,6 +29,88 @@ def public_representation(user):
     return {f: user[f] for f in user_public_fields}
 
 
+basic_auth = HTTPBasicAuth()
+
+
+@basic_auth.verify_password
+def verify_password(email, password):
+    user = None
+    for u in users.values():
+        if u["email"] == email:
+            user = u
+            break
+
+    if user is None:
+        return None
+
+    if user["password"] != password:
+        return None
+
+    return user
+
+
+@basic_auth.error_handler
+def basic_auth_error():
+    """Return a 401 error to the client."""
+    r = jsonify(
+        {
+            "error": "Unauthorized",
+            "message": "Authentication in the Basic Auth format is required.",
+        }
+    )
+    r.status_code = 401
+    # fmt: off
+    '''
+    source: https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
+
+        Unfortunately web browsers have the nasty habit of showing an ugly login dialog
+        box when a request comes back with a 401 error code.
+
+        A simple trick to distract web browsers is to return an error code other than
+        401. An alternative error code favored by many is 403, which is the "Forbidden"
+        error. While this is a close enough error, it sort of violates the HTTP
+        standard, so it is not the proper thing to do if full compliance is necessary.
+        In particular this would be a bad idea if the client application is not a web
+        browser. But for cases where server and client are developed together it saves a
+        lot of trouble.
+    
+    source: https://flask-httpauth.readthedocs.io/en/latest/index.html
+
+        class flask_httpauth.HTTPBasicAuth
+
+            This class handles HTTP Basic authentication for Flask routes.
+
+            __init__(scheme=None, realm=None)
+
+                Create a basic authentication object.
+
+                If the optional `scheme` argument is provided, it will be used instead
+                of the standard “Basic” scheme in the `WWW-Authenticate` response. A
+                fairly common practice is to use a custom scheme to prevent browsers
+                from prompting the user to login.
+
+                The `realm` argument can be used to provide an application defined realm
+                with the `WWW-Authenticate` header.
+
+    source: https://github.com/kaloyan-marinov/goal-tracker-public/blob/13c76f8abd4182e8ad559492e796476eb9d38f37/goal_tracker/auth.py
+
+        This project also prevents web browsers from showing an ugly login dialog box
+        when a request comes back with a 401 error code.
+
+        It appears that:
+        (a) this project _effectively_ uses the approach recommended by the previous
+            source, but
+        (b) this project's implementation is not identical to the approach recommended
+            by the previous source.
+        
+        Recall that this project's implementation is based on the following project's
+        implementation:
+        https://github.com/miguelgrinberg/microblog/blob/02aae8d9816fb23b72cbeca2ac945ac2d48a6ed0/app/api/auth.py
+    '''
+    # fmt: on
+    return r
+
+
 @app.route("/api/users", methods=["GET"])
 def get_users():
     return {u_id: public_representation(u) for u_id, u in users.items()}
@@ -36,7 +119,20 @@ def get_users():
 @app.route("/api/users/<int:user_id>", methods=["GET"])
 def get_user(user_id):
     user_id_str = str(user_id)
-    u = users[user_id_str]
+    u = users.get(user_id_str)
+
+    if u is None:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": (
+                    f"There doesn't exist a User resource with an id of {user_id_str}"
+                ),
+            }
+        )
+        r.status_code = 404
+        return r
+
     return public_representation(u)
 
 
@@ -136,16 +232,20 @@ def edit_user(user_id):
 
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@basic_auth.login_required
 def delete_user(user_id):
     user_id_str = str(user_id)
-    if user_id_str not in users:
+    if basic_auth.current_user()["id"] != user_id_str:
         r = jsonify(
             {
-                "error": "Not Found",
-                "message": f"There doesn't exist a User resource with an id of {user_id}",
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to delete any User resource different from"
+                    " your own."
+                ),
             }
         )
-        r.status_code = 404
+        r.status_code = 403
         return r
 
     del users[user_id_str]

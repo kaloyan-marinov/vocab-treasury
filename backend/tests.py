@@ -1,6 +1,7 @@
 import unittest
 import json
 from unittest.mock import patch
+import base64
 
 
 from backend.vocab_treasury import public_representation, app, users
@@ -42,12 +43,26 @@ class TestApp(unittest.TestCase):
         )
 
     def test_get_user(self):
-        rv = self.client.get("/api/users/1")
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 200)
+        # Attempt to get a User resource that doesn't exist.
+        rv_1 = self.client.get("/api/users/17")
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        self.assertEqual(rv_1.status_code, 404)
         self.assertEqual(
-            body,
+            body_1,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 17",
+            },
+        )
+
+        # Get a User resource.
+        rv_2 = self.client.get("/api/users/1")
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2,
             {
                 "id": "1",
                 "username": "jd",
@@ -282,34 +297,109 @@ class TestApp(unittest.TestCase):
 
     def test_delete_user(self):
         with patch.dict("backend.vocab_treasury.users") as users_mock:
+            # Attempt to delete a User resource
+            # without providing Basic Auth credentials.
+            rv_1 = self.client.delete("/api/users/1")
+
+            # Attempt to delete a User resource,
+            # which does not correspond to the user issuing the request.
+            basic_auth_credentials = "john.doe@gmail.com:123"
+            b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode(
+                "utf-8"
+            )
+            authorization = "Basic " + b_a_c
+
+            rv_2 = self.client.delete(
+                "/api/users/2", headers={"Authorization": authorization}
+            )
+
             # Attempt to delete a User resource that doesn't exist.
-            rv_1 = self.client.delete("/api/users/17")
+            rv_3 = self.client.delete(
+                "/api/users/17", headers={"Authorization": authorization}
+            )
 
             # Delete a User resource.
-            rv_2 = self.client.delete("/api/users/1")
+            rv_4 = self.client.delete(
+                "/api/users/1", headers={"Authorization": authorization}
+            )
+
+            # Attempt to get the deleted User resource.
+            rv_5 = self.client.get("/api/users/1")
 
             # Get all remaining User resources.
-            rv_3 = self.client.get("/api/users")
+            rv_6 = self.client.get("/api/users")
+
+            # Attempt to delete a User resource
+            # by providing an incorrect set of Basic Auth credentials.
+            basic_auth_credentials_7 = "mary.smith@yahoo.com:wrong-password"
+            b_a_c_7 = base64.b64encode(basic_auth_credentials_7.encode("utf-8")).decode(
+                "utf-8"
+            )
+            authorization_7 = "Basic " + b_a_c_7
+
+            rv_7 = self.client.delete(
+                "/api/users/2", headers={"Authorization": authorization_7}
+            )
 
         body_str_1 = rv_1.get_data(as_text=True)
         body_1 = json.loads(body_str_1)
-        self.assertEqual(rv_1.status_code, 404)
+        self.assertEqual(rv_1.status_code, 401)
         self.assertEqual(
             body_1,
             {
-                "error": "Not Found",
-                "message": "There doesn't exist a User resource with an id of 17",
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
             },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
-        self.assertEqual(body_str_2, "")
-        self.assertEqual(rv_2.status_code, 204)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 403)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to delete any User resource different from"
+                    " your own."
+                ),
+            },
+        )
 
         body_str_3 = rv_3.get_data(as_text=True)
         body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 403)
         self.assertEqual(
             body_3,
+            {
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to delete any User resource different from"
+                    " your own."
+                ),
+            },
+        )
+
+        body_str_4 = rv_4.get_data(as_text=True)
+        self.assertEqual(rv_4.status_code, 204)
+        self.assertEqual(body_str_4, "")
+
+        body_str_5 = rv_5.get_data(as_text=True)
+        body_5 = json.loads(body_str_5)
+        self.assertEqual(rv_5.status_code, 404)
+        self.assertEqual(
+            body_5,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 1",
+            },
+        )
+
+        body_str_6 = rv_6.get_data(as_text=True)
+        body_6 = json.loads(body_str_6)
+        self.assertEqual(rv_6.status_code, 200)
+        self.assertEqual(
+            body_6,
             {
                 "2": {
                     "id": "2",
@@ -317,4 +407,14 @@ class TestApp(unittest.TestCase):
                 }
             },
         )
-        self.assertEqual(rv_3.status_code, 200)
+
+        body_str_7 = rv_7.get_data(as_text=True)
+        body_7 = json.loads(body_str_7)
+        self.assertEqual(rv_7.status_code, 401)
+        self.assertEqual(
+            body_7,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
