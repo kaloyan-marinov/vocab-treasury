@@ -36,44 +36,11 @@ class User(db.Model):
         return {"id": self.id, "username": self.username}
 
 
-users_list = [
-    {
-        "id": "1",
-        "username": "jd",
-        "email": "john.doe@gmail.com",
-        "password": "123",
-    },
-    {
-        "id": "2",
-        "username": "ms",
-        "email": "mary.smith@yahoo.com",
-        "password": "456",
-    },
-]
-
-
-users = {u["id"]: u for u in users_list}
-
-
-def public_representation(user):
-    user_public_fields = ["id", "username"]
-    return {f: user[f] for f in user_public_fields}
-
-
 basic_auth = HTTPBasicAuth()
 
 
 @basic_auth.verify_password
 def verify_password(email, password):
-    # fmt: off
-    '''
-    user = None
-    for u in users.values():
-        if u["email"] == email:
-            user = u
-            break
-    '''
-    # fmt: on
     user = User.query.filter_by(email=email).first()
 
     if user is None:
@@ -189,16 +156,6 @@ def create_user():
         return "", 400
 
     email = request.json.get("email")
-    # fmt: off
-    '''
-    is_email_taken = False
-    for user in users.values():
-        if user["email"] == email:
-            is_email_taken = True
-            break
-    if is_email_taken:
-    '''
-    # fmt: on
     if User.query.filter_by(email=email).first() is not None:
         r = jsonify(
             {
@@ -216,16 +173,6 @@ def create_user():
     if password is None:
         return "", 400
 
-    # fmt: off
-    '''
-    new_user_id = max([int(u_id) for u_id in users.keys()]) + 1
-    new_user_id_str = str(new_user_id)
-    new_user = {k: v for k, v in request.json.items()}
-    new_user["id"] = new_user_id_str
-
-    users[new_user_id_str] = new_user
-    '''
-    # fmt: on
     user = User(username=username, email=email, password=password)
 
     db.session.add(user)
@@ -250,11 +197,6 @@ def edit_user(user_id):
         r.status_code = 400
         return r
 
-    # fmt: off
-    '''
-    user_id_str = str(user_id)
-    '''
-    # fmt: on
     if basic_auth.current_user().id != user_id:
         r = jsonify(
             {
@@ -304,7 +246,6 @@ def edit_user(user_id):
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 @basic_auth.login_required
 def delete_user(user_id):
-    # user_id_str = str(user_id)
     if basic_auth.current_user().id != user_id:
         r = jsonify(
             {
@@ -318,7 +259,6 @@ def delete_user(user_id):
         r.status_code = 403
         return r
 
-    # del users[user_id_str]
     u = User.query.get(user_id)
     db.session.delete(u)
     db.session.commit()

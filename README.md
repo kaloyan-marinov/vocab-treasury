@@ -119,16 +119,16 @@ Another aspect of the reality of purposeful language learning is that it takes a
     ---------
 
     $ curl -v \
-        -X GET
+        -X GET \
         localhost:5000/api/users/1
     
-    200
+    404
 
     ---------
 
     $ curl -v \
         -X POST \
-        -d '{"username": "fl", "email": "first.last@protonmail.com", "password": "789"}' \
+        -d '{"username": "jd", "email": "john.doe@gmail.com", "password": "123"}' \
         localhost:5000/api/users
 
     400
@@ -136,9 +136,17 @@ Another aspect of the reality of purposeful language learning is that it takes a
     $ curl -v \
         -X POST \
         -H "Content-Type: application/json" \
-        -d '{"username": "fl", "email": "first.last@protonmail.com", "password": "789"}' \
+        -d '{"username": "jd", "email": "john.doe@gmail.com", "password": "123"}' \
         localhost:5000/api/users
     
+    201
+
+    $ curl -v \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d '{"username": "ms", "email": "mary.smith@yahoo.com", "password": "456"}' \
+        localhost:5000/api/users
+
     201
 
     ----
@@ -219,7 +227,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
-        -u john.doe@gmail.com:123 \
+        -u JOHN.DOE@GMAIL.COM:123 \
         localhost:5000/api/users/2
 
     403
@@ -232,7 +240,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
-        -u john.doe@gmail.com:123 \
+        -u JOHN.DOE@GMAIL.COM:123 \
         localhost:5000/api/users/1
 
     204

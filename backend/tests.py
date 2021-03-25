@@ -8,22 +8,10 @@ import os
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-from backend.vocab_treasury import public_representation, app, users, db, User
+from backend.vocab_treasury import app, db, User
 
 
 app.config["TESTING"] = True
-
-
-class TestUtils(unittest.TestCase):
-    def test_public_representation(self):
-        user = {
-            "id": "1",
-            "username": "jd",
-            "email": "john.doe@gmail.com",
-            "password": "123",
-        }
-        p_r_of_user = public_representation(user)
-        self.assertEqual(p_r_of_user, {"id": "1", "username": "jd"})
 
 
 class TestApp(unittest.TestCase):
