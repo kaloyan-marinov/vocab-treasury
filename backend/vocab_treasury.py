@@ -181,6 +181,7 @@ def create_user():
 
 
 @app.route("/api/users/<int:user_id>", methods=["PUT"])
+@basic_auth.login_required
 def edit_user(user_id):
     if not request.json:
         r = jsonify(
@@ -193,14 +194,17 @@ def edit_user(user_id):
         return r
 
     user_id_str = str(user_id)
-    if user_id_str not in users:
+    if basic_auth.current_user()["id"] != user_id_str:
         r = jsonify(
             {
-                "error": "Not Found",
-                "message": f"There doesn't exist a User resource with an id of {user_id_str}",
+                "error": "Forbidden",
+                "message": (
+                    "You are not allowed to edit any User resource different from your"
+                    " own."
+                ),
             }
         )
-        r.status_code = 404
+        r.status_code = 403
         return r
 
     email = request.json.get("email")
