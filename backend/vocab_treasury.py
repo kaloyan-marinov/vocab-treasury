@@ -21,21 +21,23 @@ users_list = [
 
 
 users = {u["id"]: u for u in users_list}
-user_public_fields = ["id", "username"]
+
+
+def public_representation(user):
+    user_public_fields = ["id", "username"]
+    return {f: user[f] for f in user_public_fields}
 
 
 @app.route("/api/users", methods=["GET"])
 def get_users():
-    return {
-        u_id: {"id": u["id"], "username": u["username"]} for u_id, u in users.items()
-    }
+    return {u_id: public_representation(u) for u_id, u in users.items()}
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
 def get_user(user_id):
     user_id_str = str(user_id)
     u = users[user_id_str]
-    return {"id": u["id"], "username": u["username"]}
+    return public_representation(u)
 
 
 @app.route("/api/users", methods=["POST"])
@@ -76,7 +78,7 @@ def create_user():
 
     users[new_user_id_str] = new_user
 
-    payload = {f: new_user[f] for f in user_public_fields}
+    payload = public_representation(new_user)
     r = jsonify(payload)
     r.status_code = 201
     return r
@@ -129,7 +131,7 @@ def edit_user(user_id):
     edited_user = {**original_user, **request.json}
     users[user_id_str] = edited_user
 
-    payload = {f: edited_user[f] for f in user_public_fields}
+    payload = public_representation(edited_user)
     return payload
 
 

@@ -3,7 +3,19 @@ import json
 from unittest.mock import patch
 
 
-from backend.vocab_treasury import app, users
+from backend.vocab_treasury import public_representation, app, users
+
+
+class TestUtils(unittest.TestCase):
+    def test_public_representation(self):
+        user = {
+            "id": "1",
+            "username": "jd",
+            "email": "john.doe@gmail.com",
+            "password": "123",
+        }
+        p_r_of_user = public_representation(user)
+        self.assertEqual(p_r_of_user, {"id": "1", "username": "jd"})
 
 
 class TestApp(unittest.TestCase):
