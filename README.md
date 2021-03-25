@@ -141,13 +141,40 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
+        localhost:5000/api/users/1
+
+    401
+
+    $ curl -v \
+        -X DELETE \
+        -u john.doe@gmail.com:123 \
+        localhost:5000/api/users/2
+
+    403
+
+    $ curl -v \
+        -X DELETE \
         localhost:5000/api/users/17
+
+    401
+
+    $ curl -v \
+        -X DELETE \
+        -u john.doe@gmail.com:123 \
+        localhost:5000/api/users/1
+
+    204
+
+    $ curl -v \
+        -X GET \
+        localhost:5000/api/users/1
 
     404
 
     $ curl -v \
         -X DELETE \
-        localhost:5000/api/users/1
+        -u mary.smith@gmail.com:wrong-password \
+        localhost:5000/api/users/2
 
-    204
+    401
     ```
