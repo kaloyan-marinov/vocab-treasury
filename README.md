@@ -86,7 +86,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
             id INTEGER NOT NULL, 
             username VARCHAR(20) NOT NULL, 
             email VARCHAR(120) NOT NULL, 
-            password VARCHAR(60) NOT NULL, 
+            password_hash VARCHAR(60) NOT NULL, 
             PRIMARY KEY (id), 
             UNIQUE (email), 
             UNIQUE (username)
@@ -179,15 +179,6 @@ Another aspect of the reality of purposeful language learning is that it takes a
         -X PUT \
         -H "Content-Type: application/json" \
         -u john.doe@gmail.com:123 \
-        -d '{"username": "j-d"}' \
-        localhost:5000/api/users/17
-
-    403
-
-    $ curl -v \
-        -X PUT \
-        -H "Content-Type: application/json" \
-        -u john.doe@gmail.com:123 \
         -d '{"username": "JD", "email": "JOHN.DOE@GMAIL.COM"}' \
         localhost:5000/api/users/1
     
@@ -234,12 +225,6 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
-        localhost:5000/api/users/17
-
-    401
-
-    $ curl -v \
-        -X DELETE \
         -u JOHN.DOE@GMAIL.COM:123 \
         localhost:5000/api/users/1
 
@@ -253,7 +238,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
-        -u mary.smith@gmail.com:wrong-password \
+        -u mary.smith@yahoo.com:wrong-password \
         localhost:5000/api/users/2
 
     401
