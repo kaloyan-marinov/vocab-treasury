@@ -128,7 +128,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X POST \
-        -d '{"username": "jd", "email": "john.doe@gmail.com", "password": "123"}' \
+        -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
         localhost:5000/api/users
 
     400
@@ -136,7 +136,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
     $ curl -v \
         -X POST \
         -H "Content-Type: application/json" \
-        -d '{"username": "jd", "email": "john.doe@gmail.com", "password": "123"}' \
+        -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
         localhost:5000/api/users
     
     201
@@ -160,7 +160,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X PUT \
-        -u john.doe@gmail.com:123 \
+        -u john.doe@protonmail.com:123 \
         -d '{"username": "j-d"}' \
         localhost:5000/api/users/1
 
@@ -169,7 +169,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
     $ curl -v \
         -X PUT \
         -H "Content-Type: application/json" \
-        -u john.doe@gmail.com:123 \
+        -u john.doe@protonmail.com:123 \
         -d '{"username": "j-d"}' \
         localhost:5000/api/users/2
 
@@ -178,8 +178,8 @@ Another aspect of the reality of purposeful language learning is that it takes a
     $ curl -v \
         -X PUT \
         -H "Content-Type: application/json" \
-        -u john.doe@gmail.com:123 \
-        -d '{"username": "JD", "email": "JOHN.DOE@GMAIL.COM"}' \
+        -u john.doe@protonmail.com:123 \
+        -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
         localhost:5000/api/users/1
     
     200
@@ -194,7 +194,7 @@ Another aspect of the reality of purposeful language learning is that it takes a
         -X PUT \
         -H "Content-Type: application/json" \
         -u mary.smith@yahoo.com:456 \
-        -d '{"email": "JOHN.DOE@GMAIL.COM"}' \
+        -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
         localhost:5000/api/users/2
 
     400
@@ -218,14 +218,14 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
     $ curl -v \
         -X DELETE \
-        -u JOHN.DOE@GMAIL.COM:123 \
+        -u JOHN.DOE@PROTONMAIL.COM:123 \
         localhost:5000/api/users/2
 
     403
 
     $ curl -v \
         -X DELETE \
-        -u JOHN.DOE@GMAIL.COM:123 \
+        -u JOHN.DOE@PROTONMAIL.COM:123 \
         localhost:5000/api/users/1
 
     204
