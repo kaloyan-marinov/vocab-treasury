@@ -362,7 +362,11 @@ class Test_4_EditUser(TestBase):
     """Test the request responsible for editing a specific User resource."""
 
     def setUp(self):
-        self.data = {"username": "JD", "email": "JOHN.DOE@GMAIL.COM", "password": "!@#"}
+        self.data = {
+            "username": "JD",
+            "email": "JOHN.DOE@PROTONMAIL.COM",
+            "password": "!@#",
+        }
         self.data_str = json.dumps(self.data)
         super().setUp()
 
@@ -567,7 +571,7 @@ class Test_4_EditUser(TestBase):
             {
                 "id": 1,
                 "username": "JD",
-                "email": "JOHN.DOE@GMAIL.COM",
+                "email": "JOHN.DOE@PROTONMAIL.COM",
             },
         )
         self.assertTrue(check_password_hash(edited_u.password_hash, "!@#"))
