@@ -235,9 +235,10 @@ def edit_user(user_id):
         return r
 
     username = request.json.get("username")
-
+    password = request.json.get("password")
     email = request.json.get("email")
-    if email:
+
+    if email is not None:
         if User.query.filter_by(email=email).first() is not None:
             r = jsonify(
                 {
@@ -251,7 +252,19 @@ def edit_user(user_id):
             r.status_code = 400
             return r
 
-    password = request.json.get("password")
+    if username is not None:
+        if User.query.filter_by(username=username).first() is not None:
+            r = jsonify(
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        "There already exists a User resource with the same username as"
+                        " the one you provided."
+                    ),
+                }
+            )
+            r.status_code = 400
+            return r
 
     u = User.query.get(user_id)
     if username is not None:
