@@ -2,6 +2,7 @@ import unittest
 import json
 import base64
 import os
+from werkzeug.security import check_password_hash
 
 
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
@@ -127,14 +128,14 @@ class Test_1_CreateUser(TestBase):
         self.assertEqual(len(users), 1)
         user = users[0]
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
     def test_4_prevent_duplication_of_emails(self):
         """
@@ -181,14 +182,14 @@ class Test_1_CreateUser(TestBase):
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
     def test_5_prevent_duplication_of_usernames(self):
         """
@@ -237,14 +238,14 @@ class Test_1_CreateUser(TestBase):
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
 
 class Test_2_GetUsers(TestBase):
@@ -410,14 +411,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
     def test_2_missing_content_type(self):
         """
@@ -456,14 +457,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
     def test_3_prevent_editing_of_another_user(self):
         """
@@ -512,14 +513,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 2)
         user = User.query.get(2)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 2,
                 "username": "ms",
                 "email": "mary.smith@yahoo.com",
-                "password": "456",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "456"))
 
     def test_4_edit_the_authenticated_user(self):
         """
@@ -562,14 +563,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 1)
         edited_u = User.query.get(1)
         self.assertEqual(
-            {a: getattr(edited_u, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(edited_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "JD",
                 "email": "JOHN.DOE@GMAIL.COM",
-                "password": "!@#",
             },
         )
+        self.assertTrue(check_password_hash(edited_u.password_hash, "!@#"))
 
     def test_5_prevent_duplication_of_emails(self):
         """
@@ -621,17 +622,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 2)
         targeted_u = User.query.get(1)
         self.assertEqual(
-            {
-                a: getattr(targeted_u, a)
-                for a in ["id", "username", "email", "password"]
-            },
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
 
     def test_6_incorrect_basic_auth(self):
         """
@@ -675,17 +673,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 1)
         targeted_u = User.query.get(1)
         self.assertEqual(
-            {
-                a: getattr(targeted_u, a)
-                for a in ["id", "username", "email", "password"]
-            },
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
 
     def test_7_prevent_duplication_of_usernames(self):
         """
@@ -737,14 +732,14 @@ class Test_4_EditUser(TestBase):
         self.assertEqual(len(users), 2)
         user = User.query.get(1)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {a: getattr(user, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(user.password_hash, "123"))
 
 
 class Test_5_DeleteUser(TestBase):
@@ -795,17 +790,14 @@ class Test_5_DeleteUser(TestBase):
         self.assertEqual(len(users), 1)
         targeted_u = User.query.get(1)
         self.assertEqual(
-            {
-                a: getattr(targeted_u, a)
-                for a in ["id", "username", "email", "password"]
-            },
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
 
     def test_2_prevent_deleting_of_another_user(self):
         """
@@ -849,17 +841,14 @@ class Test_5_DeleteUser(TestBase):
         self.assertEqual(len(users), 2)
         targeted_u = User.query.get(2)
         self.assertEqual(
-            {
-                a: getattr(targeted_u, a)
-                for a in ["id", "username", "email", "password"]
-            },
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 2,
                 "username": "ms",
                 "email": "mary.smith@yahoo.com",
-                "password": "456",
             },
         )
+        self.assertTrue(check_password_hash(targeted_u.password_hash, "456"))
 
     def test_3_delete_the_authenticated_user(self):
         """
@@ -926,14 +915,11 @@ class Test_5_DeleteUser(TestBase):
         self.assertEqual(len(users), 1)
         targeted_u = User.query.get(1)
         self.assertEqual(
-            {
-                a: getattr(targeted_u, a)
-                for a in ["id", "username", "email", "password"]
-            },
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
-                "password": "123",
             },
         )
+        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))

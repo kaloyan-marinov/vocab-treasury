@@ -5,9 +5,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
 dotenv_file = find_dotenv()
 load_dotenv(dotenv_file)
-import os
 
 print(
     "os.environ.get('SQLALCHEMY_DATABASE_URI') - "
@@ -30,7 +33,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password_hash = db.Column(db.String(60), nullable=False)
 
     def public_representation(self):
         return {"id": self.id, "username": self.username}
@@ -46,7 +49,7 @@ def verify_password(email, password):
     if user is None:
         return None
 
-    if user.password != password:
+    if check_password_hash(user.password_hash, password) is False:
         return None
 
     return user
@@ -173,7 +176,11 @@ def create_user():
         r.status_code = 400
         return r
 
-    user = User(username=username, email=email, password=password)
+    user = User(
+        username=username,
+        email=email,
+        password_hash=generate_password_hash(password),
+    )
     db.session.add(user)
     db.session.commit()
 
@@ -272,7 +279,7 @@ def edit_user(user_id):
     if email is not None:
         u.email = email
     if password is not None:
-        u.password = password
+        u.password_hash = generate_password_hash(password)
 
     db.session.add(u)
     db.session.commit()
