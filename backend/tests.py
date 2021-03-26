@@ -59,7 +59,8 @@ class Test_1_CreateUser(TestBase):
             },
         )
 
-        # Reach directly into the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that no User resources have been created.
         users = User.query.all()
         self.assertEqual(len(users), 0)
 
@@ -307,7 +308,8 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-        # Reach directly into the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
@@ -352,7 +354,8 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-        # Reach directly in the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
         self.assertEqual(len(users), 1)
         user = User.query.get(1)
@@ -407,7 +410,8 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-        # Reach directly into the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
         self.assertEqual(len(users), 2)
         user = User.query.get(2)
@@ -457,7 +461,7 @@ class Test_4_EditUser(TestBase):
         )
 
         # (Reach directly into the application's persistence layer to)
-        # Get the edited User resource.
+        # Ensure that the User resource, which was targeted, got edited successfully.
         users = User.query.all()
         self.assertEqual(len(users), 1)
         edited_u = User.query.get(1)
@@ -483,8 +487,8 @@ class Test_4_EditUser(TestBase):
         )
         self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
 
-        # Attempt to edit a User resource, which does not correspond to
-        # the user authenticated by the issued request's header.
+        # Attempt to edit the 1st User resource in such a way that
+        # its email should be end up being identical to the 2nd User resource's email.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
@@ -743,11 +747,11 @@ class Test_5_DeleteUser(TestBase):
 
         # Attempt to delete a User resource
         # by providing an incorrect set of Basic Auth credentials.
-        basic_auth_credentials = "mary.smith@yahoo.com:wrong-password"
+        basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.delete(
-            "/api/users/2", headers={"Authorization": authorization}
+            "/api/users/1", headers={"Authorization": authorization}
         )
 
         body_str = rv.get_data(as_text=True)
