@@ -127,10 +127,25 @@ def create_user():
         return r
 
     username = request.json.get("username")
-    if username is None:
-        return "", 400
-
     email = request.json.get("email")
+    password = request.json.get("password")
+    for field, value in (
+        ("username", username),
+        ("email", email),
+        ("password", password),
+    ):
+        if value is None:
+            r = jsonify(
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        f"Your request body did not specify a value for '{field}'"
+                    ),
+                }
+            )
+            r.status_code = 400
+            return r
+
     if User.query.filter_by(email=email).first() is not None:
         r = jsonify(
             {
@@ -144,12 +159,7 @@ def create_user():
         r.status_code = 400
         return r
 
-    password = request.json.get("password")
-    if password is None:
-        return "", 400
-
     user = User(username=username, email=email, password=password)
-
     db.session.add(user)
     db.session.commit()
 

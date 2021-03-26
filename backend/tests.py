@@ -64,7 +64,43 @@ class Test_1_CreateUser(TestBase):
         users = User.query.all()
         self.assertEqual(len(users), 0)
 
-    def test_2_create_user(self):
+    def test_2_incomplete_request_body(self):
+        """
+        Ensure that it is impossible to create a User resource
+        without providing a value for each required field/key in the request body.
+        """
+
+        for field in ("username", "email", "password"):
+            with self.subTest():
+                # Attempt to create a User resource
+                # without providing a value for `field` in the request body.
+                data_dict = {k: v for k, v in self.data_dict.items() if k != field}
+                data_str = json.dumps(data_dict)
+                rv = self.client.post(
+                    "/api/users",
+                    data=data_str,
+                    headers={"Content-Type": "application/json"},
+                )
+
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Bad Request",
+                        "message": (
+                            f"Your request body did not specify a value for '{field}'"
+                        ),
+                    },
+                )
+
+                # (Reach directly into the application's persistence layer to)
+                # Ensure that no User resources have been created.
+                users = User.query.all()
+                self.assertEqual(len(users), 0)
+
+    def test_3_create_user(self):
         """Ensure that it is possible to create a new User resource."""
 
         # Create a new User resource.
@@ -99,7 +135,7 @@ class Test_1_CreateUser(TestBase):
             },
         )
 
-    def test_3_prevent_duplication_of_emails(self):
+    def test_4_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to create a User resource,
         which has the same email as an existing User resource.
