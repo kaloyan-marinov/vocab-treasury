@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
 
 dotenv_file = find_dotenv()
@@ -37,6 +38,25 @@ class User(db.Model):
 
     def public_representation(self):
         return {"id": self.id, "username": self.username}
+
+    def __repr__(self):
+        return f"User({self.username}, {self.email})"
+
+
+class Example(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    created = db.Column(
+        db.DateTime, nullable=False, default=datetime.datetime.utcnow
+    )  # the function, not its invocation; also, you always want to use UTC when saving date+time to a DB (so they're consistent)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=False
+    )  # note the lower-case 'u'
+
+    source_language = db.Column(db.String(30), default="Finnish")
+    new_word = db.Column(db.String(30), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    content_translation = db.Column(db.Text)
 
 
 basic_auth = HTTPBasicAuth()
