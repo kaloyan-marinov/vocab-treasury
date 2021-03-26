@@ -129,6 +129,7 @@ def create_user():
     username = request.json.get("username")
     email = request.json.get("email")
     password = request.json.get("password")
+
     for field, value in (
         ("username", username),
         ("email", email),
@@ -152,6 +153,19 @@ def create_user():
                 "error": "Bad Request",
                 "message": (
                     "There already exists a User resource with the same email as"
+                    " the one you provided."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    if User.query.filter_by(username=username).first() is not None:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same username as"
                     " the one you provided."
                 ),
             }
