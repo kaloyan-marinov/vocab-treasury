@@ -35,12 +35,10 @@ class Test_1_CreateUser(TestBase):
         self.data_str = json.dumps(self.data_dict)
         super().setUp()
 
-    def test_1_require_content_type(self):
+    def test_1_missing_content_type(self):
         """
         Ensure that it is impossible to create a User resource
         without providing a 'Content-Type: application/json' header.
-
-        # TODO: consider renaming this method to test_1_missing_content_type
         """
 
         # Attempt to create a User resource
@@ -171,20 +169,12 @@ class Test_2_GetUsers(TestBase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(body, {})
 
-        # fmt: off
-        # TODO: remove this
-        '''
-        # Reach directly into the application's persistence layer.
-        users = User.query.all()
-        self.assertEqual(len(users), 0)
-        '''
-        # fmt: on
-
     def test_2_nonempty_database(self):
         """
         Ensure that, when the database contains some User resources,
         it is possible to get all User resources.
         """
+
         # Create one User resource.
         data_0 = {
             "username": "jd",
@@ -213,26 +203,6 @@ class Test_2_GetUsers(TestBase):
                 }
             },
         )
-
-        # fmt: off
-        #
-        # TODO: remove this
-        '''
-        # Reach directly into the application's persistence layer.
-        users = User.query.all()
-        self.assertEqual(len(users), 1)
-        user = users[0]
-        self.assertEqual(
-            {a: getattr(user, a) for a in ['id', 'username', 'email', 'password']},
-            {
-                "id": 1,
-                "username": "jd",
-                "email": "john.doe@protonmail.com",
-                "password": "123",
-            },
-        )
-        '''
-        # fmt: on
 
 
 class Test_3_GetUser(TestBase):
@@ -311,12 +281,10 @@ class Test_4_EditUser(TestBase):
             headers={"Content-Type": "application/json"},
         )
 
-    def test_1_require_basic_auth(self):
+    def test_1_missing_basic_auth(self):
         """
         Ensure that it is impossible to edit a User resource
         without providing Basic Auth credentials.
-
-        TODO: consider renaming this method to test_1_missing_basic_auth
         """
 
         # Create one User resource.
@@ -353,13 +321,12 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-    def test_2_require_content_type(self):
+    def test_2_missing_content_type(self):
         """
         Ensure that it is impossible to edit a User resource
         without providing a 'Content-Type: application/json' header.
-
-        # TODO: consider renaming this method to test_1_missing_content_type
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -405,6 +372,7 @@ class Test_4_EditUser(TestBase):
         which does not correspond to
         the user authenticated by the issued request's header.
         """
+
         # Create two User resources.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -453,83 +421,12 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-    # fmt: off
-    #
-    # TODO: the implementation of `edit_user()`
-    #       allows only the authenticated user to edit only his/her corresponding
-    #       User resource, which makes it pointless to test whether attempting to edit
-    #       a non-existent User resource gets rejected by the backend application
-    #
-    #       so, remove this test altogether
-    '''
-    def test_4_nonexistent_user(self):
-        """
-        Ensure that
-        attempting to edit a User resource that doesn't exist returns a 404.
-
-        TODO: consider removing this test altogether, because:
-
-            1) its description contradicts its actual status-code assertion
-
-            2) it is somewhat pointless, since the implementation of `edit_user()`
-               allows only the authenticated user to edit only his/her corresponding
-               User resource
-        """
-        # Create one User resource.
-        data = {
-            "username": "jd",
-            "email": "john.doe@protonmail.com",
-            "password": "123",
-        }
-        data_str = json.dumps(data)
-
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
-
-        # Identify a non-existent User resource.
-        nonexistent_user_id = 17
-
-        user = User.query.get(nonexistent_user_id)
-        self.assertIsNone(user)
-
-        # Attempt to edit a User resource that doesn't exist.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Basic " + b_a_c
-
-        rv_4 = self.client.put(
-            f"/api/users/{nonexistent_user_id}",
-            data=self.data_str,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-
-        body_str_4 = rv_4.get_data(as_text=True)
-        body_4 = json.loads(body_str_4)
-        self.assertEqual(rv_4.status_code, 403)
-        self.assertEqual(
-            body_4,
-            {
-                "error": "Forbidden",
-                "message": (
-                    "You are not allowed to edit any User resource different from your"
-                    " own."
-                ),
-            },
-        )
-    '''
-    # fmt: on
-
-    def test_5_edit_the_authenticated_user(self):
+    def test_4_edit_the_authenticated_user(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to edit his/her corresponding User resource.
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -574,26 +471,12 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-        # fmt: off
-        #
-        # TODO: remove this
-        '''
-        # Get the edited User resource
-        # (by having the test client issue an HTTP request).
-        rv_6 = self.client.get("/api/users/1")
-
-        body_str_6 = rv_6.get_data(as_text=True)
-        body_6 = json.loads(body_str_6)
-        self.assertEqual(rv_6.status_code, 200)
-        self.assertEqual(body_6, {"id": 1, "username": "JD"})
-        '''
-        # fmt: on
-
-    def test_6_prevent_duplication_of_emails(self):
+    def test_5_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to edit a User resource in such a way
         that two different User resources would end up having the same email.
         """
+
         # Create two User resources.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -650,11 +533,12 @@ class Test_4_EditUser(TestBase):
             },
         )
 
-    def test_7_incorrect_basic_auth(self):
+    def test_6_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a User resource
         by providing an incorrect set of Basic Auth credentials.
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -720,11 +604,12 @@ class Test_5_DeleteUser(TestBase):
             headers={"Content-Type": "application/json"},
         )
 
-    def test_1_require_basic_auth(self):
+    def test_1_missing_basic_auth(self):
         """
         Ensure that it is impossible to delete a User resource without providing Basic
         Auth credentials.
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -769,6 +654,7 @@ class Test_5_DeleteUser(TestBase):
         which does not correspond to
         the user authenticated by the issued request's header.
         """
+
         # Create two User resources.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -816,72 +702,12 @@ class Test_5_DeleteUser(TestBase):
             },
         )
 
-    # fmt: off
-    #
-    # TODO: the implementation of `delete_user()`
-    #       allows only the authenticated user to delete only his/her corresponding
-    #       User resource, which makes it pointless to test whether attempting to delete
-    #       a non-existent User resource gets rejected by the backend application
-    #
-    #       so, remove this test altogether
-    '''
-    def test_3_nonexistent_user(self):
-        """
-        Ensure that
-        attempting to delete a User resource that doesn't exist returns a 404.
-
-        TODO: consider removing this test altogether, because:
-
-            1) its description contradicts its actual status-code assertion
-
-            2) it is somewhat pointless, since the implementation of `delete_user()`
-               allows only the authenticated user to delete only his/her corresponding
-               User resource
-        """
-        # Create one User resource.
-        data = {
-            "username": "jd",
-            "email": "john.doe@protonmail.com",
-            "password": "123",
-        }
-        data_str = json.dumps(data)
-
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
-
-        # Attempt to delete a User resource that doesn't exist.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Basic " + b_a_c
-
-        rv_3 = self.client.delete(
-            "/api/users/17", headers={"Authorization": authorization}
-        )
-
-        body_str_3 = rv_3.get_data(as_text=True)
-        body_3 = json.loads(body_str_3)
-        self.assertEqual(rv_3.status_code, 403)
-        self.assertEqual(
-            body_3,
-            {
-                "error": "Forbidden",
-                "message": (
-                    "You are not allowed to delete any User resource different from"
-                    " your own."
-                ),
-            },
-        )
-    '''
-    # fmt: on
-
-    def test_4_delete_the_authenticated_user(self):
+    def test_3_delete_the_authenticated_user(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to delete his/her corresponding User resource.
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
@@ -904,11 +730,12 @@ class Test_5_DeleteUser(TestBase):
         users = User.query.all()
         self.assertEqual(len(users), 0)
 
-    def test_5_incorrect_basic_auth(self):
+    def test_4_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to delete a User resource
         by providing an incorrect set of Basic Auth credentials.
         """
+
         # Create one User resource.
         self._create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
