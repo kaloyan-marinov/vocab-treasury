@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-from backend.vocab_treasury import app, db, User
+from backend.vocab_treasury import app, db, User, Example
 
 
 app.config["TESTING"] = True
@@ -927,3 +927,187 @@ class Test_5_DeleteUser(TestBase):
             },
         )
         self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
+
+
+class Test_6_CreateExample(TestBase):
+    """Test the request responsible for creating a new Example resource."""
+
+    def setUp(self):
+        super().setUp()
+        self._create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
+        user_id = 1
+        basic_auth_credentials = "john.doe@protonmail.com:123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        self._basic_auth = "Basic " + b_a_c
+
+        self._example_data = {
+            "user_id": user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        self._example_data_str = json.dumps(self._example_data)
+
+    def _create_user(self, username, email, password):
+        user_data = {"username": username, "email": email, "password": password}
+        user_data_str = json.dumps(user_data)
+        rv = self.client.post(
+            "/api/users",
+            data=user_data_str,
+            headers={"Content-Type": "application/json"},
+        )
+
+    def test_1_missing_basic_auth(self):
+        """
+        Ensure that it is impossible to create an Example resource
+        without providing Basic Auth credentials.
+        """
+
+        rv = self.client.post(
+            "/api/examples",
+            data=self._example_data_str,
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
+
+    def test_2_missing_content_type(self):
+        """
+        Ensure that it is impossible to create an Example resource
+        without providing a 'Content-Type: application/json' header.
+        """
+
+        rv = self.client.post(
+            "/api/examples",
+            data=self._example_data_str,
+            headers={"Authorization": self._basic_auth},
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            },
+        )
+
+    def test_3_incomplete_request_body(self):
+        """
+        Ensure that it is impossible to create an Example resource
+        without providing a value for each required field/key in the request body.
+        """
+
+        for field in ("new_word", "content"):
+            # Attempt to create an Example resource
+            # without providing a value for `field` in the request body.
+            data_dict = {k: v for k, v in self._example_data.items() if k != field}
+            data_str = json.dumps(data_dict)
+            rv = self.client.post(
+                "/api/examples",
+                data=data_str,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._basic_auth,
+                },
+            )
+
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(
+                body,
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        f"Your request body did not specify a value for '{field}'"
+                    ),
+                },
+            )
+
+            # (Reach directly into the application's persistence layer to)
+            # Ensure that no Example resources have been created.
+            examples = Example.query.all()
+            self.assertEqual(len(examples), 0)
+
+    def test_4_create_example(self):
+        """
+        Ensure that the user, who is authenticated by the issued request's header,
+        is able to edit create an Example resource.
+        """
+
+        rv = self.client.post(
+            "/api/examples",
+            data=self._example_data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._basic_auth,
+            },
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 201)
+        self.assertEqual(
+            body,
+            {
+                "id": 1,
+                "source_language": "Finnish",
+                "new_word": "osallistua [+ MIHIN]",
+                "content": "Kuka haluaa osallistua kilpailuun?",
+                "content_translation": "Who wants to participate in the competition?",
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that an Example resource has been created successfully.
+        examples = Example.query.all()
+        self.assertEqual(len(examples), 1)
+        self.assertEqual(examples[0].user_id, 1)
+
+    def test_5_incorrect_basic_auth(self):
+        """
+        Ensure that it is impossible to create a new Example resource
+        by providing an incorrect set of Basic Auth credentials.
+        """
+
+        wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
+        wrong_b_a_c = base64.b64encode(
+            wrong_basic_auth_credentials.encode("utf-8")
+        ).decode("utf-8")
+        wrong_authorization = "Basic " + wrong_b_a_c
+        rv = self.client.post(
+            "/api/examples",
+            data=self._example_data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": wrong_authorization,
+            },
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )

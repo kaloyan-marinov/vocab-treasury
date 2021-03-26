@@ -58,6 +58,15 @@ class Example(db.Model):
     content = db.Column(db.Text, nullable=False)
     content_translation = db.Column(db.Text)
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "source_language": self.source_language,
+            "new_word": self.new_word,
+            "content": self.content,
+            "content_translation": self.content_translation,
+        }
+
 
 basic_auth = HTTPBasicAuth()
 
@@ -242,7 +251,10 @@ def edit_user(user_id):
         r = jsonify(
             {
                 "error": "Bad Request",
-                "message": 'Your request did not include a "Content-Type: application/json" header.',
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
             }
         )
         r.status_code = 400
@@ -328,6 +340,59 @@ def delete_user(user_id):
     db.session.commit()
 
     return "", 204
+
+
+@app.route("/api/examples", methods=["POST"])
+@basic_auth.login_required
+def create_example():
+    if not request.json:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    source_language = request.json.get("source_language")
+    new_word = request.json.get("new_word")
+    content = request.json.get("content")
+    content_translation = request.json.get("content_translation")
+
+    for field, value in (
+        ("new_word", new_word),
+        ("content", content),
+    ):
+        if value is None:
+            r = jsonify(
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        f"Your request body did not specify a value for '{field}'"
+                    ),
+                }
+            )
+            r.status_code = 400
+            return r
+
+    e = Example(
+        user_id=basic_auth.current_user().id,
+        source_language=source_language,
+        new_word=new_word,
+        content=content,
+        content_translation=content_translation,
+    )
+    db.session.add(e)
+    db.session.commit()
+
+    payload = e.to_json()
+    r = jsonify(payload)
+    r.status_code = 201
+    return r
 
 
 if __name__ == "__main__":
