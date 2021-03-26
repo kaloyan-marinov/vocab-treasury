@@ -687,6 +687,65 @@ class Test_4_EditUser(TestBase):
             },
         )
 
+    def test_7_prevent_duplication_of_usernames(self):
+        """
+        Ensure that it is impossible to edit a User resource in such a way
+        that two different User resources would end up having the same username.
+        """
+
+        # Create two User resources.
+        self._create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
+        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+
+        # Attempt to edit the 1st User resource in such a way that
+        # its username would end up being identical to the 2nd User resource's username.
+        basic_auth_credentials = "john.doe@protonmail.com:123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+
+        data = {"username": "ms"}
+        data_str = json.dumps(data)
+
+        rv = self.client.put(
+            "/api/users/1",
+            data=data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same username as the"
+                    " one you provided."
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the attempt has not created a second User resource.
+        users = User.query.all()
+        self.assertEqual(len(users), 2)
+        user = User.query.get(1)
+        self.assertEqual(
+            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {
+                "id": 1,
+                "username": "jd",
+                "email": "john.doe@protonmail.com",
+                "password": "123",
+            },
+        )
+
 
 class Test_5_DeleteUser(TestBase):
     """Test the request responsible for deleting a specific User resource."""
