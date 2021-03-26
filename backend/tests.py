@@ -168,7 +168,7 @@ class Test_2_GetUsers(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(body, {})
+        self.assertEqual(body, {"users": []})
 
     def test_2_nonempty_database(self):
         """
@@ -198,10 +198,12 @@ class Test_2_GetUsers(TestBase):
         self.assertEqual(
             body,
             {
-                "1": {
-                    "id": 1,
-                    "username": "jd",
-                }
+                "users": [
+                    {
+                        "id": 1,
+                        "username": "jd",
+                    }
+                ]
             },
         )
 

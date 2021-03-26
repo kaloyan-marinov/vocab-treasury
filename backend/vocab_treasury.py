@@ -162,7 +162,7 @@ def create_user():
 @app.route("/api/users", methods=["GET"])
 def get_users():
     users = User.query.all()
-    return {u.id: u.public_representation() for u in users}
+    return {"users": [u.public_representation() for u in users]}
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
