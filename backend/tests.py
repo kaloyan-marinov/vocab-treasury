@@ -121,7 +121,8 @@ class Test_1_CreateUser(TestBase):
             },
         )
 
-        # Reach directly into the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that a User resource has been created successfully.
         users = User.query.all()
         self.assertEqual(len(users), 1)
         user = users[0]
@@ -174,10 +175,67 @@ class Test_1_CreateUser(TestBase):
             },
         )
 
-        # Reach directly into the application's persistence layer.
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the attempt has not created a second User resource.
         users = User.query.all()
         self.assertEqual(len(users), 1)
-        user = users[0]
+        user = User.query.get(1)
+        self.assertEqual(
+            {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
+            {
+                "id": 1,
+                "username": "jd",
+                "email": "john.doe@protonmail.com",
+                "password": "123",
+            },
+        )
+
+    def test_5_prevent_duplication_of_usernames(self):
+        """
+        Ensure that it is impossible to create a User resource,
+        which has the same username as an existing User resource.
+        """
+
+        # Create one User resource.
+        rv_0 = self.client.post(
+            "/api/users",
+            data=self.data_str,
+            headers={"Content-Type": "application/json"},
+        )
+
+        # Attempt to create a second User resource with the same username as the User
+        # resource that was created just now.
+        data = {
+            "username": "jd",
+            "email": "different-email@protonmail.com",
+            "password": "different-password",
+        }
+        data_str = json.dumps(data)
+        rv = self.client.post(
+            "/api/users",
+            data=data_str,
+            headers={"Content-Type": "application/json"},
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same username as the"
+                    " one you provided."
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the attempt has not created a second User resource.
+        users = User.query.all()
+        self.assertEqual(len(users), 1)
+        user = User.query.get(1)
         self.assertEqual(
             {a: getattr(user, a) for a in ["id", "username", "email", "password"]},
             {
