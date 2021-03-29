@@ -464,5 +464,24 @@ def get_examples():
     return {"examples": [e.to_json() for e in examples]}
 
 
+@app.route("/api/examples/<int:example_id>", methods=["GET"])
+@token_auth.login_required
+def get_example(example_id):
+    example = Example.query.get(example_id)
+    if example is None or example.user_id != token_auth.current_user().id:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": (
+                    "Your User doesn't have an Example resource with an ID of "
+                    + str(example_id)
+                ),
+            }
+        )
+        r.status_code = 404
+        return r
+    return example.to_json()
+
+
 if __name__ == "__main__":
     app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)

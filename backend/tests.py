@@ -1386,3 +1386,186 @@ class Test_8_GetExamples(TestBaseForExampleResources):
             {1}.intersection(example_ids_of_user_2),
             set(),
         )
+
+
+class Test_9_GetExample(TestBaseForExampleResources):
+    """Test the request responsible for getting a specific Example resource."""
+
+    def setUp(self):
+        super().setUp()
+
+        user_dict, self._token_auth = self.create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
+        self._user_id = user_dict["id"]
+
+    def test_1_missing_token_auth(self):
+        """
+        Ensure that it is impossible for a user to get a specific resource of her own
+        without providing a Bearer-Token Auth credential.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Attempt to get the Example resource, which was created just now,
+        # without providing a Bearer-Token Auth credential.
+        rv_2 = self.client.get(f"/api/examples/{example_id}")
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 401)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Bearer-Token Auth format is required.",
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that there is one user,
+        # who doesn't have any Example resources of her own.
+        users = User.query.all()
+        self.assertEqual(len(users), 1)
+        u = users[0]
+        self.assertEqual(u.id, self._user_id)
+
+        examples = Example.query.all()
+        self.assertEqual(len(examples), 1)
+        e = examples[0]
+        self.assertEqual(e.user_id, u.id)
+
+    def test_2_nonexistent_example(self):
+        """
+        Ensure that
+        attempting to get an Example resource, which doesn't exist, returns a 404.
+        """
+
+        rv = self.client.get(
+            "/api/examples/1", headers={"Authorization": self._token_auth}
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(
+            body,
+            {
+                "error": "Not Found",
+                "message": "Your User doesn't have an Example resource with an ID of 1",
+            },
+        )
+
+    def test_3_example_that_exists(self):
+        """Ensure that a user is able to get a specific Example resource of her own."""
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Get the Example resource that was created just now.
+        rv_2 = self.client.get(
+            f"/api/examples/{example_id}", headers={"Authorization": self._token_auth}
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2,
+            {
+                "id": 1,
+                "source_language": "Finnish",
+                "new_word": "osallistua [+ MIHIN]",
+                "content": "Kuka haluaa osallistua kilpailuun?",
+                "content_translation": "Who wants to participate in the competition?",
+            },
+        )
+
+    def test_4_prevent_accessing_of_foreign_example(self):
+        """
+        Ensure that each user cannot get a specific Example resource,
+        which belongs to a different user.
+        """
+
+        # Create a second User resource.
+        user_dict_2, token_auth_2 = self.create_user(
+            username="ms", email="mary.smith@yahoo.com", password="456"
+        )
+
+        # Create one Example resource for the second user.
+        data_2 = {
+            "user_id": user_dict_2["id"],
+            "source_language": "Finnish",
+            "new_word": "kieli",
+            "content": "Mitä kieltä sinä puhut?",
+            "content_translation": "What languages do you speak?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.post(
+            "/api/examples",
+            data=data_str_2,
+            headers={"Content-Type": "application/json", "Authorization": token_auth_2},
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        example_id_2 = body_2["id"]
+
+        # Ensure that
+        # the 1st user cannot get a specific resource, which belongs to the 2nd user.
+        rv_3 = self.client.get(
+            f"/api/examples/{example_id_2}", headers={"Authorization": self._token_auth}
+        )
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 404)
+        self.assertEqual(
+            body_3,
+            {
+                "error": "Not Found",
+                "message": (
+                    "Your User doesn't have an Example resource with an ID of "
+                    + str(example_id_2)
+                ),
+            },
+        )
