@@ -1030,31 +1030,26 @@ class Test_6_IssueToken(TestBase):
         )
 
 
-class Test_7_CreateExample(TestBase):
-    """Test the request responsible for creating a new Example resource."""
-
-    def setUp(self):
-        super().setUp()
-
+class TestBaseForExampleResources(TestBase):
+    def create_user(self, username, email, password):
         # Create one User resource.
-        user_data = {
-            "username": "jd",
-            "email": "john.doe@protonmail.com",
-            "password": "123",
+        data_1 = {
+            "username": username,
+            "email": email,
+            "password": password,
         }
-        user_data_str = json.dumps(user_data)
-        rv = self.client.post(
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
             "/api/users",
-            data=user_data_str,
+            data=data_str_1,
             headers={"Content-Type": "application/json"},
         )
 
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        user_id = body["id"]
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
 
         # Issue an access token for the user, which was created just now.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        basic_auth_credentials = email + ":" + password
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         basic_auth = "Basic " + b_a_c
         rv_2 = self.client.post(
@@ -1064,13 +1059,26 @@ class Test_7_CreateExample(TestBase):
 
         body_str_2 = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_str_2)
-        token = body_2["token"]
-        self._token_auth = "Bearer " + token
+        token_auth = "Bearer " + body_2["token"]
+
+        return body_1, token_auth
+
+
+class Test_7_CreateExample(TestBaseForExampleResources):
+    """Test the request responsible for creating a new Example resource."""
+
+    def setUp(self):
+        super().setUp()
+
+        # Create one User resource.
+        user_dict, self._token_auth = self.create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
 
         # Prepare a JSON payload, which is required for creating an Example resource
         # associated with the above-created User resource.
         self._example_data = {
-            "user_id": user_id,
+            "user_id": user_dict["id"],
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1228,4 +1236,153 @@ class Test_7_CreateExample(TestBase):
                     "Authentication in the Bearer-Token Auth format is required."
                 ),
             },
+        )
+
+
+class Test_8_GetExamples(TestBaseForExampleResources):
+    """
+    Test the request responsible for getting all Example resources,
+    which are associated with a given User resource.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        # Create one User resource.
+        user_dict, self._token_auth = self.create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
+        self._user_id = user_dict["id"]
+
+    def test_1_no_examples_exist(self):
+        """
+        Given a user who doesn't have any Example resources of her own,
+        ensure that, when that user requests all resources,
+        she doesn't get any.
+        """
+
+        rv = self.client.get(
+            "/api/examples", headers={"Authorization": self._token_auth}
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(body, {"examples": []})
+
+    def test_2_some_examples_exist(self):
+        """
+        Given a user who has nonzero Example resources of her own,
+        ensure that, when that user requests all resources,
+        she gets all of her own resources.
+        """
+
+        # Create one Example resource.
+        example_data = {
+            "user_id": self._user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        example_data_str = json.dumps(example_data)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=example_data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._token_auth,
+            },
+        )
+
+        # Get all Example resources that are associated with the only existing user.
+        rv_2 = self.client.get(
+            "/api/examples", headers={"Authorization": self._token_auth}
+        )
+
+        body_2_str = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_2_str)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2,
+            {
+                "examples": [
+                    {
+                        "id": 1,
+                        "source_language": "Finnish",
+                        "new_word": "osallistua [+ MIHIN]",
+                        "content": "Kuka haluaa osallistua kilpailuun?",
+                        "content_translation": "Who wants to participate in the competition?",
+                    }
+                ]
+            },
+        )
+
+    def test_3_access_only_own_examples(self):
+        """
+        Ensure that each user can get all of her own Example resources,
+        but cannot get any of the Example resources that belong to another user.
+        """
+
+        # Create a second User resource.
+        user_dict_2, token_auth_2 = self.create_user(
+            username="ms", email="mary.smith@yahoo.com", password="456"
+        )
+
+        # Create one Example resource for the first user.
+        data_1 = {
+            "user_id": self._user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id_1 = body_1["id"]
+
+        # Create one Example resource for the second user.
+        data_2 = {
+            "user_id": user_dict_2["id"],
+            "source_language": "Finnish",
+            "new_word": "kieli",
+            "content": "Mitä kieltä sinä puhut?",
+            "content_translation": "What languages do you speak?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.post(
+            "/api/examples",
+            data=data_str_2,
+            headers={"Content-Type": "application/json", "Authorization": token_auth_2},
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        example_id_2 = body_2["id"]
+
+        # Ensure that the 2nd user can get all of her own Example resources,
+        # but cannot get any of the Example resources that belong to another user.
+        rv_3 = self.client.get("/api/examples", headers={"Authorization": token_auth_2})
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 200)
+        example_ids_of_user_2 = {e["id"] for e in body_3["examples"]}
+        self.assertEqual(
+            example_ids_of_user_2,
+            {2},
+        )
+        self.assertEqual(
+            {1}.intersection(example_ids_of_user_2),
+            set(),
         )
