@@ -3,8 +3,11 @@ import json
 import base64
 import os
 from werkzeug.security import check_password_hash
+from itsdangerous import TimedJSONWebSignatureSerializer
 
 
+TESTING_SECRET_KEY = "testing-secret-key"
+os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
@@ -929,19 +932,143 @@ class Test_5_DeleteUser(TestBase):
         self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
 
 
-class Test_6_CreateExample(TestBase):
+class Test_6_IssueToken(TestBase):
+    """
+    Test the request responsible for issuing a JSON Web Signature token for a user,
+    who has authenticated herself successfully as part of that same request.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        # Create one User resource.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        user_data_str = json.dumps(user_data)
+        rv = self.client.post(
+            "/api/users",
+            data=user_data_str,
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Compute a valid token for the User resource, which was created just now.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        user_id = body["id"]
+
+        token_serializer = TimedJSONWebSignatureSerializer(
+            TESTING_SECRET_KEY, expires_in=3600
+        )
+        token = token_serializer.dumps({"user_id": user_id}).decode("utf-8")
+        self._expected_body = {"token": token}
+
+    def test_1_missing_basic_auth(self):
+        """
+        Ensure that it is impossible to issue a(n access) token
+        without providing Basic Auth credentials.
+        """
+
+        rv = self.client.post("/api/tokens")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEquals(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
+
+    def test_2_issue_token(self):
+        """
+        Ensure that a(n access) token gets issued for the user,
+        who is authenticated by the issued request's header.
+        """
+
+        basic_auth_credentials = "john.doe@protonmail.com:123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        basic_auth = "Basic " + b_a_c
+        rv = self.client.post("/api/tokens", headers={"Authorization": basic_auth})
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(body, self._expected_body)
+
+    def test_3_incorrect_basic_auth(self):
+        """
+        Ensure that it is impossible to issue a(n access) token
+        by providing an incorrect set of Basic Auth credentials.
+        """
+
+        wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
+        wrong_b_a_c = base64.b64encode(
+            wrong_basic_auth_credentials.encode("utf-8")
+        ).decode("utf-8")
+        wrong_authorization = "Authorization " + wrong_b_a_c
+        rv = self.client.post(
+            "/api/tokens",
+            headers={"Authorization": wrong_authorization},
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Basic Auth format is required.",
+            },
+        )
+
+
+class Test_7_CreateExample(TestBase):
     """Test the request responsible for creating a new Example resource."""
 
     def setUp(self):
         super().setUp()
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+
+        # Create one User resource.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        user_data_str = json.dumps(user_data)
+        rv = self.client.post(
+            "/api/users",
+            data=user_data_str,
+            headers={"Content-Type": "application/json"},
         )
-        user_id = 1
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        user_id = body["id"]
+
+        # Issue an access token for the user, which was created just now.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        self._basic_auth = "Basic " + b_a_c
+        basic_auth = "Basic " + b_a_c
+        rv_2 = self.client.post(
+            "/api/tokens",
+            headers={"Content-Type": "application/json", "Authorization": basic_auth},
+        )
 
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        token = body_2["token"]
+        self._token_auth = "Bearer " + token
+
+        # Prepare a JSON payload, which is required for creating an Example resource
+        # associated with the above-created User resource.
         self._example_data = {
             "user_id": user_id,
             "source_language": "Finnish",
@@ -951,19 +1078,10 @@ class Test_6_CreateExample(TestBase):
         }
         self._example_data_str = json.dumps(self._example_data)
 
-    def _create_user(self, username, email, password):
-        user_data = {"username": username, "email": email, "password": password}
-        user_data_str = json.dumps(user_data)
-        rv = self.client.post(
-            "/api/users",
-            data=user_data_str,
-            headers={"Content-Type": "application/json"},
-        )
-
-    def test_1_missing_basic_auth(self):
+    def test_1_missing_token_auth(self):
         """
         Ensure that it is impossible to create an Example resource
-        without providing Basic Auth credentials.
+        without providing a Bearer-Token Auth credential.
         """
 
         rv = self.client.post(
@@ -978,7 +1096,9 @@ class Test_6_CreateExample(TestBase):
             body,
             {
                 "error": "Unauthorized",
-                "message": "Authentication in the Basic Auth format is required.",
+                "message": (
+                    "Authentication in the Bearer-Token Auth format is required."
+                ),
             },
         )
 
@@ -991,7 +1111,7 @@ class Test_6_CreateExample(TestBase):
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
-            headers={"Authorization": self._basic_auth},
+            headers={"Authorization": self._token_auth},
         )
 
         body_str = rv.get_data(as_text=True)
@@ -1024,7 +1144,7 @@ class Test_6_CreateExample(TestBase):
                 data=data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._basic_auth,
+                    "Authorization": self._token_auth,
                 },
             )
 
@@ -1057,7 +1177,7 @@ class Test_6_CreateExample(TestBase):
             data=self._example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._basic_auth,
+                "Authorization": self._token_auth,
             },
         )
 
@@ -1081,17 +1201,13 @@ class Test_6_CreateExample(TestBase):
         self.assertEqual(len(examples), 1)
         self.assertEqual(examples[0].user_id, 1)
 
-    def test_5_incorrect_basic_auth(self):
+    def test_5_incorrect_token_auth(self):
         """
         Ensure that it is impossible to create a new Example resource
-        by providing an incorrect set of Basic Auth credentials.
+        by providing an incorrect Bearer-Token Auth credential.
         """
 
-        wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
-        wrong_b_a_c = base64.b64encode(
-            wrong_basic_auth_credentials.encode("utf-8")
-        ).decode("utf-8")
-        wrong_authorization = "Basic " + wrong_b_a_c
+        wrong_authorization = self._token_auth + "-wrong"
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
@@ -1108,6 +1224,8 @@ class Test_6_CreateExample(TestBase):
             body,
             {
                 "error": "Unauthorized",
-                "message": "Authentication in the Basic Auth format is required.",
+                "message": (
+                    "Authentication in the Bearer-Token Auth format is required."
+                ),
             },
         )

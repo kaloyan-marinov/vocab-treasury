@@ -31,8 +31,11 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 2. at the root of your local repository, create a `.env` file with the following structure:
     ```
+    SECRET_KEY=<specify-a-good-secret-key-here>
+
     SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
     ```
+    (For deployment, you should generate a "good secret key" and store that value in SECRET_KEY within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
 
 3. create a Python virtual environment, activate it, and install all dependencies:
     ```
