@@ -457,5 +457,12 @@ def create_example():
     return r
 
 
+@app.route("/api/examples", methods=["GET"])
+@token_auth.login_required
+def get_examples():
+    examples = Example.query.filter_by(user_id=token_auth.current_user().id).all()
+    return {"examples": [e.to_json() for e in examples]}
+
+
 if __name__ == "__main__":
     app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)
