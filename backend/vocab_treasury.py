@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from dotenv import find_dotenv, load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,6 +8,10 @@ from flask_migrate import Migrate
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+
+
+from itsdangerous import TimedJSONWebSignatureSerializer, BadSignature, SignatureExpired
+import sys
 
 
 dotenv_file = find_dotenv()
@@ -20,6 +24,14 @@ print(
 
 
 app = Flask(__name__)
+
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+if app.config["SECRET_KEY"] is None:
+    sys.exit(
+        datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
+        + " - An environment variable called SECRET_KEY must be specified: crashing..."
+    )
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -67,6 +79,9 @@ class Example(db.Model):
             "content_translation": self.content_translation,
         }
 
+    def __repr__(self):
+        return f"Example({self.id}, {self.new_word})"
+
 
 basic_auth = HTTPBasicAuth()
 
@@ -74,7 +89,6 @@ basic_auth = HTTPBasicAuth()
 @basic_auth.verify_password
 def verify_password(email, password):
     user = User.query.filter_by(email=email).first()
-
     if user is None:
         return None
 
@@ -143,6 +157,46 @@ def basic_auth_error():
         https://github.com/miguelgrinberg/microblog/blob/02aae8d9816fb23b72cbeca2ac945ac2d48a6ed0/app/api/auth.py
     '''
     # fmt: on
+    return r
+
+
+token_serializer = TimedJSONWebSignatureSerializer(
+    app.config["SECRET_KEY"],
+    expires_in=3600,
+)
+
+
+token_auth = HTTPTokenAuth()
+
+
+@token_auth.verify_token
+def verify_token(token):
+    # TODO: utilize unittest.mock.patch
+    #       to test this function's currently untested instructions
+    try:
+        token_payload = token_serializer.loads(token)
+    except SignatureExpired:
+        return None  # valid token, but expired
+    except BadSignature:
+        return None  # invalid token
+
+    user = User.query.get(token_payload["user_id"])
+    if user is None:
+        return None
+
+    return user
+
+
+@token_auth.error_handler
+def token_auth_error():
+    """Return a 401 error to the client."""
+    r = jsonify(
+        {
+            "error": "Unauthorized",
+            "message": "Authentication in the Bearer-Token Auth format is required.",
+        }
+    )
+    r.status_code = 401
     return r
 
 
@@ -342,8 +396,16 @@ def delete_user(user_id):
     return "", 204
 
 
-@app.route("/api/examples", methods=["POST"])
+@app.route("/api/tokens", methods=["POST"])
 @basic_auth.login_required
+def issue_token():
+    token_payload = {"user_id": basic_auth.current_user().id}
+    token = token_serializer.dumps(token_payload).decode("utf-8")
+    return {"token": token}
+
+
+@app.route("/api/examples", methods=["POST"])
+@token_auth.login_required
 def create_example():
     if not request.json:
         r = jsonify(
@@ -380,7 +442,7 @@ def create_example():
             return r
 
     e = Example(
-        user_id=basic_auth.current_user().id,
+        user_id=token_auth.current_user().id,
         source_language=source_language,
         new_word=new_word,
         content=content,
