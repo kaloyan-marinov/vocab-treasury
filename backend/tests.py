@@ -1071,14 +1071,14 @@ class Test_7_CreateExample(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        user_dict, self._token_auth = self.create_user(
+        jd_user_dict, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
 
         # Prepare a JSON payload, which is required for creating an Example resource
         # associated with the above-created User resource.
         self._example_data = {
-            "user_id": user_dict["id"],
+            "user_id": jd_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1119,7 +1119,7 @@ class Test_7_CreateExample(TestBaseForExampleResources):
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
-            headers={"Authorization": self._token_auth},
+            headers={"Authorization": self._jd_user_token_auth},
         )
 
         body_str = rv.get_data(as_text=True)
@@ -1152,7 +1152,7 @@ class Test_7_CreateExample(TestBaseForExampleResources):
                 data=data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._token_auth,
+                    "Authorization": self._jd_user_token_auth,
                 },
             )
 
@@ -1185,7 +1185,7 @@ class Test_7_CreateExample(TestBaseForExampleResources):
             data=self._example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._token_auth,
+                "Authorization": self._jd_user_token_auth,
             },
         )
 
@@ -1215,7 +1215,7 @@ class Test_7_CreateExample(TestBaseForExampleResources):
         by providing an incorrect Bearer-Token Auth credential.
         """
 
-        wrong_authorization = self._token_auth + "-wrong"
+        wrong_authorization = self._jd_user_token_auth + "-wrong"
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
@@ -1249,10 +1249,10 @@ class Test_8_GetExamples(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        user_dict, self._token_auth = self.create_user(
+        jd_user_dict, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
-        self._user_id = user_dict["id"]
+        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_no_examples_exist(self):
         """
@@ -1262,7 +1262,7 @@ class Test_8_GetExamples(TestBaseForExampleResources):
         """
 
         rv = self.client.get(
-            "/api/examples", headers={"Authorization": self._token_auth}
+            "/api/examples", headers={"Authorization": self._jd_user_token_auth}
         )
 
         body_str = rv.get_data(as_text=True)
@@ -1279,7 +1279,7 @@ class Test_8_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource.
         example_data = {
-            "user_id": self._user_id,
+            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1291,13 +1291,13 @@ class Test_8_GetExamples(TestBaseForExampleResources):
             data=example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._token_auth,
+                "Authorization": self._jd_user_token_auth,
             },
         )
 
         # Get all Example resources that are associated with the only existing user.
         rv_2 = self.client.get(
-            "/api/examples", headers={"Authorization": self._token_auth}
+            "/api/examples", headers={"Authorization": self._jd_user_token_auth}
         )
 
         body_2_str = rv_2.get_data(as_text=True)
@@ -1325,13 +1325,13 @@ class Test_8_GetExamples(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        user_dict_2, token_auth_2 = self.create_user(
+        ms_user_dict, ms_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
         # Create one Example resource for the first user.
         data_1 = {
-            "user_id": self._user_id,
+            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1343,7 +1343,7 @@ class Test_8_GetExamples(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._token_auth,
+                "Authorization": self._jd_user_token_auth,
             },
         )
 
@@ -1353,7 +1353,7 @@ class Test_8_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": user_dict_2["id"],
+            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1363,7 +1363,10 @@ class Test_8_GetExamples(TestBaseForExampleResources):
         rv_2 = self.client.post(
             "/api/examples",
             data=data_str_2,
-            headers={"Content-Type": "application/json", "Authorization": token_auth_2},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": ms_token_auth,
+            },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -1372,18 +1375,22 @@ class Test_8_GetExamples(TestBaseForExampleResources):
 
         # Ensure that the 2nd user can get all of her own Example resources,
         # but cannot get any of the Example resources that belong to another user.
-        rv_3 = self.client.get("/api/examples", headers={"Authorization": token_auth_2})
+        rv_3 = self.client.get(
+            "/api/examples",
+            headers={"Authorization": ms_token_auth},
+        )
 
         body_str_3 = rv_3.get_data(as_text=True)
         body_3 = json.loads(body_str_3)
         self.assertEqual(rv_3.status_code, 200)
-        example_ids_of_user_2 = {e["id"] for e in body_3["examples"]}
+        example_ids_of_the_ms_user = {e["id"] for e in body_3["examples"]}
         self.assertEqual(
-            example_ids_of_user_2,
+            example_ids_of_the_ms_user,
             {2},
         )
+        example_ids_of_the_jd_user = {example_id_1}
         self.assertEqual(
-            {1}.intersection(example_ids_of_user_2),
+            example_ids_of_the_ms_user.intersection(example_ids_of_the_jd_user),
             set(),
         )
 
@@ -1394,10 +1401,10 @@ class Test_9_GetExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        user_dict, self._token_auth = self.create_user(
+        jd_user_dict, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
-        self._user_id = user_dict["id"]
+        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -1407,7 +1414,7 @@ class Test_9_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._user_id,
+            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1419,7 +1426,7 @@ class Test_9_GetExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._token_auth,
+                "Authorization": self._jd_user_token_auth,
             },
         )
 
@@ -1444,11 +1451,11 @@ class Test_9_GetExample(TestBaseForExampleResources):
 
         # (Reach directly into the application's persistence layer to)
         # Ensure that there is one user,
-        # who doesn't have any Example resources of her own.
+        # who has Example resources of her own.
         users = User.query.all()
         self.assertEqual(len(users), 1)
         u = users[0]
-        self.assertEqual(u.id, self._user_id)
+        self.assertEqual(u.id, self._jd_user_id)
 
         examples = Example.query.all()
         self.assertEqual(len(examples), 1)
@@ -1462,7 +1469,7 @@ class Test_9_GetExample(TestBaseForExampleResources):
         """
 
         rv = self.client.get(
-            "/api/examples/1", headers={"Authorization": self._token_auth}
+            "/api/examples/1", headers={"Authorization": self._jd_user_token_auth}
         )
 
         body_str = rv.get_data(as_text=True)
@@ -1481,7 +1488,7 @@ class Test_9_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._user_id,
+            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1493,7 +1500,7 @@ class Test_9_GetExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._token_auth,
+                "Authorization": self._jd_user_token_auth,
             },
         )
 
@@ -1503,7 +1510,8 @@ class Test_9_GetExample(TestBaseForExampleResources):
 
         # Get the Example resource that was created just now.
         rv_2 = self.client.get(
-            f"/api/examples/{example_id}", headers={"Authorization": self._token_auth}
+            f"/api/examples/{example_id}",
+            headers={"Authorization": self._jd_user_token_auth},
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -1522,18 +1530,18 @@ class Test_9_GetExample(TestBaseForExampleResources):
 
     def test_4_prevent_accessing_of_foreign_example(self):
         """
-        Ensure that each user cannot get a specific Example resource,
+        Ensure that a user cannot get a specific Example resource,
         which belongs to a different user.
         """
 
         # Create a second User resource.
-        user_dict_2, token_auth_2 = self.create_user(
+        ms_user_dict, ms_user_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": user_dict_2["id"],
+            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1543,7 +1551,10 @@ class Test_9_GetExample(TestBaseForExampleResources):
         rv_2 = self.client.post(
             "/api/examples",
             data=data_str_2,
-            headers={"Content-Type": "application/json", "Authorization": token_auth_2},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": ms_user_token_auth,
+            },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -1553,7 +1564,8 @@ class Test_9_GetExample(TestBaseForExampleResources):
         # Ensure that
         # the 1st user cannot get a specific resource, which belongs to the 2nd user.
         rv_3 = self.client.get(
-            f"/api/examples/{example_id_2}", headers={"Authorization": self._token_auth}
+            f"/api/examples/{example_id_2}",
+            headers={"Authorization": self._jd_user_token_auth},
         )
 
         body_str_3 = rv_3.get_data(as_text=True)
