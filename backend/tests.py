@@ -27,7 +27,7 @@ class TestBase(unittest.TestCase):
         db.drop_all()
 
 
-class Test_1_CreateUser(TestBase):
+class Test_01_CreateUser(TestBase):
     """"Test the request responsible for creating a new User resource."""
 
     def setUp(self):
@@ -251,7 +251,7 @@ class Test_1_CreateUser(TestBase):
         self.assertTrue(check_password_hash(user.password_hash, "123"))
 
 
-class Test_2_GetUsers(TestBase):
+class Test_02_GetUsers(TestBase):
     """"Test the request responsible for getting all existing User resources."""
 
     def test_1_empty_database(self):
@@ -306,7 +306,7 @@ class Test_2_GetUsers(TestBase):
         )
 
 
-class Test_3_GetUser(TestBase):
+class Test_03_GetUser(TestBase):
     """Test the request responsible for getting one specific User resource."""
 
     def test_1_nonexistent_user(self):
@@ -361,7 +361,7 @@ class Test_3_GetUser(TestBase):
         )
 
 
-class Test_4_EditUser(TestBase):
+class Test_04_EditUser(TestBase):
     """Test the request responsible for editing a specific User resource."""
 
     def setUp(self):
@@ -749,7 +749,7 @@ class Test_4_EditUser(TestBase):
         self.assertTrue(check_password_hash(user.password_hash, "123"))
 
 
-class Test_5_DeleteUser(TestBase):
+class Test_05_DeleteUser(TestBase):
     """Test the request responsible for deleting a specific User resource."""
 
     def _create_user(self, username, email, password):
@@ -932,7 +932,7 @@ class Test_5_DeleteUser(TestBase):
         self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
 
 
-class Test_6_IssueToken(TestBase):
+class Test_06_IssueToken(TestBase):
     """
     Test the request responsible for issuing a JSON Web Signature token for a user,
     who has authenticated herself successfully as part of that same request.
@@ -1064,7 +1064,7 @@ class TestBaseForExampleResources(TestBase):
         return body_1, token_auth
 
 
-class Test_7_CreateExample(TestBaseForExampleResources):
+class Test_07_CreateExample(TestBaseForExampleResources):
     """Test the request responsible for creating a new Example resource."""
 
     def setUp(self):
@@ -1239,7 +1239,7 @@ class Test_7_CreateExample(TestBaseForExampleResources):
         )
 
 
-class Test_8_GetExamples(TestBaseForExampleResources):
+class Test_08_GetExamples(TestBaseForExampleResources):
     """
     Test the request responsible for getting all Example resources,
     which are associated with a given User resource.
@@ -1395,7 +1395,7 @@ class Test_8_GetExamples(TestBaseForExampleResources):
         )
 
 
-class Test_9_GetExample(TestBaseForExampleResources):
+class Test_09_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
 
     def setUp(self):
@@ -1579,5 +1579,238 @@ class Test_9_GetExample(TestBaseForExampleResources):
                     "Your User doesn't have an Example resource with an ID of "
                     + str(example_id_2)
                 ),
+            },
+        )
+
+
+class Test_10_EditExample(TestBaseForExampleResources):
+    """Test the request responsible for editing a specific Example resource."""
+
+    def setUp(self):
+        super().setUp()  # TODO: find out if self should be passed in here
+
+        jd_user_dict, self._jd_user_token_auth = self.create_user(
+            username="jd", email="john.doe@protonmail.com", password="123"
+        )
+        self._jd_user_id = jd_user_dict["id"]
+
+    def test_1_missing_token_auth(self):
+        """
+        Ensure that it is impossible to edit a specific Example resource
+        without providing a Bearer-Token Auth credential.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._jd_user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Attempt to edit the Example resource, which was created just now,
+        # without providing a Bearer-Token Auth credential.
+        data_2 = {
+            "source_language": "English",
+            "new_word": "participate [in sth]",
+            "content": "Who wants to participate in the competition?",
+            "content_translation": "Kuka haluaa osallistua kilpailuun?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.put(
+            f"/api/examples/{example_id}",
+            data=data_str_2,
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 401)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Bearer-Token Auth format is required.",
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, didn't get edited.
+        e = Example.query.get(example_id)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": example_id,
+                "source_language": "Finnish",
+                "new_word": "osallistua [+ MIHIN]",
+                "content": "Kuka haluaa osallistua kilpailuun?",
+                "content_translation": "Who wants to participate in the competition?",
+            },
+        )
+
+    def test_2_edit_own_example(self):
+        """
+        Ensure that a user is able to edit a specific Example resource of her own.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._jd_user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Edit the Example resource, which was created just now.
+        data_2 = {
+            "source_language": "English",
+            "new_word": "participate [in sth]",
+            "content": "Who wants to participate in the competition?",
+            "content_translation": "Kuka haluaa osallistua kilpailuun?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.put(
+            f"/api/examples/{example_id}",
+            data=data_str_2,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2,
+            {
+                "id": example_id,
+                "source_language": "English",
+                "new_word": "participate [in sth]",
+                "content": "Who wants to participate in the competition?",
+                "content_translation": "Kuka haluaa osallistua kilpailuun?",
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, got edited successfully.
+        e = Example.query.get(example_id)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": example_id,
+                "source_language": "English",
+                "new_word": "participate [in sth]",
+                "content": "Who wants to participate in the competition?",
+                "content_translation": "Kuka haluaa osallistua kilpailuun?",
+            },
+        )
+
+    def test_3_prevent_editing_of_foreign_example(self):
+        """
+        Ensure that a user cannot edit a specific Example resource,
+        which belongs to a different user.
+        """
+
+        # Create a second User resource.
+        ms_user_dict, ms_user_token_auth = self.create_user(
+            username="ms", email="mary.smith@yahoo.com", password="456"
+        )
+
+        # Create one Example resource for the second user.
+        data_2 = {
+            "user_id": ms_user_dict["id"],
+            "source_language": "Finnish",
+            "new_word": "kieli",
+            "content": "Mitä kieltä sinä puhut?",
+            "content_translation": "What languages do you speak?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.post(
+            "/api/examples",
+            data=data_str_2,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": ms_user_token_auth,
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        example_id_2 = body_2["id"]
+
+        # Ensure that
+        # the 1st user cannot edit a specific resource, which belongs to the 2nd user.
+        data_3 = {
+            "source_language": "English",
+            "new_word": "participate [in sth]",
+            "content": "Who wants to participate in the competition?",
+            "content_translation": "Kuka haluaa osallistua kilpailuun?",
+        }
+        data_str_3 = json.dumps(data_3)
+        rv_3 = self.client.put(
+            f"/api/examples/{example_id_2}",
+            data=data_str_3,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 404)
+        self.assertEqual(
+            body_3,
+            {
+                "error": "Not Found",
+                "message": (
+                    "Your User doesn't have an Example resource with an ID of "
+                    + str(example_id_2)
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, didn't get edited.
+        e = Example.query.get(example_id_2)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": 1,
+                "source_language": "Finnish",
+                "new_word": "kieli",
+                "content": "Mitä kieltä sinä puhut?",
+                "content_translation": "What languages do you speak?",
             },
         )
