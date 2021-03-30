@@ -1773,7 +1773,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, didn't get edited.
         e = Example.query.get(example_id)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": example_id,
                 "source_language": "Finnish",
@@ -1846,7 +1846,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, didn't get edited.
         e = Example.query.get(example_id)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": example_id,
                 "source_language": "Finnish",
@@ -1918,7 +1918,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, got edited successfully.
         e = Example.query.get(example_id)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": example_id,
                 "source_language": "English",
@@ -1997,7 +1997,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, didn't get edited.
         e = Example.query.get(example_id_2)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": 1,
                 "source_language": "Finnish",
@@ -2066,7 +2066,7 @@ class Test_11_DeleteExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, did not get deleted.
         e = Example.query.get(example_id)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": example_id,
                 "source_language": "Finnish",
@@ -2177,7 +2177,7 @@ class Test_11_DeleteExample(TestBaseForExampleResources):
         # Ensure that the Example resource, which was targeted, didn't get deleted.
         e = Example.query.get(example_id_2)
         self.assertEqual(
-            e.to_json(),
+            e.to_dict(),
             {
                 "id": 1,
                 "source_language": "Finnish",
