@@ -533,5 +533,28 @@ def edit_example(example_id):
     return example.to_json()
 
 
+@app.route("/api/examples/<int:example_id>", methods=["DELETE"])
+@token_auth.login_required
+def delete_example(example_id):
+    example = Example.query.get(example_id)
+    if example is None or example.user_id != token_auth.current_user().id:
+        r = jsonify(
+            {
+                "error": "Not Found",
+                "message": (
+                    "Your User doesn't have an Example resource with an ID of "
+                    + str(example_id)
+                ),
+            }
+        )
+        r.status_code = 404
+        return r
+
+    db.session.delete(example)
+    db.session.commit()
+
+    return "", 204
+
+
 if __name__ == "__main__":
     app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)
