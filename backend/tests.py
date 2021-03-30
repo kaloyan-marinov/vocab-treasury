@@ -1814,3 +1814,183 @@ class Test_10_EditExample(TestBaseForExampleResources):
                 "content_translation": "What languages do you speak?",
             },
         )
+
+
+class Test_11_DeleteExample(TestBaseForExampleResources):
+    """Test the request responsible for deleting a specific Example resource."""
+
+    def setUp(self):
+        super().setUp()
+
+        jd_user_dict, self._jd_user_token_auth = self.create_user(
+            username="jd", email="john.doe@gmail.com", password="123"
+        )
+        self._jd_user_id = jd_user_dict["id"]
+
+    def test_1_missing_token_auth(self):
+        """
+        Ensure that it is impossible to delete a specific Example resource
+        without providing a Bearer-Token Auth credential.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._jd_user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Attempt to delete the Example resource, which was created just now,
+        # without providing a Bearer-Token Auth credential.
+        rv_2 = self.client.delete(f"/api/examples/{example_id}")
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 401)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Bearer-Token Auth format is required.",
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, did not get deleted.
+        e = Example.query.get(example_id)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": example_id,
+                "source_language": "Finnish",
+                "new_word": "osallistua [+ MIHIN]",
+                "content": "Kuka haluaa osallistua kilpailuun?",
+                "content_translation": "Who wants to participate in the competition?",
+            },
+        )
+
+    def test_2_delete_own_example(self):
+        """
+        Ensure that a user is able to delete a specific Example of her own.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._jd_user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Delete the Example resource, which was created just now.
+        rv_2 = self.client.delete(
+            f"/api/examples/{example_id}",
+            headers={"Authorization": self._jd_user_token_auth},
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        self.assertEqual(rv_2.status_code, 204)
+        self.assertEqual(body_str_2, "")
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, got deleted
+        # successfully.
+        e = Example.query.get(example_id)
+        self.assertIsNone(e)
+
+    def test_3_prevent_deleting_of_foreign_example(self):
+        """
+        Ensure that a user cannot delete a specific Example resource,
+        which belongs to a different user.
+        """
+
+        # Create a second User resource.
+        ms_user_dict, ms_user_token_auth = self.create_user(
+            username="ms", email="mary.smith@yahoo.com", password="456"
+        )
+
+        # Create one Example resource for the second user.
+        data_2 = {
+            "user_id": ms_user_dict["id"],
+            "source_language": "Finnish",
+            "new_word": "kieli",
+            "content": "Mitä kieltä sinä puhut?",
+            "content_translation": "What languages do you speak?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.post(
+            "/api/examples",
+            data=data_str_2,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": ms_user_token_auth,
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        example_id_2 = body_2["id"]
+
+        # Ensure that
+        # the 1st user cannot delete a specific resource, which belongs to the 2nd user.
+        rv_3 = self.client.delete(
+            f"/api/examples/{example_id_2}",
+            headers={"Authorization": self._jd_user_token_auth},
+        )
+
+        body_str_3 = rv_3.get_data(as_text=True)
+        body_3 = json.loads(body_str_3)
+        self.assertEqual(rv_3.status_code, 404)
+        self.assertEqual(
+            body_3,
+            {
+                "error": "Not Found",
+                "message": (
+                    "Your User doesn't have an Example resource with an ID of "
+                    + str(example_id_2)
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the Example resource, which was targeted, didn't get deleted.
+        e = Example.query.get(example_id_2)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": 1,
+                "source_language": "Finnish",
+                "new_word": "kieli",
+                "content": "Mitä kieltä sinä puhut?",
+                "content_translation": "What languages do you speak?",
+            },
+        )
