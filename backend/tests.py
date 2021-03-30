@@ -141,6 +141,8 @@ class Test_01_CreateUser(TestBase):
         )
         self.assertTrue(check_password_hash(user.password_hash, "123"))
 
+        self.assertEqual(repr(user), "User(1, jd)")
+
     def test_4_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to create a User resource,
@@ -1210,6 +1212,8 @@ class Test_07_CreateExample(TestBaseForExampleResources):
         self.assertEqual(len(examples), 1)
         self.assertEqual(examples[0].user_id, 1)
 
+        self.assertEqual(repr(examples[0]), "Example(1, osallistua [+ MIHIN])")
+
     def test_5_incorrect_token_auth(self):
         """
         Ensure that it is impossible to create a new Example resource
@@ -1750,9 +1754,6 @@ class Test_10_EditExample(TestBaseForExampleResources):
         rv_2 = self.client.put(
             f"/api/examples/{example_id}",
             data=data_str_2,
-            headers={
-                "Content-Type": "application/json",
-            },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -1780,7 +1781,80 @@ class Test_10_EditExample(TestBaseForExampleResources):
             },
         )
 
-    def test_2_edit_own_example(self):
+    def test_2_missing_content_type(self):
+        """
+        Ensure that it is impossible to edit a Example resource
+        without providing a 'Content-Type: application/json' header.
+        """
+
+        # Create one Example resource.
+        data_1 = {
+            "user_id": self._jd_user_id,
+            "source_language": "Finnish",
+            "new_word": "osallistua [+ MIHIN]",
+            "content": "Kuka haluaa osallistua kilpailuun?",
+            "content_translation": "Who wants to participate in the competition?",
+        }
+        data_str_1 = json.dumps(data_1)
+        rv_1 = self.client.post(
+            "/api/examples",
+            data=data_str_1,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        example_id = body_1["id"]
+
+        # Attempt to edit the Example resource, which was created just now,
+        # without providing a "Content-Type: application/json" header.
+        data_2 = {
+            "source_language": "English",
+            "new_word": "participate [in sth]",
+            "content": "Who wants to participate in the competition?",
+            "content_translation": "Kuka haluaa osallistua kilpailuun?",
+        }
+        data_str_2 = json.dumps(data_2)
+        rv_2 = self.client.put(
+            f"/api/examples/{example_id}",
+            data=data_str_2,
+            headers={
+                "Authorization": self._jd_user_token_auth,
+            },
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 400)
+        self.assertEqual(
+            body_2,
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)"
+        # Ensure that the Example resource, which was targeted, didn't get edited.
+        e = Example.query.get(example_id)
+        self.assertEqual(
+            e.to_json(),
+            {
+                "id": example_id,
+                "source_language": "Finnish",
+                "new_word": "osallistua [+ MIHIN]",
+                "content": "Kuka haluaa osallistua kilpailuun?",
+                "content_translation": "Who wants to participate in the competition?",
+            },
+        )
+
+    def test_3_edit_own_example(self):
         """
         Ensure that a user is able to edit a specific Example resource of her own.
         """
@@ -1852,7 +1926,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
             },
         )
 
-    def test_3_prevent_editing_of_foreign_example(self):
+    def test_4_prevent_editing_of_foreign_example(self):
         """
         Ensure that a user cannot edit a specific Example resource,
         which belongs to a different user.
