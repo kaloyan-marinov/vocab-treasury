@@ -52,7 +52,7 @@ class User(db.Model):
         return {"id": self.id, "username": self.username}
 
     def __repr__(self):
-        return f"User({self.username}, {self.email})"
+        return f"User({self.id}, {self.username})"
 
 
 class Example(db.Model):
