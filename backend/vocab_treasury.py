@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, url_for
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from dotenv import find_dotenv, load_dotenv
 from flask_sqlalchemy import SQLAlchemy
@@ -268,7 +268,7 @@ def create_user():
     payload = user.public_representation()
     r = jsonify(payload)
     r.status_code = 201
-    # TODO: add a Location header
+    r.headers["Location"] = url_for("get_user", user_id=user.id)
     return r
 
 
@@ -453,7 +453,7 @@ def create_example():
     payload = e.to_json()
     r = jsonify(payload)
     r.status_code = 201
-    # TODO: add a Location header
+    r.headers["Location"] = url_for("get_example", example_id=e.id)
     return r
 
 
