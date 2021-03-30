@@ -48,7 +48,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(60), nullable=False)
 
-    def public_representation(self):
+    def to_dict(self):
+        """Export `self` to a dict, which omits any and all sensitive information."""
         return {"id": self.id, "username": self.username}
 
     def __repr__(self):
@@ -70,7 +71,7 @@ class Example(db.Model):
     content = db.Column(db.Text, nullable=False)
     content_translation = db.Column(db.Text)
 
-    def to_json(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "source_language": self.source_language,
@@ -265,7 +266,7 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    payload = user.public_representation()
+    payload = user.to_dict()
     r = jsonify(payload)
     r.status_code = 201
     r.headers["Location"] = url_for("get_user", user_id=user.id)
@@ -275,7 +276,7 @@ def create_user():
 @app.route("/api/users", methods=["GET"])
 def get_users():
     users = User.query.all()
-    return {"users": [u.public_representation() for u in users]}
+    return {"users": [u.to_dict() for u in users]}
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
@@ -294,7 +295,7 @@ def get_user(user_id):
         r.status_code = 404
         return r
 
-    return u.public_representation()
+    return u.to_dict()
 
 
 @app.route("/api/users/<int:user_id>", methods=["PUT"])
@@ -369,7 +370,7 @@ def edit_user(user_id):
     db.session.add(u)
     db.session.commit()
 
-    return u.public_representation()
+    return u.to_dict()
 
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
@@ -450,7 +451,7 @@ def create_example():
     db.session.add(e)
     db.session.commit()
 
-    payload = e.to_json()
+    payload = e.to_dict()
     r = jsonify(payload)
     r.status_code = 201
     r.headers["Location"] = url_for("get_example", example_id=e.id)
@@ -461,7 +462,7 @@ def create_example():
 @token_auth.login_required
 def get_examples():
     examples = Example.query.filter_by(user_id=token_auth.current_user().id).all()
-    return {"examples": [e.to_json() for e in examples]}
+    return {"examples": [e.to_dict() for e in examples]}
 
 
 @app.route("/api/examples/<int:example_id>", methods=["GET"])
@@ -480,7 +481,7 @@ def get_example(example_id):
         )
         r.status_code = 404
         return r
-    return example.to_json()
+    return example.to_dict()
 
 
 @app.route("/api/examples/<int:example_id>", methods=["PUT"])
@@ -530,7 +531,7 @@ def edit_example(example_id):
     db.session.add(example)
     db.session.commit()
 
-    return example.to_json()
+    return example.to_dict()
 
 
 @app.route("/api/examples/<int:example_id>", methods=["DELETE"])
