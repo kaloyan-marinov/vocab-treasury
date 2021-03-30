@@ -171,8 +171,6 @@ token_auth = HTTPTokenAuth()
 
 @token_auth.verify_token
 def verify_token(token):
-    # TODO: utilize unittest.mock.patch
-    #       to test this function's currently untested instructions
     try:
         token_payload = token_serializer.loads(token)
     except SignatureExpired:
@@ -270,6 +268,7 @@ def create_user():
     payload = user.public_representation()
     r = jsonify(payload)
     r.status_code = 201
+    # TODO: add a Location header
     return r
 
 
@@ -454,6 +453,7 @@ def create_example():
     payload = e.to_json()
     r = jsonify(payload)
     r.status_code = 201
+    # TODO: add a Location header
     return r
 
 

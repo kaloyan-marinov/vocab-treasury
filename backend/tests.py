@@ -1,9 +1,10 @@
 import unittest
 import json
+from unittest.mock import patch
 import base64
 import os
 from werkzeug.security import check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer
+from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 
 
 TESTING_SECRET_KEY = "testing-secret-key"
@@ -1238,6 +1239,121 @@ class Test_07_CreateExample(TestBaseForExampleResources):
             },
         )
 
+    def test_6_expired_token(self):
+        """
+        Ensure that it is impossible to create an Example resource
+        by providing an expired Bearer Token.
+        """
+
+        # Simulate a request, in which a client provides an expired Bearer Token.
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            side_effect=SignatureExpired("forced via mocking/patching"),
+        ):
+            rv = self.client.post(
+                "/api/examples",
+                data=self._example_data_str,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Bearer-Token Auth format is required.",
+            },
+        )
+
+        # (Reach into the application's persistence layer to)
+        # Ensure that the simulated request didn't create any new Example resources.
+        examples = Example.query.all()
+        self.assertEqual(len(examples), 0)
+
+    def test_7_token_signature_was_tampered_with(self):
+        """
+        Ensure that
+        it is impossible to create an Example resource by providing a Bearer Token,
+        whose cryptographic signature has been tampered with.
+        """
+
+        # Simulate a request, in which a client provides a Bearer Token,
+        # whose cryptographic signature has been tampered with.
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            side_effect=BadSignature("forced via mocking/patching"),
+        ):
+            rv = self.client.post(
+                "/api/examples",
+                data=self._example_data_str,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "Authentication in the Bearer-Token Auth format is required.",
+            },
+        )
+
+        # (Reach into the application's persistence layer to)
+        # Ensure that the simulated request didn't create any new Example resources.
+        examples = Example.query.all()
+        self.assertEqual(len(examples), 0)
+
+    def test_8_token_for_nonexistent_user(self):
+        """
+        Ensure that
+        it is impossible to create an Example resource by providing a Bearer Token,
+        whose payload specifies a non-existent user ID.
+        """
+
+        # Simulate a request, in which a client provides a Bearer Token,
+        # whose payload specifies a non-existent user ID.
+        nonexistent_user_id = 17
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            return_value={"user_id": nonexistent_user_id},
+        ):
+            rv = self.client.post(
+                "/api/examples",
+                data=self._example_data_str,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "Authentication in the Bearer-Token Auth format is required."
+                ),
+            },
+        )
+
+        # (Reach into the application's persistence layer to)
+        # Ensure that the simulated request didn't create any new Example resources.
+        examples = Example.query.all()
+        self.assertEqual(len(examples), 0)
+
 
 class Test_08_GetExamples(TestBaseForExampleResources):
     """
@@ -1587,7 +1703,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
     """Test the request responsible for editing a specific Example resource."""
 
     def setUp(self):
-        super().setUp()  # TODO: find out if self should be passed in here
+        super().setUp()
 
         jd_user_dict, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
