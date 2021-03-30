@@ -118,6 +118,7 @@ class Test_01_CreateUser(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 201)
+        self.assertEqual(rv.headers["Location"], "http://localhost/api/users/1")
         self.assertEqual(
             body,
             {
@@ -1195,6 +1196,7 @@ class Test_07_CreateExample(TestBaseForExampleResources):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 201)
+        self.assertEqual(rv.headers["Location"], "http://localhost/api/examples/1")
         self.assertEqual(
             body,
             {
