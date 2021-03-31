@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)  # same as in users.forms.RegistrationForm
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)  # passwords will be hashed to a length of 60
+    password_hash = db.Column(db.String(60), nullable=False)  # passwords will be hashed to a length of 60
 
     examples = db.relationship('Example', backref='author', lazy=True)  # the `backref` is similar to adding an attribute to the `Example` model; `lazy=True` specifies that SQLAlchemy will load the data as necessary in one go
 

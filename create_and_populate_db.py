@@ -16,7 +16,7 @@ def main():
         u_1 = User(
             username='du',
             email='DeployedUser@test.com',
-            password=password_hash_1
+            password_hash=password_hash_1
         )
         db.session.add(u_1)
         db.session.commit()
@@ -28,7 +28,7 @@ def main():
         u_2 = User(
             username='jd',
             email='john.doe@gmail.com',
-            password=password_hash_2
+            password_hash=password_hash_2
         )
 
         plaintext_password_3 = 'b'
@@ -38,7 +38,7 @@ def main():
         u_3 = User(
             username='ms',
             email='mary.smith@yahoo.com',
-            password=password_hash_3
+            password_hash=password_hash_3
         )
         
         db.session.add(u_2)

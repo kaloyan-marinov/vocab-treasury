@@ -45,7 +45,7 @@ def login():
 
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
+        if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
             login_user(user)
 
             # identify if the user logged in out of their own will,
@@ -179,7 +179,7 @@ def reset_token(token):
     # it will submit back to the same route that it was rendered from
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data)
-        user.password = hashed_password
+        user.password_hash = hashed_password
         db.session.commit()
         flash('YOUR PASSWORD HAS BEEN UPDATED! YOU ARE NOW ABLE TO LOG IN.')
         return redirect(url_for('users.login'))
