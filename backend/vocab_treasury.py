@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 
 
 import os
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_bcrypt import Bcrypt
 import datetime
 
 
@@ -40,6 +40,12 @@ db = SQLAlchemy(app)
 
 
 migrate = Migrate(app, db)
+
+
+# As suggested on https://flask-bcrypt.readthedocs.io/en/latest/
+# the following variable is not called simply `bcrypt`
+# (because if it were, it would be effectively overriding the `bcrypt` module).
+flask_bcrypt = Bcrypt(app)
 
 
 class User(db.Model):
@@ -93,7 +99,7 @@ def verify_password(email, password):
     if user is None:
         return None
 
-    if check_password_hash(user.password_hash, password) is False:
+    if flask_bcrypt.check_password_hash(user.password_hash, password) is False:
         return None
 
     return user
@@ -261,7 +267,7 @@ def create_user():
     user = User(
         username=username,
         email=email,
-        password_hash=generate_password_hash(password),
+        password_hash=flask_bcrypt.generate_password_hash(password).decode("utf-8"),
     )
     db.session.add(user)
     db.session.commit()
@@ -365,7 +371,7 @@ def edit_user(user_id):
     if email is not None:
         u.email = email
     if password is not None:
-        u.password_hash = generate_password_hash(password)
+        u.password_hash = flask_bcrypt.generate_password_hash(password).decode("utf-8")
 
     db.session.add(u)
     db.session.commit()

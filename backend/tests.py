@@ -3,7 +3,6 @@ import json
 from unittest.mock import patch
 import base64
 import os
-from werkzeug.security import check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 
 
@@ -12,7 +11,7 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-from backend.vocab_treasury import app, db, User, Example
+from backend.vocab_treasury import app, db, flask_bcrypt, User, Example
 
 
 app.config["TESTING"] = True
@@ -140,7 +139,9 @@ class Test_01_CreateUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
         self.assertEqual(repr(user), "User(1, jd)")
 
@@ -196,7 +197,9 @@ class Test_01_CreateUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
     def test_5_prevent_duplication_of_usernames(self):
         """
@@ -252,7 +255,9 @@ class Test_01_CreateUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
 
 class Test_02_GetUsers(TestBase):
@@ -429,7 +434,9 @@ class Test_04_EditUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
     def test_2_missing_content_type(self):
         """
@@ -475,7 +482,9 @@ class Test_04_EditUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
     def test_3_prevent_editing_of_another_user(self):
         """
@@ -531,7 +540,9 @@ class Test_04_EditUser(TestBase):
                 "email": "mary.smith@yahoo.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "456"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "456"),
+        )
 
     def test_4_edit_the_authenticated_user(self):
         """
@@ -581,7 +592,9 @@ class Test_04_EditUser(TestBase):
                 "email": "JOHN.DOE@PROTONMAIL.COM",
             },
         )
-        self.assertTrue(check_password_hash(edited_u.password_hash, "!@#"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(edited_u.password_hash, "!@#"),
+        )
 
     def test_5_prevent_duplication_of_emails(self):
         """
@@ -640,7 +653,9 @@ class Test_04_EditUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+        )
 
     def test_6_incorrect_basic_auth(self):
         """
@@ -691,7 +706,9 @@ class Test_04_EditUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+        )
 
     def test_7_prevent_duplication_of_usernames(self):
         """
@@ -750,7 +767,9 @@ class Test_04_EditUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(user.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+        )
 
 
 class Test_05_DeleteUser(TestBase):
@@ -808,7 +827,9 @@ class Test_05_DeleteUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+        )
 
     def test_2_prevent_deleting_of_another_user(self):
         """
@@ -859,7 +880,9 @@ class Test_05_DeleteUser(TestBase):
                 "email": "mary.smith@yahoo.com",
             },
         )
-        self.assertTrue(check_password_hash(targeted_u.password_hash, "456"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(targeted_u.password_hash, "456"),
+        )
 
     def test_3_delete_the_authenticated_user(self):
         """
@@ -933,7 +956,9 @@ class Test_05_DeleteUser(TestBase):
                 "email": "john.doe@protonmail.com",
             },
         )
-        self.assertTrue(check_password_hash(targeted_u.password_hash, "123"))
+        self.assertTrue(
+            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+        )
 
 
 class Test_06_IssueToken(TestBase):
@@ -982,7 +1007,7 @@ class Test_06_IssueToken(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 401)
-        self.assertEquals(
+        self.assertEqual(
             body,
             {
                 "error": "Unauthorized",
