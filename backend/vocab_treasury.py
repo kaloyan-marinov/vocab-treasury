@@ -48,7 +48,46 @@ migrate = Migrate(app, db)
 flask_bcrypt = Bcrypt(app)
 
 
-class User(db.Model):
+class PaginatedAPIMixin(object):
+    """
+    This is a "mixin" class, which implements generic functionality for
+    generating a representation for a collection of resources.
+    """
+
+    @staticmethod
+    def to_collection_dict(query, per_page, page, endpoint, **kwargs):
+        pagination_obj = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        link_to_self = url_for(endpoint, per_page=per_page, page=page, **kwargs)
+        link_to_next = (
+            url_for(endpoint, per_page=per_page, page=page + 1, **kwargs)
+            if pagination_obj.has_next
+            else None
+        )
+        link_to_prev = (
+            url_for(endpoint, per_page=per_page, page=page - 1, **kwargs)
+            if pagination_obj.has_prev
+            else None
+        )
+
+        resource_representations = {
+            "items": [resource.to_dict() for resource in pagination_obj.items],
+            "_meta": {
+                "total_items": pagination_obj.total,
+                "per_page": per_page,
+                "total_pages": pagination_obj.pages,
+                "page": page,
+            },
+            "_links": {
+                "self": link_to_self,
+                "next": link_to_next,
+                "prev": link_to_prev,
+            },
+        }
+        return resource_representations
+
+
+class User(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -62,7 +101,7 @@ class User(db.Model):
         return f"User({self.id}, {self.username})"
 
 
-class Example(db.Model):
+class Example(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     created = db.Column(
@@ -281,8 +320,25 @@ def create_user():
 
 @app.route("/api/users", methods=["GET"])
 def get_users():
-    users = User.query.all()
-    return {"users": [u.to_dict() for u in users]}
+    """
+    If the client wants to specify:
+    - how many resources it wants at a time,
+      it can incorporate `per_page` into its request;
+    - which page of the paginated query results it wants,
+      it can incorporate `page` into its request.
+
+    Importantly, this function enforces that
+    the "page size" (= the value of `per_page`) never be larger than 100,
+    with the reason for this restriction being
+    that we do not want to task the server too much.
+    """
+    per_page = min(
+        request.args.get("per_page", 10, type=int),
+        100,
+    )
+    page = request.args.get("page", 1, type=int)
+    users_collection = User.to_collection_dict(User.query, per_page, page, "get_users")
+    return users_collection
 
 
 @app.route("/api/users/<int:user_id>", methods=["GET"])
@@ -467,8 +523,30 @@ def create_example():
 @app.route("/api/examples", methods=["GET"])
 @token_auth.login_required
 def get_examples():
-    examples = Example.query.filter_by(user_id=token_auth.current_user().id).all()
-    return {"examples": [e.to_dict() for e in examples]}
+    """
+    If the client wants to specify:
+    - how many resources it wants at a time,
+      it can incorporate `per_page` into its request;
+    - which page of the paginated query results it wants,
+      it can incorporate `page` into its request.
+
+    Importantly, this function enforces that
+    the "page size" (= the value of `per_page`) never be larger than 100,
+    with the reason for this restriction being
+    that we do not want to task the server too much.
+    """
+    per_page = min(
+        100,
+        request.args.get("per_page", default=10, type=int),
+    )
+    page = request.args.get("page", default=1, type=int)
+    examples_collection = Example.to_collection_dict(
+        Example.query.filter_by(user_id=token_auth.current_user().id),
+        per_page,
+        page,
+        "get_examples",
+    )
+    return examples_collection
 
 
 @app.route("/api/examples/<int:example_id>", methods=["GET"])

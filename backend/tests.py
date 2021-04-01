@@ -4,6 +4,7 @@ from unittest.mock import patch
 import base64
 import os
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
+from flask import url_for
 
 
 TESTING_SECRET_KEY = "testing-secret-key"
@@ -275,7 +276,25 @@ class Test_02_GetUsers(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(body, {"users": []})
+        with app.test_request_context():
+            _links_self = url_for("get_users", per_page=10, page=1)
+        self.assertEqual(
+            body,
+            {
+                "items": [],
+                "_meta": {
+                    "total_items": 0,
+                    "per_page": 10,
+                    "total_pages": 0,
+                    "page": 1,
+                },
+                "_links": {
+                    "next": None,
+                    "prev": None,
+                    "self": _links_self,
+                },
+            },
+        )
 
     def test_2_nonempty_database(self):
         """
@@ -302,15 +321,28 @@ class Test_02_GetUsers(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
+        with app.test_request_context():
+            _links_self = url_for("get_users", per_page=10, page=1)
         self.assertEqual(
             body,
             {
-                "users": [
+                "items": [
                     {
                         "id": 1,
                         "username": "jd",
                     }
-                ]
+                ],
+                "_meta": {
+                    "total_items": 1,
+                    "per_page": 10,
+                    "total_pages": 1,
+                    "page": 1,
+                },
+                "_links": {
+                    "self": _links_self,
+                    "next": None,
+                    "prev": None,
+                },
             },
         )
 
@@ -1415,7 +1447,25 @@ class Test_08_GetExamples(TestBaseForExampleResources):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(body, {"examples": []})
+        with app.test_request_context():
+            _links_self = url_for("get_examples", per_page=10, page=1)
+        self.assertEqual(
+            body,
+            {
+                "items": [],
+                "_meta": {
+                    "total_items": 0,
+                    "per_page": 10,
+                    "total_pages": 0,
+                    "page": 1,
+                },
+                "_links": {
+                    "self": _links_self,
+                    "next": None,
+                    "prev": None,
+                },
+            },
+        )
 
     def test_2_some_examples_exist(self):
         """
@@ -1450,10 +1500,12 @@ class Test_08_GetExamples(TestBaseForExampleResources):
         body_2_str = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_2_str)
         self.assertEqual(rv_2.status_code, 200)
+        with app.test_request_context():
+            _links_self = url_for("get_examples", per_page=10, page=1)
         self.assertEqual(
             body_2,
             {
-                "examples": [
+                "items": [
                     {
                         "id": 1,
                         "source_language": "Finnish",
@@ -1461,7 +1513,18 @@ class Test_08_GetExamples(TestBaseForExampleResources):
                         "content": "Kuka haluaa osallistua kilpailuun?",
                         "content_translation": "Who wants to participate in the competition?",
                     }
-                ]
+                ],
+                "_meta": {
+                    "total_items": 1,
+                    "per_page": 10,
+                    "total_pages": 1,
+                    "page": 1,
+                },
+                "_links": {
+                    "self": _links_self,
+                    "next": None,
+                    "prev": None,
+                },
             },
         )
 
@@ -1530,7 +1593,7 @@ class Test_08_GetExamples(TestBaseForExampleResources):
         body_str_3 = rv_3.get_data(as_text=True)
         body_3 = json.loads(body_str_3)
         self.assertEqual(rv_3.status_code, 200)
-        example_ids_of_the_ms_user = {e["id"] for e in body_3["examples"]}
+        example_ids_of_the_ms_user = {example["id"] for example in body_3["items"]}
         self.assertEqual(
             example_ids_of_the_ms_user,
             {2},
