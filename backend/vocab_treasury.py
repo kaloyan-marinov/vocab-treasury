@@ -13,6 +13,8 @@ import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer, BadSignature, SignatureExpired
 import sys
 
+from flask_mail import Mail, Message
+
 
 dotenv_file = find_dotenv()
 load_dotenv(dotenv_file)
@@ -40,6 +42,16 @@ db = SQLAlchemy(app)
 
 
 migrate = Migrate(app, db)
+
+
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
+app.config["MAIL_PORT"] = os.environ.get("MAIL_PORT")
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+
+
+mail = Mail(app)
 
 
 # As suggested on https://flask-bcrypt.readthedocs.io/en/latest/
@@ -209,6 +221,13 @@ def basic_auth_error():
 token_serializer = TimedJSONWebSignatureSerializer(
     app.config["SECRET_KEY"],
     expires_in=3600,
+)
+
+MINUTES_FOR_PASSWORD_RESET = 15
+
+token_serializer_for_password_resets = TimedJSONWebSignatureSerializer(
+    app.config["SECRET_KEY"],
+    expires_in=60 * MINUTES_FOR_PASSWORD_RESET,
 )
 
 
@@ -456,6 +475,159 @@ def delete_user(user_id):
     db.session.commit()
 
     return "", 204
+
+
+@app.route("/api/request-password-reset", methods=["POST"])
+def request_password_reset():
+    if not request.json:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    email = request.json.get("email")
+    if email is None:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": "Your request's body din't specify a value for 'email'.",
+            }
+        )
+        r.status_code = 400
+        return r
+
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": "The email you provided is invalid.",
+            }
+        )
+        r.status_code = 400
+        return r
+
+    send_password_reset_email(user)
+
+    r = jsonify(
+        {
+            "message": (
+                "Sending an email with instructions for resetting your password..."
+            ),
+        }
+    )
+    r.status_code = 202
+    return r
+
+
+def send_password_reset_email(user):
+    print("Sending an email with instructions for resetting your password...")
+    password_reset_token = token_serializer_for_password_resets.dumps(
+        {"user_id": user.id}
+    ).decode("utf-8")
+
+    msg = Message(
+        subject="[VocabTreasury] Your request for a password reset",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+    )
+    msg.body = f"""Dear {user.username},
+
+You may reset your password within {MINUTES_FOR_PASSWORD_RESET} minutes of receiving
+this email message.
+
+To reset your password, launch a terminal instance and issue the following request:
+```
+$ curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    -d '{{"new_password": <your-new-password>}}' \\
+    {url_for('reset_password', token=password_reset_token, _external=True)}
+```
+When issuing that request, please remember
+(a) to replace `<your-new-password>` with your desired new password, and
+(b) to surround your desired new password with double quotation marks.
+
+If you want to reset your password
+but fail to do that within {MINUTES_FOR_PASSWORD_RESET} minutes of receiving this message,
+you will have to submit a brand-new request for a password reset.
+(To submit a brand-new request for a password reset, issue a POST request to the
+{url_for('request_password_reset', _external=True)} endpoint.)
+
+Sincerely,
+The VocabTreasury Team
+
+PS: If you did not request a password reset,
+then simply ignore this email message and your password will remain unchanged.
+    """
+
+    with app.app_context():
+        mail.send(msg)
+
+
+@app.route("/api/reset-password/<token>", methods=["POST"])
+def reset_password(token):
+    reject_token = False
+    try:
+        token_payload = token_serializer_for_password_resets.loads(token)
+    except SignatureExpired as e:
+        reject_token = True  # valid token, but expired
+    except BadSignature as e:
+        reject_token = True  # invalid token
+
+    if reject_token:
+        r = jsonify(
+            {
+                "error": "Unauthorized",
+                "message": "Your password-reset token is invalid.",
+            }
+        )
+        r.status_code = 401
+        return r
+    user_id = token_payload["user_id"]
+    user = User.query.get(user_id)
+
+    if not request.json:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    new_password = request.json.get("new_password")
+    if new_password is None:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your request's body didn't specify a value for a 'new_password'."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    user.password_hash = flask_bcrypt.generate_password_hash(new_password)
+    db.session.add(user)
+    db.session.commit()
+
+    r = jsonify({"message": "You have reset your password successfully."})
+    r.status_code = 200
+    return r
 
 
 @app.route("/api/tokens", methods=["POST"])

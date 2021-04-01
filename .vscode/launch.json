@@ -24,7 +24,8 @@
       "env": {
         "FLASK_ENV": "development"
       },
-      "jinja": true
+      "jinja": true,
+      "justMyCode": false
     }
   ]
 }

@@ -1,6 +1,7 @@
 alembic==1.5.8
 appdirs==1.4.4
 bcrypt==3.2.0
+blinker==1.4
 cffi==1.14.5
 cfgv==3.2.0
 click==7.1.2
@@ -10,6 +11,7 @@ filelock==3.0.12
 Flask==1.1.2
 Flask-Bcrypt==0.7.1
 Flask-HTTPAuth==4.2.0
+Flask-Mail==0.9.1
 Flask-Migrate==2.7.0
 Flask-SQLAlchemy==2.5.1
 greenlet==1.0.0
