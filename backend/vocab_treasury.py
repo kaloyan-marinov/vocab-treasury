@@ -14,6 +14,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer, BadSignature, Signatur
 import sys
 
 from flask_mail import Mail, Message
+from threading import Thread
 
 
 dotenv_file = find_dotenv()
@@ -528,17 +529,11 @@ def request_password_reset():
 
 
 def send_password_reset_email(user):
-    print("Sending an email with instructions for resetting your password...")
     password_reset_token = token_serializer_for_password_resets.dumps(
         {"user_id": user.id}
     ).decode("utf-8")
 
-    msg = Message(
-        subject="[VocabTreasury] Your request for a password reset",
-        sender="noreply@demo.com",
-        recipients=[user.email],
-    )
-    msg.body = f"""Dear {user.username},
+    msg_body = f"""Dear {user.username},
 
 You may reset your password within {MINUTES_FOR_PASSWORD_RESET} minutes of receiving
 this email message.
@@ -569,6 +564,23 @@ PS: If you did not request a password reset,
 then simply ignore this email message and your password will remain unchanged.
     """
 
+    send_email(
+        subject="[VocabTreasury] Your request for a password reset",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+        body=msg_body,
+    )
+
+
+def send_email(subject, sender, recipients, body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = body
+
+    t = Thread(target=send_async_email, args=(app, msg))
+    t.start()
+
+
+def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
 
