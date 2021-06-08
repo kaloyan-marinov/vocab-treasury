@@ -8,3 +8,5 @@ venv/
 
 .coverage
 htmlcov/
+
+frontend/node_modules
