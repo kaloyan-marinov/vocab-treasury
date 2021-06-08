@@ -2,10 +2,10 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import App from "./App";
 
-test("renders a 'Hello world!' message", () => {
+test("renders a 'Welcome to VocabTreasury!' message", () => {
   render(<App />);
-  const divElement = screen.getByText("Hello world!");
-  console.log(divElement);
+  const headingElement = screen.getByText("Welcome to VocabTreasury!");
+  console.log(headingElement);
 
   /*
   The following statement throws a
@@ -27,5 +27,14 @@ test("renders a 'Hello world!' message", () => {
     (which means that the "21: remove files and boilerplate code, which ..." commit was
     what gave rise to this problem in this repository)
   */
-  expect(divElement).toBeInTheDocument();
+  expect(headingElement).toBeInTheDocument();
+});
+
+test("renders navigation links", () => {
+  render(<App />);
+  const navigationLinkTexts = ["Home", "About", "Log in", "Register"];
+  for (const nLT of navigationLinkTexts) {
+    const element = screen.getByText(nLT);
+    expect(element).toBeInTheDocument();
+  }
 });
