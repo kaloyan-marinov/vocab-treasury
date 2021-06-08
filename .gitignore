@@ -10,3 +10,4 @@ venv/
 htmlcov/
 
 frontend/node_modules
+frontend/coverage
