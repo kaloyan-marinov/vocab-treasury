@@ -32,9 +32,27 @@ describe("<Home>", () => {
 });
 
 describe("<NavigationBar>", () => {
-  test("renders navigation links", () => {
+  test("renders navigation links that are always visible", () => {
     render(<NavigationBar />);
-    const navigationLinkTexts = ["Home", "About", "Log in", "Register"];
+    const navigationLinkTexts = ["VocabTreasury", "Home", "About"];
+    for (const nLT of navigationLinkTexts) {
+      const element = screen.getByText(nLT);
+      expect(element).toBeInTheDocument();
+    }
+  });
+
+  test("renders navigation links for guest users", () => {
+    render(<NavigationBar />);
+    const navigationLinkTexts = ["Log in", "Register"];
+    for (const nLT of navigationLinkTexts) {
+      const element = screen.getByText(nLT);
+      expect(element).toBeInTheDocument();
+    }
+  });
+
+  test("renders navigation links for logged-in users", () => {
+    render(<NavigationBar />);
+    const navigationLinkTexts = ["Own VocabTreasury", "Account", "Log out"];
     for (const nLT of navigationLinkTexts) {
       const element = screen.getByText(nLT);
       expect(element).toBeInTheDocument();
