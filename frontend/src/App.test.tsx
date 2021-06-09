@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import { NavigationBar, Home, About } from "./App";
+import { NavigationBar, Home, About, Login } from "./App";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -47,5 +47,25 @@ describe("<About>", () => {
     render(<About />);
     const headingElement = screen.getByText("About VocabTreasury...");
     expect(headingElement).toBeInTheDocument();
+  });
+});
+
+describe("Login", () => {
+  test("renders (a <legend> tag and) a login form", () => {
+    render(<Login />);
+
+    const legendElement = screen.getByText("LOG IN");
+    expect(legendElement).toBeInTheDocument();
+
+    const emailLabelElement = screen.getByText("EMAIL");
+    expect(emailLabelElement).toBeInTheDocument();
+
+    const passwordLabelElement = screen.getByText("PASSWORD");
+    expect(passwordLabelElement).toBeInTheDocument();
+
+    const submitInputElement = screen.getByRole("button", {
+      name: "LOG INTO MY ACCOUNT",
+    });
+    expect(submitInputElement).toBeInTheDocument();
   });
 });

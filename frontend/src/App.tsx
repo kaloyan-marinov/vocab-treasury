@@ -66,18 +66,22 @@ export const About = () => {
 export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+  };
+
   return (
     <React.Fragment>
       {"<Login>"}
 
       <div>
         <form method="POST" action="">
-          <input
+          {/* <input
             id="csrf_token"
             name="csrf_token"
             type="hidden"
             value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBBGQ.-pGpwZNqzdLEsExWq3e70nZNJec"
-          />
+          /> */}
           <fieldset>
             <legend>LOG IN</legend>
 
@@ -85,13 +89,16 @@ export const Login = () => {
               <label htmlFor="email">EMAIL</label>
 
               <input
-                id="email"
+                // id="email"
                 name="email"
-                required
+                // required
                 type="text"
                 value=""
-                data-kwimpalastatus="alive"
-                data-kwimpalaid="1623212313076-1"
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623212313076-1"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
               />
             </div>
 
@@ -99,19 +106,22 @@ export const Login = () => {
               <label htmlFor="password">PASSWORD</label>
 
               <input
-                id="password"
+                // id="password"
                 name="password"
-                required
+                // required
                 type="password"
                 value=""
-                data-kwimpalastatus="alive"
-                data-kwimpalaid="1623212313076-0"
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623212313076-0"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
               />
             </div>
           </fieldset>
           <div>
             <input
-              id="submit"
+              // id="submit"
               name="submit"
               type="submit"
               value="LOG INTO MY ACCOUNT"
