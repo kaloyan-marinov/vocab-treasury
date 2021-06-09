@@ -12,6 +12,8 @@ export const App = () => {
       <Home />
       <hr />
       <About />
+      <hr />
+      <Login />
     </React.Fragment>
   );
 };
@@ -57,6 +59,74 @@ export const About = () => {
     <React.Fragment>
       {"<About>"}
       <h1>About VocabTreasury...</h1>
+    </React.Fragment>
+  );
+};
+
+export const Login = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Login>`);
+
+  return (
+    <React.Fragment>
+      {"<Login>"}
+
+      <div>
+        <form method="POST" action="">
+          <input
+            id="csrf_token"
+            name="csrf_token"
+            type="hidden"
+            value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBBGQ.-pGpwZNqzdLEsExWq3e70nZNJec"
+          />
+          <fieldset>
+            <legend>LOG IN</legend>
+
+            <div>
+              <label htmlFor="email">EMAIL</label>
+
+              <input
+                id="email"
+                name="email"
+                required
+                type="text"
+                value=""
+                data-kwimpalastatus="alive"
+                data-kwimpalaid="1623212313076-1"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password">PASSWORD</label>
+
+              <input
+                id="password"
+                name="password"
+                required
+                type="password"
+                value=""
+                data-kwimpalastatus="alive"
+                data-kwimpalaid="1623212313076-0"
+              />
+            </div>
+          </fieldset>
+          <div>
+            <input
+              id="submit"
+              name="submit"
+              type="submit"
+              value="LOG INTO MY ACCOUNT"
+            />
+            <small>
+              <a href="/reset_password">FORGOT PASSWORD?</a>
+            </small>
+          </div>
+        </form>
+      </div>
+      <div>
+        <small>
+          NEED AN ACCOUNT? <a href="/register">CLICK HERE TO REGISTER</a>
+        </small>
+      </div>
     </React.Fragment>
   );
 };
