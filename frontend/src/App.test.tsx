@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import App from "./App";
+import { App, About } from "./App";
 
 test("renders a 'Welcome to VocabTreasury!' message", () => {
   render(<App />);
   const headingElement = screen.getByText("Welcome to VocabTreasury!");
-  console.log(headingElement);
 
   /*
   The following statement throws a
@@ -37,4 +36,12 @@ test("renders navigation links", () => {
     const element = screen.getByText(nLT);
     expect(element).toBeInTheDocument();
   }
+});
+
+describe("<About>", () => {
+  test("renders an 'About VocabTreasury...' message", () => {
+    render(<About />);
+    const headingElement = screen.getByText("About VocabTreasury...");
+    expect(headingElement).toBeInTheDocument();
+  });
 });
