@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import { NavigationBar, Home, About, Register, Login } from "./App";
+import { NavigationBar, Home, About, Register, Login, Account } from "./App";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -111,5 +111,15 @@ describe("<Login>", () => {
       name: "LOG INTO MY ACCOUNT",
     });
     expect(submitInputElement).toBeInTheDocument();
+  });
+});
+
+describe("<Account>", () => {
+  test("renders the ", () => {
+    render(<Account />);
+
+    const headingElement = screen.getByText("jd");
+    console.log(headingElement);
+    expect(headingElement).toBeInTheDocument();
   });
 });

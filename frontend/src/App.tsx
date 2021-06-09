@@ -16,6 +16,8 @@ export const App = () => {
       <Register />
       <hr />
       <Login />
+      <hr />
+      <Account />
     </React.Fragment>
   );
 };
@@ -260,6 +262,19 @@ export const Login = () => {
           NEED AN ACCOUNT? <a href="/register">CLICK HERE TO REGISTER</a>
         </small>
       </div>
+    </React.Fragment>
+  );
+};
+
+export const Account = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Account>`);
+
+  const usernameOfLoggedInUser = "jd";
+
+  return (
+    <React.Fragment>
+      {"<Account>"}
+      <h1>{usernameOfLoggedInUser}</h1>
     </React.Fragment>
   );
 };
