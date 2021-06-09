@@ -18,6 +18,8 @@ export const App = () => {
       <Login />
       <hr />
       <Account />
+      <hr />
+      <OwnVocabTreasury />
     </React.Fragment>
   );
 };
@@ -275,6 +277,174 @@ export const Account = () => {
     <React.Fragment>
       {"<Account>"}
       <h1>{usernameOfLoggedInUser}</h1>
+    </React.Fragment>
+  );
+};
+
+export const OwnVocabTreasury = () => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
+  );
+
+  const emailOfLoggedInUser = "john.doe@protonmail.com";
+
+  const styleForBorder = { border: "1px solid black" };
+
+  const style = { width: "100%" };
+  Object.assign(style, styleForBorder);
+
+  const styleForLinkToCurrentPage = { fontSize: 40 };
+
+  return (
+    <React.Fragment>
+      {"<OwnVocabTreasury>"}
+      <h1>Own VocabTreasury for {emailOfLoggedInUser}</h1>
+      <div>
+        <a href="/example/new">Record new example</a>
+      </div>
+      <div>
+        <a href="/own-vocabtreasury/search">Search</a>
+      </div>
+      <br />
+      <table style={style}>
+        <tbody>
+          <tr>
+            <th style={styleForBorder}>ID</th>
+            <th style={styleForBorder}>SOURCE LANGUAGE</th>
+            <th style={styleForBorder}>NEW WORD</th>
+            <th style={styleForBorder}>EXAMPLE</th>
+            <th style={styleForBorder}>TRANSLATION</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/1?page=1">1</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>vihata + P</th>
+            <th style={styleForBorder}>Älä vihaa ketään!</th>
+            <th style={styleForBorder}>Don't hate anyone!</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/2?page=1">2</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>tulinen</th>
+            <th style={styleForBorder}>
+              "tulinen" ja "tulivuori" ovat samanlaisia sanoja.
+            </th>
+            <th style={styleForBorder}>
+              "spicy" and "volcano" are similar words.
+            </th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/3?page=1">3</a>
+            </th>
+            <th style={styleForBorder}>German</th>
+            <th style={styleForBorder}>der Termin</th>
+            <th style={styleForBorder}>
+              Man muss erstens den Termin festsetzen und dann ihn einhalten.
+            </th>
+            <th style={styleForBorder}>
+              One must firstly fix the deadline and then meet/observe it.
+            </th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/4?page=1">4</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>sama</th>
+            <th style={styleForBorder}>Olemme samaa mieltä.</th>
+            <th style={styleForBorder}>I agree.</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/5?page=1">5</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>pitää</th>
+            <th style={styleForBorder}>Pidätkö koirista?</th>
+            <th style={styleForBorder}>Do you like dogs?</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/6?page=1">6</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>tykätä</th>
+            <th style={styleForBorder}>Tykkäätkö koirista?</th>
+            <th style={styleForBorder}>Do you like dogs?</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/7?page=1">7</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>kannettava tietokone</th>
+            <th style={styleForBorder}>
+              Ota sinun kannettava tietokone kotiin!
+            </th>
+            <th style={styleForBorder}>Take your laptop home!</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/10?page=1">10</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>teeskennellä</th>
+            <th style={styleForBorder}>Älä teeskentele, että olet sairas!</th>
+            <th style={styleForBorder}>Don't pretend that you're sick!</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/11?page=1">11</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>teeskennellä</th>
+            <th style={styleForBorder}>Älä teeskentele olevasi sairas!</th>
+            <th style={styleForBorder}>Don't pretend that you're sick!</th>
+          </tr>
+
+          <tr>
+            <th style={styleForBorder}>
+              <a href="/example/12?page=1">12</a>
+            </th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>teeskennellä</th>
+            <th style={styleForBorder}>
+              Miksi teeskentelimme pitävänsä hänen vitsistään?
+            </th>
+            <th style={styleForBorder}>
+              Why did we pretend to like his jokes?
+            </th>
+          </tr>
+        </tbody>
+      </table>
+      {/* <font size="14"> */}
+      {/* 
+                https://stackoverflow.com/questions/61002821/font-with-typescript-property-font-does-not-exist-on-type-jsx-intrinsicele
+                
+                `<font>`` is a deprecated tag in HTML,
+                so TS will not include it in its type definitions.
+                This, as well as many other tags, have been deprecated
+                in favor of using CSS to style elements. */}
+      <a style={styleForLinkToCurrentPage} href="/own-vocabtreasury?page=1">
+        1
+      </a>{" "}
+      {/* </font> */}
+      <a href="/own-vocabtreasury?page=2">2</a> ...{" "}
+      <a href="/own-vocabtreasury?page=281">281</a>
     </React.Fragment>
   );
 };

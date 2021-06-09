@@ -1,6 +1,14 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import { NavigationBar, Home, About, Register, Login, Account } from "./App";
+import {
+  NavigationBar,
+  Home,
+  About,
+  Register,
+  Login,
+  Account,
+  OwnVocabTreasury,
+} from "./App";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -115,11 +123,54 @@ describe("<Login>", () => {
 });
 
 describe("<Account>", () => {
-  test("renders the ", () => {
+  test("renders a greeting for the logged-in user", () => {
     render(<Account />);
 
     const headingElement = screen.getByText("jd");
-    console.log(headingElement);
     expect(headingElement).toBeInTheDocument();
+  });
+});
+
+describe("<OwnVocabTreasury>", () => {
+  test("renders a heading, manipulation links, and a page of the logged-in user's examples", () => {
+    render(<OwnVocabTreasury />);
+
+    const headingElement = screen.getByText(
+      "Own VocabTreasury for john.doe@protonmail.com"
+    );
+    expect(headingElement).toBeInTheDocument();
+
+    const recordNewExampleAnchor = screen.getByText("Record new example");
+    expect(recordNewExampleAnchor).toBeInTheDocument();
+
+    const searchAnchor = screen.getByText("Search");
+    expect(searchAnchor).toBeInTheDocument();
+
+    for (const columnName of [
+      "ID",
+      "SOURCE LANGUAGE",
+      "NEW WORD",
+      "EXAMPLE",
+      "TRANSLATION",
+    ]) {
+      const tableCellElement = screen.getByText(columnName);
+      expect(tableCellElement).toBeInTheDocument();
+    }
+
+    for (const columnValue of [
+      // "Finnish",
+      "sama",
+      "Olemme samaa mieltä.",
+      "I agree.",
+    ]) {
+      const tableCellElement = screen.getByText(columnValue);
+      expect(tableCellElement).toBeInTheDocument();
+    }
+
+    const tableCellElementsForFinnish = screen.getAllByText("Finnish");
+    expect(tableCellElementsForFinnish.length).toEqual(9);
+
+    const tableCellElementsForGerman = screen.getAllByText("German");
+    expect(tableCellElementsForGerman).toHaveLength(1);
   });
 });
