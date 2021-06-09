@@ -6,6 +6,24 @@ export const App = () => {
   return (
     <React.Fragment>
       {"<App>"}
+      <hr />
+      <NavigationBar />
+      <hr />
+      <Home />
+      <hr />
+      <About />
+    </React.Fragment>
+  );
+};
+
+export const NavigationBar = () => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <NavigationBar>`
+  );
+
+  return (
+    <React.Fragment>
+      {"<NavigationBar>"}
       <div>
         <a href="/">VocabTreasury</a>
       </div>
@@ -15,11 +33,19 @@ export const App = () => {
       <div>
         <a href="/login">Log in</a> <a href="/register">Register</a>
       </div>
+    </React.Fragment>
+  );
+};
+
+export const Home = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Home>`);
+
+  return (
+    <React.Fragment>
+      {"<Home>"}
       <div>
         <h1>Welcome to VocabTreasury!</h1>
       </div>
-      <hr />
-      <About />
     </React.Fragment>
   );
 };
