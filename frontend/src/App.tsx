@@ -13,6 +13,8 @@ export const App = () => {
       <hr />
       <About />
       <hr />
+      <Register />
+      <hr />
       <Login />
     </React.Fragment>
   );
@@ -63,6 +65,110 @@ export const About = () => {
   );
 };
 
+export const Register = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Register>`);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+  };
+
+  return (
+    <React.Fragment>
+      {"<Register>"}
+      <div>
+        <form method="POST" action="">
+          {/* <input
+            id="csrf_token"
+            name="csrf_token"
+            type="hidden"
+            value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBIog.Sx3_eThYVwEW83gYvO9LMaNY3VU"
+          /> */}
+          <fieldset>
+            <legend>[legend-tag: JOIN TODAY]</legend>
+            <div>
+              <label htmlFor="username">USERNAME</label>
+
+              <input
+                // id="username"
+                name="username"
+                // required
+                type="text"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623214242467-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <label htmlFor="email">EMAIL</label>
+
+              <input
+                // id="email"
+                name="email"
+                // required
+                type="text"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623214242467-3"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <label htmlFor="password">PASSWORD</label>
+
+              <input
+                // id="password"
+                name="password"
+                // required
+                type="password"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623214242467-0"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <label htmlFor="confirm_password">CONFIRM PASSWORD</label>
+
+              <input
+                // id="confirm_password"
+                name="confirm_password"
+                // required
+                type="password"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623214242467-1"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+          </fieldset>
+          <div>
+            <input
+              // id="submit"
+              name="submit"
+              type="submit"
+              value="CREATE MY ACCOUNT"
+            />
+          </div>
+        </form>
+      </div>
+      <div>
+        <small>
+          ALREADY HAVE AN ACCOUNT? <a href="/login">CLICK HERE TO LOG IN</a>
+        </small>
+      </div>
+    </React.Fragment>
+  );
+};
+
 export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
 
@@ -73,7 +179,6 @@ export const Login = () => {
   return (
     <React.Fragment>
       {"<Login>"}
-
       <div>
         <form method="POST" action="">
           {/* <input
