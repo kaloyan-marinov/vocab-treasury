@@ -9,6 +9,7 @@ import {
   Account,
   OwnVocabTreasury,
   RecordNewExample,
+  Search,
 } from "./App";
 
 describe("<Home>", () => {
@@ -204,4 +205,30 @@ describe("<RecordNewExample>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
   });
+});
+
+describe("<Search>", () => {
+  test(
+    "renders the fiels of a form" +
+      " for searching through the logged-in user's Example resources",
+    () => {
+      render(<Search />);
+
+      const idTableCellElement = screen.getByText("ID");
+      expect(idTableCellElement).toBeInTheDocument();
+
+      const sourceLanguageTableCellElement =
+        screen.getByText("SOURCE LANGUAGE");
+      expect(sourceLanguageTableCellElement).toBeInTheDocument();
+
+      const newWordTableCellElement = screen.getByText("NEW WORD");
+      expect(newWordTableCellElement).toBeInTheDocument();
+
+      const exampleTableCellElement = screen.getByText("EXAMPLE");
+      expect(exampleTableCellElement).toBeInTheDocument();
+
+      const translationTableCellElement = screen.getByText("TRANSLATION");
+      expect(translationTableCellElement).toBeInTheDocument();
+    }
+  );
 });

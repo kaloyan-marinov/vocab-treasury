@@ -22,6 +22,8 @@ export const App = () => {
       <OwnVocabTreasury />
       <hr />
       <RecordNewExample />
+      <hr />
+      <Search />
     </React.Fragment>
   );
 };
@@ -93,7 +95,10 @@ export const Register = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Register>`);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
   };
 
   return (
@@ -197,7 +202,10 @@ export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
   };
 
   return (
@@ -283,17 +291,17 @@ export const Account = () => {
   );
 };
 
+const styleForBorder = { border: "1px solid black" };
+
+const styleForTable = { width: "100%" };
+Object.assign(styleForTable, styleForBorder);
+
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
   );
 
   const emailOfLoggedInUser = "john.doe@protonmail.com";
-
-  const styleForBorder = { border: "1px solid black" };
-
-  const style = { width: "100%" };
-  Object.assign(style, styleForBorder);
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
@@ -308,7 +316,7 @@ export const OwnVocabTreasury = () => {
         <a href="/own-vocabtreasury/search">Search</a>
       </div>
       <br />
-      <table style={style}>
+      <table style={styleForTable}>
         <tbody>
           <tr>
             <th style={styleForBorder}>ID</th>
@@ -459,7 +467,10 @@ export const RecordNewExample = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
   };
 
   return (
@@ -535,6 +546,90 @@ export const RecordNewExample = () => {
           </fieldset>
         </form>
       </div>
+    </React.Fragment>
+  );
+};
+
+// The source for the next definition is
+// https://reactgo.com/horizontally-center-elements-css/
+const styleForCenter = { display: "flex", justifyContent: "center" };
+
+export const Search = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Search>`);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
+  };
+
+  return (
+    <React.Fragment>
+      {"<Search>"}
+
+      <form method="POST" action="">
+        <table style={styleForTable}>
+          <tbody>
+            <tr>
+              <th style={styleForBorder}>ID</th>
+              <th style={styleForBorder}>SOURCE LANGUAGE</th>
+              <th style={styleForBorder}>NEW WORD</th>
+              <th style={styleForBorder}>EXAMPLE</th>
+              <th style={styleForBorder}>TRANSLATION</th>
+            </tr>
+            <tr>
+              {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGeIw.YoZgSG4uYKnMwx7EtMnwkEeNoD0"> */}
+              <th style={styleForBorder}></th>
+              <th style={styleForBorder}></th>
+              <th style={styleForBorder}>
+                <input
+                  id="<S>-new_word"
+                  name="new_word"
+                  type="text"
+                  value=""
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleChange(e)
+                  }
+                />
+              </th>
+              <th style={styleForBorder}>
+                <input
+                  id="<S>-content"
+                  name="content"
+                  type="text"
+                  value=""
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleChange(e)
+                  }
+                />
+              </th>
+              <th style={styleForBorder}>
+                <input
+                  id="<S>-content_translation"
+                  name="content_translation"
+                  type="text"
+                  value=""
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleChange(e)
+                  }
+                />
+              </th>
+            </tr>
+          </tbody>
+        </table>
+
+        <br />
+        <div style={styleForCenter}>
+          <input
+            // id="submit"
+            name="submit"
+            type="submit"
+            value="SEARCH"
+          />
+        </div>
+        <br />
+      </form>
     </React.Fragment>
   );
 };
