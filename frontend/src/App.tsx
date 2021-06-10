@@ -20,6 +20,8 @@ export const App = () => {
       <Account />
       <hr />
       <OwnVocabTreasury />
+      <hr />
+      <RecordNewExample />
     </React.Fragment>
   );
 };
@@ -445,6 +447,94 @@ export const OwnVocabTreasury = () => {
       {/* </font> */}
       <a href="/own-vocabtreasury?page=2">2</a> ...{" "}
       <a href="/own-vocabtreasury?page=281">281</a>
+    </React.Fragment>
+  );
+};
+
+export const RecordNewExample = () => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <RecordNewExample>`
+  );
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    console.log(`handling the onChange event for \`${e.target.outerHTML}\``);
+  };
+
+  return (
+    <React.Fragment>
+      {"<RecordNewExample>"}
+
+      <div>
+        <form method="POST" action="">
+          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGUkA.375Xt02E9Mh-V4Gq7C7jOA7_LKc"> */}
+          <fieldset>
+            <legend>[legend-tag]: CREATE NEW EXAMPLE</legend>
+            <div>
+              <label htmlFor="source_language">SOURCE LANGUAGE</label>
+
+              <input
+                // id="source_language"
+                name="source_language"
+                type="text"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623299217012-0"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+
+            <div>
+              <label htmlFor="new_word">NEW WORD</label>
+
+              <input
+                // id="new_word"
+                name="new_word"
+                // required
+                type="text"
+                value=""
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <label htmlFor="content">EXAMPLE</label>
+
+              <textarea
+                // id="content"
+                name="content"
+                // required
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <label htmlFor="content_translation">TRANSLATION</label>
+
+              <textarea
+                // id="content_translation"
+                name="content_translation"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+            <div>
+              <input
+                // id="submit"
+                name="submit"
+                type="submit"
+                value="RECORD THIS EXAMPLE"
+              />
+            </div>
+          </fieldset>
+        </form>
+      </div>
     </React.Fragment>
   );
 };

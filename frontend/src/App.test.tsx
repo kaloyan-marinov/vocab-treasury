@@ -8,6 +8,7 @@ import {
   Login,
   Account,
   OwnVocabTreasury,
+  RecordNewExample,
 } from "./App";
 
 describe("<Home>", () => {
@@ -132,45 +133,75 @@ describe("<Account>", () => {
 });
 
 describe("<OwnVocabTreasury>", () => {
-  test("renders a heading, manipulation links, and a page of the logged-in user's examples", () => {
-    render(<OwnVocabTreasury />);
+  test(
+    "renders a heading, manipulation links," +
+      " and a page of the logged-in user's Example resources",
+    () => {
+      render(<OwnVocabTreasury />);
 
-    const headingElement = screen.getByText(
-      "Own VocabTreasury for john.doe@protonmail.com"
-    );
-    expect(headingElement).toBeInTheDocument();
+      const headingElement = screen.getByText(
+        "Own VocabTreasury for john.doe@protonmail.com"
+      );
+      expect(headingElement).toBeInTheDocument();
 
-    const recordNewExampleAnchor = screen.getByText("Record new example");
-    expect(recordNewExampleAnchor).toBeInTheDocument();
+      const recordNewExampleAnchor = screen.getByText("Record new example");
+      expect(recordNewExampleAnchor).toBeInTheDocument();
 
-    const searchAnchor = screen.getByText("Search");
-    expect(searchAnchor).toBeInTheDocument();
+      const searchAnchor = screen.getByText("Search");
+      expect(searchAnchor).toBeInTheDocument();
 
-    for (const columnName of [
-      "ID",
-      "SOURCE LANGUAGE",
-      "NEW WORD",
-      "EXAMPLE",
-      "TRANSLATION",
-    ]) {
-      const tableCellElement = screen.getByText(columnName);
-      expect(tableCellElement).toBeInTheDocument();
+      for (const columnName of [
+        "ID",
+        "SOURCE LANGUAGE",
+        "NEW WORD",
+        "EXAMPLE",
+        "TRANSLATION",
+      ]) {
+        const tableCellElement = screen.getByText(columnName);
+        expect(tableCellElement).toBeInTheDocument();
+      }
+
+      for (const columnValue of [
+        // "Finnish",
+        "sama",
+        "Olemme samaa mieltä.",
+        "I agree.",
+      ]) {
+        const tableCellElement = screen.getByText(columnValue);
+        expect(tableCellElement).toBeInTheDocument();
+      }
+
+      const tableCellElementsForFinnish = screen.getAllByText("Finnish");
+      expect(tableCellElementsForFinnish.length).toEqual(9);
+
+      const tableCellElementsForGerman = screen.getAllByText("German");
+      expect(tableCellElementsForGerman).toHaveLength(1);
     }
+  );
+});
 
-    for (const columnValue of [
-      // "Finnish",
-      "sama",
-      "Olemme samaa mieltä.",
-      "I agree.",
-    ]) {
-      const tableCellElement = screen.getByText(columnValue);
-      expect(tableCellElement).toBeInTheDocument();
-    }
+describe("<RecordNewExample>", () => {
+  test("renders the fields of a form for creating a new Example resource", () => {
+    render(<RecordNewExample />);
 
-    const tableCellElementsForFinnish = screen.getAllByText("Finnish");
-    expect(tableCellElementsForFinnish.length).toEqual(9);
+    const legendElement = screen.getByText("[legend-tag]: CREATE NEW EXAMPLE");
+    expect(legendElement).toBeInTheDocument();
 
-    const tableCellElementsForGerman = screen.getAllByText("German");
-    expect(tableCellElementsForGerman).toHaveLength(1);
+    const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
+    expect(sourceLanguageLabelElement).toBeInTheDocument();
+
+    const newWordLabelElement = screen.getByText("NEW WORD");
+    expect(newWordLabelElement).toBeInTheDocument();
+
+    const exampleLabelElement = screen.getByText("EXAMPLE");
+    expect(exampleLabelElement).toBeInTheDocument();
+
+    const translationLabelElement = screen.getByText("TRANSLATION");
+    expect(translationLabelElement).toBeInTheDocument();
+
+    const submitInputElement = screen.getByRole("button", {
+      name: "RECORD THIS EXAMPLE",
+    });
+    expect(submitInputElement).toBeInTheDocument();
   });
 });
