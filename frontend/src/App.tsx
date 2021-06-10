@@ -110,10 +110,10 @@ export const Register = () => {
           <fieldset>
             <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
-              <label htmlFor="username">USERNAME</label>
+              <label htmlFor="<R>-username">USERNAME</label>
 
               <input
-                // id="username"
+                id="<R>-username"
                 name="username"
                 // required
                 type="text"
@@ -126,10 +126,10 @@ export const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="email">EMAIL</label>
+              <label htmlFor="<R>-email">EMAIL</label>
 
               <input
-                // id="email"
+                id="<R>-email"
                 name="email"
                 // required
                 type="text"
@@ -142,10 +142,10 @@ export const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="password">PASSWORD</label>
+              <label htmlFor="<R>-password">PASSWORD</label>
 
               <input
-                // id="password"
+                id="<R>-password"
                 name="password"
                 // required
                 type="password"
@@ -158,10 +158,10 @@ export const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirm_password">CONFIRM PASSWORD</label>
+              <label htmlFor="<R>-confirm_password">CONFIRM PASSWORD</label>
 
               <input
-                // id="confirm_password"
+                id="<R>-confirm_password"
                 name="confirm_password"
                 // required
                 type="password"
@@ -215,10 +215,10 @@ export const Login = () => {
             <legend>LOG IN</legend>
 
             <div>
-              <label htmlFor="email">EMAIL</label>
+              <label htmlFor="<L>-email">EMAIL</label>
 
               <input
-                // id="email"
+                id="<L>-email"
                 name="email"
                 // required
                 type="text"
@@ -232,10 +232,10 @@ export const Login = () => {
             </div>
 
             <div>
-              <label htmlFor="password">PASSWORD</label>
+              <label htmlFor="<L>-password">PASSWORD</label>
 
               <input
-                // id="password"
+                id="<L>-password"
                 name="password"
                 // required
                 type="password"
@@ -472,10 +472,10 @@ export const RecordNewExample = () => {
           <fieldset>
             <legend>[legend-tag]: CREATE NEW EXAMPLE</legend>
             <div>
-              <label htmlFor="source_language">SOURCE LANGUAGE</label>
+              <label htmlFor="<RNE>-source_language">SOURCE LANGUAGE</label>
 
               <input
-                // id="source_language"
+                id="<RNE>-source_language"
                 name="source_language"
                 type="text"
                 value=""
@@ -488,10 +488,10 @@ export const RecordNewExample = () => {
             </div>
 
             <div>
-              <label htmlFor="new_word">NEW WORD</label>
+              <label htmlFor="<RNE>-new_word">NEW WORD</label>
 
               <input
-                // id="new_word"
+                id="<RNE>-new_word"
                 name="new_word"
                 // required
                 type="text"
@@ -502,10 +502,10 @@ export const RecordNewExample = () => {
               />
             </div>
             <div>
-              <label htmlFor="content">EXAMPLE</label>
+              <label htmlFor="<RNE>-content">EXAMPLE</label>
 
               <textarea
-                // id="content"
+                id="<RNE>-content"
                 name="content"
                 // required
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -514,10 +514,10 @@ export const RecordNewExample = () => {
               />
             </div>
             <div>
-              <label htmlFor="content_translation">TRANSLATION</label>
+              <label htmlFor="<RNE>-content_translation">TRANSLATION</label>
 
               <textarea
-                // id="content_translation"
+                id="<RNE>-content_translation"
                 name="content_translation"
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
