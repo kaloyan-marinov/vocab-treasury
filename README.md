@@ -29,220 +29,307 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 1. clone this repository, and navigate into your local repository
 
-2. at the root of your local repository, create a `.env` file with the following structure:
+2. in the `backend` subfolder of your local repository, create a `.env` file with the following structure:
     ```
     SECRET_KEY=<specify-a-good-secret-key-here>
 
     SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
+
+    MAIL_SERVER=
+    MAIL_PORT=
+    #MAIL_USE_TLS =  True
+    MAIL_USERNAME=
+    MAIL_PASSWORD=
     ```
     (For deployment, you should generate a "good secret key" and store that value in SECRET_KEY within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
 
-3. create a Python virtual environment, activate it, and install all dependencies:
-    ```
-    $ python3 --version
-    Python 3.8.3
+3. set up the backend:
 
-    $ python3 -m venv venv
+    - navigate into the `backend` subfolder:
+        ```
+        $ cd backend
+        ```
 
-    $ source venv/bin/activate
-    (venv) $ pip install --upgrade pip
-    (venv) $ pip install -r requirements.txt
-    ```
+    - create a Python virtual environment, activate it, and install all dependencies:
+        ```
+        backend $ python3 --version
+        Python 3.8.3
 
-4. ensure that running the tests results in a PASS by issuing one of the following - either:
-    ```
-    (venv) $ python -m unittest backend/tests.py
+        backend $ python3 -m venv venv
 
-    (venv) $ python \
-        -m unittest \
-        discover -v \
-        backend/
-    ```
+        backend $ source venv/bin/activate
+        (venv) backend $ pip install --upgrade pip
+        (venv) backend $ pip install -r requirements.txt
+        ```
 
-    or, even better:
-    ```
-    (venv) $ coverage run \
-        --source=backend/ \
-        --omit=backend/tests.py \
-        -m unittest \
-        discover -v \
-        backend/
+    - ensure that running the tests results in a PASS by issuing one of the following - either:
+        ```
+        (venv) backend $ python -m unittest tests.py
 
-    (venv) $ coverage report
+        (venv) backend $ python \
+            -m unittest \
+            discover -v \
+            .
+        ```
 
-    (venv) $ coverage html
-    ```
+        or, even better:
+        ```
+        (venv) backend $ coverage run \
+            --source=./ \
+            --omit=venv/*,tests.py \
+            -m unittest \
+            discover -v \
+            .
 
-5. create an empty SQLite database and apply all database migrations:
-    ```
-    (venv) $ FLASK_APP=backend/vocab_treasury.py flask db upgrade
-    ```
+        (venv) backend $ coverage report
 
-6. verify that the previous step was successful by issuing `$ sqlite3 <the-value-of-SQLALCHEMY_DATABASE_URI-in-your.env-file>` and then issuing:
-    ```
-    SQLite version 3.32.3 2020-06-18 14:16:19
-    Enter ".help" for usage hints.
-    sqlite> .tables
-    alembic_version  user           
-    sqlite> .schema user
-    CREATE TABLE user (
-            id INTEGER NOT NULL, 
-            username VARCHAR(20) NOT NULL, 
-            email VARCHAR(120) NOT NULL, 
-            password_hash VARCHAR(60) NOT NULL, 
-            PRIMARY KEY (id), 
-            UNIQUE (email), 
-            UNIQUE (username)
-    );
-    sqlite> .quit
-    ```
+        (venv) backend $ coverage html
+        ```
 
-7. create a pre-commit Git hook that runs the `black` formatter for Python code:
-    ```
-    (venv) $ pre-commit install
-    pre-commit installed at .git/hooks/pre-commit
-    (venv) $
-    ```
+    - create an empty SQLite database and apply all database migrations:
+        ```
+        (venv) backend $ FLASK_APP=vocab_treasury.py flask db upgrade
+        ```
 
-8. launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
-    ```
-    (venv) $ python backend/vocab_treasury.py
+    - verify that the previous step was successful by issuing `$ sqlite3 <the-value-of-SQLALCHEMY_DATABASE_URI-in-your.env-file>` and then issuing:
+        ```
+        SQLite version 3.32.3 2020-06-18 14:16:19
+        Enter ".help" for usage hints.
+        sqlite> .tables
+        alembic_version  user           
+        sqlite> .schema user
+        CREATE TABLE user (
+                id INTEGER NOT NULL, 
+                username VARCHAR(20) NOT NULL, 
+                email VARCHAR(120) NOT NULL, 
+                password_hash VARCHAR(60) NOT NULL, 
+                PRIMARY KEY (id), 
+                UNIQUE (email), 
+                UNIQUE (username)
+        );
+        sqlite> .schema example
+        CREATE TABLE example (
+                id INTEGER NOT NULL, 
+                created DATETIME NOT NULL, 
+                user_id INTEGER NOT NULL, 
+                source_language VARCHAR(30), 
+                new_word VARCHAR(30) NOT NULL, 
+                content TEXT NOT NULL, 
+                content_translation TEXT, 
+                PRIMARY KEY (id), 
+                FOREIGN KEY(user_id) REFERENCES user (id)
+        );
+        sqlite> .quit
+        ```
 
-    (venv) $ FLASK_APP=backend/vocab_treasury.py flask run
-    ```
+    - create a pre-commit Git hook that runs the `black` formatter for Python code:
+        ```
+        (venv) $ pre-commit install
+        pre-commit installed at .git/hooks/pre-commit
+        (venv) $
+        ```
 
-9. launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
-    ```
-    $ curl -v \
-        -X GET \
-        localhost:5000/api/users
+    - launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
+        ```
+        (venv) backend $ python vocab_treasury.py
 
-    200
+        (venv) backend $ FLASK_APP=vocab_treasury.py flask run
+        ```
 
-    ---------
+    - launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
+        ```
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users \
+            | json_pp
 
-    $ curl -v \
-        -X GET \
-        localhost:5000/api/users/1
-    
-    404
+        200
 
-    ---------
+        ---------
 
-    $ curl -v \
-        -X POST \
-        -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
-        localhost:5000/api/users
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        404
 
-    400
+        ---------
 
-    $ curl -v \
-        -X POST \
-        -H "Content-Type: application/json" \
-        -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
-        localhost:5000/api/users
-    
-    201
+        $ curl -v \
+            -X POST \
+            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            localhost:5000/api/users \
+            | json_pp
 
-    $ curl -v \
-        -X POST \
-        -H "Content-Type: application/json" \
-        -d '{"username": "ms", "email": "mary.smith@yahoo.com", "password": "456"}' \
-        localhost:5000/api/users
+        400
 
-    201
+        $ curl -v \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            localhost:5000/api/users \
+            | json_pp
+        
+        201
 
-    ----
+        $ curl -v \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "ms", "email": "mary.smith@yahoo.com", "password": "456"}' \
+            localhost:5000/api/users \
+            | json_pp
 
-    $ curl -v \
-        -X PUT \
-        -d '{"username": "j-d"}' \
-        localhost:5000/api/users/1
+        201
 
-    401
+        ----
 
-    $ curl -v \
-        -X PUT \
-        -u john.doe@protonmail.com:123 \
-        -d '{"username": "j-d"}' \
-        localhost:5000/api/users/1
+        $ curl -v \
+            -X PUT \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
 
-    400
+        401
 
-    $ curl -v \
-        -X PUT \
-        -H "Content-Type: application/json" \
-        -u john.doe@protonmail.com:123 \
-        -d '{"username": "j-d"}' \
-        localhost:5000/api/users/2
+        $ curl -v \
+            -X PUT \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
 
-    403
+        400
 
-    $ curl -v \
-        -X PUT \
-        -H "Content-Type: application/json" \
-        -u john.doe@protonmail.com:123 \
-        -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
-        localhost:5000/api/users/1
-    
-    200
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
 
-    $ curl -v \
-        -X GET \
-        localhost:5000/api/users
+        403
 
-    200
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        200
 
-    $ curl -v \
-        -X PUT \
-        -H "Content-Type: application/json" \
-        -u mary.smith@yahoo.com:456 \
-        -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
-        localhost:5000/api/users/2
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users \
+            | json_pp
 
-    400
+        200
 
-    $ curl -v \
-        -X PUT \
-        -H "Content-Type: application/json" \
-        -u mary.smith@yahoo.com:wrong-password \
-        -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
-        localhost:5000/api/users/2
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u mary.smith@yahoo.com:456 \
+            -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
 
-    401
+        400
 
-    ---
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u mary.smith@yahoo.com:wrong-password \
+            -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
 
-    $ curl -v \
-        -X DELETE \
-        localhost:5000/api/users/1
+        401
 
-    401
+        ---
 
-    $ curl -v \
-        -X DELETE \
-        -u JOHN.DOE@PROTONMAIL.COM:123 \
-        localhost:5000/api/users/2
+        $ curl -v \
+            -X DELETE \
+            localhost:5000/api/users/1 \
+            | json_pp
 
-    403
+        401
 
-    $ curl -v \
-        -X DELETE \
-        -u JOHN.DOE@PROTONMAIL.COM:123 \
-        localhost:5000/api/users/1
+        $ curl -v \
+            -X DELETE \
+            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            localhost:5000/api/users/2 \
+            | json_pp
 
-    204
+        403
 
-    $ curl -v \
-        -X GET \
-        localhost:5000/api/users/1
+        $ curl -v \
+            -X DELETE \
+            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            localhost:5000/api/users/1 \
+            | json_pp
 
-    404
+        204
 
-    $ curl -v \
-        -X DELETE \
-        -u mary.smith@yahoo.com:wrong-password \
-        localhost:5000/api/users/2
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
 
-    401
-    ```
+        404
+
+        $ curl -v \
+            -X DELETE \
+            -u mary.smith@yahoo.com:wrong-password \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        401
+
+        ---
+
+        $ curl -v \
+            -X POST \
+            -u mary.smith@yahoo.com:456 \
+            localhost:5000/api/tokens
+
+        200
+
+        $ export T2=<the-json-web-signature-token-from-the-previous-response>
+
+        $ curl -v \
+            -H "Authorization: Bearer ${T2}" \
+            localhost:5000/api/examples \
+            | json_pp
+
+        200
+
+        $ curl -v \
+            -X POST \
+            -H "Authorization: Bearer ${T2}" \
+            -H "Content-Type: application/json" \
+            -d '{"source_language": "German", "new_word": "die Tasse, -n", "content": "e-e Tasse Kaffe"}' \
+            localhost:5000/api/examples \
+            | json_pp
+
+        201
+
+        $ curl -v \
+            -H "Authorization: Bearer ${T2}" \
+            localhost:5000/api/examples/1 \
+            | json_pp
+
+        200
+
+        $ curl -v \
+            -X PUT \
+            -H "Authorization: Bearer ${T2}" \
+            -H "Content-Type: application/json" \
+            -d '{"content_translation": "a cup of coffee"}' \
+            localhost:5000/api/examples/1 \
+            | json_pp
+        
+        200
+        ```

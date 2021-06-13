@@ -12,10 +12,19 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-from backend.vocab_treasury import app, db, flask_bcrypt, User, Example
+from vocab_treasury import app, db, flask_bcrypt, User, Example
 
 
 app.config["TESTING"] = True
+
+# fmt: off
+'''
+print(
+    "os.environ.get('SECRET_KEY') - "
+    + os.environ.get("SECRET_KEY")
+)
+'''
+# fmt: on
 
 
 class TestBase(unittest.TestCase):
@@ -1061,7 +1070,48 @@ class Test_06_IssueToken(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(body, self._expected_body)
+
+        # fmt: off
+        '''
+        At first sight, it might seem that
+        the next code-block should be replaced by the single statement,
+        which is currently located within the `try`-statement.
+        
+        Unfortunately, that would not work as expected 100% of the time.
+        The reason for that is hinted at by the content of the `except`-statement,
+        and that reason can be summarized as follows:
+            the endpoint handler relies on a _Timed_JSONWebSignatureSerializer,
+            which means that,
+            if the execution of the endpoint handler takes more than 1 s,
+            then (a) the observed and expected headers will not be equal to each other,
+            and (b) the observed and expected cryptographic signatures will not be equal
+            to each other.
+        
+        For that reason, the next code-block utilizes the `try`-`except` construct
+        so that, even if the `try`-block's assertion fails,
+        the `except`-block will make another less-stringent-but-nevertheless-meaningful
+        assertion.
+        '''
+        # fmt: on
+        try:
+            self.assertEqual(body, self._expected_body)
+        except AssertionError as e:
+            header, payload, cryptographic_signature = body["token"].split(".")
+            h_expected, p_expected, c_s_expected = self._expected_body["token"].split(
+                "."
+            )
+
+            print()
+            for name, value, value_expected in zip(
+                ["header", "payload", "cryptographic signature"],
+                [header, payload, cryptographic_signature],
+                [h_expected, p_expected, c_s_expected],
+            ):
+                print(f"{name}s equal?   {value == value_expected}")
+                print(f"{name} observed: {value}")
+                print(f"{name} expected: {value_expected}")
+
+            self.assertEqual(payload, p_expected)
 
     def test_3_incorrect_basic_auth(self):
         """
