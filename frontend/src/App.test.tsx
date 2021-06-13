@@ -9,6 +9,7 @@ import {
   Account,
   OwnVocabTreasury,
   RecordNewExample,
+  SingleExample,
   Search,
 } from "./App";
 
@@ -205,6 +206,68 @@ describe("<RecordNewExample>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
   });
+});
+
+describe("<SingleExample>", () => {
+  test(
+    "renders a specific Example resource" +
+      " and HTML elements that enable user interaction",
+    () => {
+      render(<SingleExample />);
+
+      const divElement = screen.getByText(
+        "You have selected the following Example from your Own VocabTreasury:"
+      );
+      expect(divElement).toBeInTheDocument();
+
+      // First row.
+      const idTableCellElement1 = screen.getByText("ID");
+      expect(idTableCellElement1).toBeInTheDocument();
+
+      const sourceLanguageTableCellElement1 =
+        screen.getByText("SOURCE LANGUAGE");
+      expect(sourceLanguageTableCellElement1).toBeInTheDocument();
+
+      const newWordTableCellElement1 = screen.getByText("NEW WORD");
+      expect(newWordTableCellElement1).toBeInTheDocument();
+
+      const exampleTableCellElement1 = screen.getByText("EXAMPLE");
+      expect(exampleTableCellElement1).toBeInTheDocument();
+
+      const translationTableCellElement1 = screen.getByText("TRANSLATION");
+      expect(translationTableCellElement1).toBeInTheDocument();
+
+      // Second row.
+      const idTableCellElement2 = screen.getByText("4");
+      expect(idTableCellElement2).toBeInTheDocument();
+
+      const sourceLanguageTableCellElement2 = screen.getByText("Finnish");
+      expect(sourceLanguageTableCellElement2).toBeInTheDocument();
+
+      const newWordTableCellElement2 = screen.getByText("sama");
+      expect(newWordTableCellElement2).toBeInTheDocument();
+
+      const exampleTableCellElement2 = screen.getByText("Olemme samaa mieltä.");
+      expect(exampleTableCellElement2).toBeInTheDocument();
+
+      const translationTableCellElement2 = screen.getByText("I agree.");
+      expect(translationTableCellElement2).toBeInTheDocument();
+
+      // HTML elements that enable user interaction.
+      const anchorForReturning = screen.getByText(
+        "Return to this example within my Own VocabTreasury"
+      );
+      expect(anchorForReturning).toBeInTheDocument();
+
+      const anchorForEditing = screen.getByText("Edit this example");
+      expect(anchorForEditing).toBeInTheDocument();
+
+      const buttonForDeleting = screen.getByRole("button", {
+        name: "Delete this example",
+      });
+      expect(buttonForDeleting).toBeInTheDocument();
+    }
+  );
 });
 
 describe("<Search>", () => {

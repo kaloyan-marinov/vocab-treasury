@@ -23,6 +23,8 @@ export const App = () => {
       <hr />
       <RecordNewExample />
       <hr />
+      <SingleExample />
+      <hr />
       <Search />
     </React.Fragment>
   );
@@ -546,6 +548,57 @@ export const RecordNewExample = () => {
           </fieldset>
         </form>
       </div>
+    </React.Fragment>
+  );
+};
+
+export const SingleExample = () => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <SingleExample>`
+  );
+
+  return (
+    <React.Fragment>
+      {"<SingleExample>"}
+      <div>
+        You have selected the following Example from your Own VocabTreasury:
+      </div>
+
+      <table style={styleForTable}>
+        <tbody>
+          <tr>
+            <th style={styleForBorder}>ID</th>
+            <th style={styleForBorder}>SOURCE LANGUAGE</th>
+            <th style={styleForBorder}>NEW WORD</th>
+            <th style={styleForBorder}>EXAMPLE</th>
+            <th style={styleForBorder}>TRANSLATION</th>
+          </tr>
+          <tr>
+            <th style={styleForBorder}>4</th>
+            <th style={styleForBorder}>Finnish</th>
+            <th style={styleForBorder}>sama</th>
+            <th style={styleForBorder}>Olemme samaa mieltä.</th>
+            <th style={styleForBorder}>I agree.</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <br />
+      <div>
+        <a href="/own-vocabtreasury?page=1">
+          Return to this example within my Own VocabTreasury
+        </a>
+      </div>
+
+      <br />
+      <div>
+        <a href="/example/4/edit?page=1">Edit this example</a>
+      </div>
+
+      <br />
+      <form action="/example/4/delete?page=1" method="POST">
+        <input type="submit" value="Delete this example" />
+      </form>
     </React.Fragment>
   );
 };
