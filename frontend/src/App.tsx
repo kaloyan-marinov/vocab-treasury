@@ -44,7 +44,7 @@ export const App = () => {
         <Route exact path="/example/:id/edit">
           <EditExample />
         </Route>
-        <Route exact path="/search">
+        <Route exact path="/own-vocabtreasury/search">
           <Search />
         </Route>
       </Switch>
