@@ -372,7 +372,7 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
-interface IEntry {
+interface IExample {
   id: number;
   source_language: string;
   new_word: string;
@@ -380,7 +380,7 @@ interface IEntry {
   content_translation: string;
 }
 
-const entriesMock: IEntry[] = [
+const examplesMock: IExample[] = [
   {
     id: 1,
     source_language: "Finnish",
@@ -463,7 +463,7 @@ export const OwnVocabTreasury = () => {
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
-  const entryTableRows = entriesMock.map((e: IEntry) => (
+  const exampleTableRows = examplesMock.map((e: IExample) => (
     <tr>
       <th style={styleForBorder}>
         <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
@@ -495,7 +495,7 @@ export const OwnVocabTreasury = () => {
             <th style={styleForBorder}>EXAMPLE</th>
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
-          {entryTableRows}
+          {exampleTableRows}
         </tbody>
       </table>
       {/* <font size="14"> */}
@@ -612,7 +612,7 @@ export const SingleExample = () => {
     `${new Date().toISOString()} - React is rendering <SingleExample>`
   );
 
-  const entry: IEntry = entriesMock[3];
+  const example: IExample = examplesMock[3];
 
   return (
     <React.Fragment>
@@ -631,11 +631,11 @@ export const SingleExample = () => {
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
           <tr>
-            <th style={styleForBorder}>{entry.id}</th>
-            <th style={styleForBorder}>{entry.source_language}</th>
-            <th style={styleForBorder}>{entry.new_word}</th>
-            <th style={styleForBorder}>{entry.content}</th>
-            <th style={styleForBorder}>{entry.content_translation}</th>
+            <th style={styleForBorder}>{example.id}</th>
+            <th style={styleForBorder}>{example.source_language}</th>
+            <th style={styleForBorder}>{example.new_word}</th>
+            <th style={styleForBorder}>{example.content}</th>
+            <th style={styleForBorder}>{example.content_translation}</th>
           </tr>
         </tbody>
       </table>
@@ -672,7 +672,7 @@ export const EditExample = () => {
     );
   };
 
-  const entry: IEntry = entriesMock[3];
+  const example: IExample = examplesMock[3];
 
   return (
     <React.Fragment>
@@ -689,7 +689,7 @@ export const EditExample = () => {
               id="<EE>-source_language"
               name="source_language"
               type="text"
-              value={entry.source_language}
+              value={example.source_language}
               // data-kwimpalastatus="alive"
               // data-kwimpalaid="1623570528862-0"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -705,7 +705,7 @@ export const EditExample = () => {
               name="new_word"
               // required
               type="text"
-              value={entry.new_word}
+              value={example.new_word}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -718,7 +718,7 @@ export const EditExample = () => {
               id="<EE>-content"
               name="content"
               // required
-              value={entry.content}
+              value={example.content}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -730,7 +730,7 @@ export const EditExample = () => {
             <textarea
               id="<EE>-content_translation"
               name="content_translation"
-              value={entry.content_translation}
+              value={example.content_translation}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
