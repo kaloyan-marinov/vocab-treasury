@@ -15,6 +15,9 @@ import {
   Search,
 } from "./App";
 
+import { createMemoryHistory } from "history";
+import { Router } from "react-router-dom";
+
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
     render(<Home />);
@@ -46,7 +49,14 @@ describe("<Home>", () => {
 
 describe("<NavigationBar>", () => {
   test("renders navigation links that are always visible", () => {
-    render(<NavigationBar />);
+    const history = createMemoryHistory();
+
+    render(
+      <Router history={history}>
+        <NavigationBar />
+      </Router>
+    );
+
     const navigationLinkTexts = ["VocabTreasury", "Home", "About"];
     for (const nLT of navigationLinkTexts) {
       const element = screen.getByText(nLT);
@@ -55,7 +65,14 @@ describe("<NavigationBar>", () => {
   });
 
   test("renders navigation links for guest users", () => {
-    render(<NavigationBar />);
+    const history = createMemoryHistory();
+
+    render(
+      <Router history={history}>
+        <NavigationBar />
+      </Router>
+    );
+
     const navigationLinkTexts = ["Log in", "Register"];
     for (const nLT of navigationLinkTexts) {
       const element = screen.getByText(nLT);
@@ -64,7 +81,14 @@ describe("<NavigationBar>", () => {
   });
 
   test("renders navigation links for logged-in users", () => {
-    render(<NavigationBar />);
+    const history = createMemoryHistory();
+
+    render(
+      <Router history={history}>
+        <NavigationBar />
+      </Router>
+    );
+
     const navigationLinkTexts = ["Own VocabTreasury", "Account", "Log out"];
     for (const nLT of navigationLinkTexts) {
       const element = screen.getByText(nLT);
@@ -83,8 +107,17 @@ describe("<About>", () => {
 
 describe("<Register>", () => {
   test("renders (a <legend> tag and) a registration form", () => {
-    render(<Register />);
+    /* Arrange. */
+    const history = createMemoryHistory();
 
+    /* Act. */
+    render(
+      <Router history={history}>
+        <Register />
+      </Router>
+    );
+
+    /* Assert. */
     const legendElement = screen.getByText("[legend-tag: JOIN TODAY]");
     expect(legendElement).toBeInTheDocument();
 
@@ -109,8 +142,17 @@ describe("<Register>", () => {
 
 describe("<Login>", () => {
   test("renders (a <legend> tag and) a login form", () => {
-    render(<Login />);
+    /* Arrange. */
+    const history = createMemoryHistory();
 
+    /* Act. */
+    render(
+      <Router history={history}>
+        <Login />
+      </Router>
+    );
+
+    /* Assert. */
     const legendElement = screen.getByText("LOG IN");
     expect(legendElement).toBeInTheDocument();
 
@@ -158,8 +200,17 @@ describe("<OwnVocabTreasury>", () => {
     "renders a heading, manipulation links," +
       " and a page of the logged-in user's Example resources",
     () => {
-      render(<OwnVocabTreasury />);
+      /* Arrange. */
+      const history = createMemoryHistory();
 
+      /* Act. */
+      render(
+        <Router history={history}>
+          <OwnVocabTreasury />
+        </Router>
+      );
+
+      /* Assert. */
       const headingElement = screen.getByText(
         "Own VocabTreasury for john.doe@protonmail.com"
       );
@@ -232,14 +283,23 @@ describe("<SingleExample>", () => {
     "renders a specific Example resource" +
       " and HTML elements that enable user interaction",
     () => {
-      render(<SingleExample />);
+      /* Arrange. */
+      const history = createMemoryHistory();
 
+      /* Arrange. */
+      render(
+        <Router history={history}>
+          <SingleExample />
+        </Router>
+      );
+
+      /* Assert. */
       const divElement = screen.getByText(
         "You have selected the following Example from your Own VocabTreasury:"
       );
       expect(divElement).toBeInTheDocument();
 
-      // First row.
+      /* First row. */
       const idTableCellElement1 = screen.getByText("ID");
       expect(idTableCellElement1).toBeInTheDocument();
 
@@ -256,7 +316,7 @@ describe("<SingleExample>", () => {
       const translationTableCellElement1 = screen.getByText("TRANSLATION");
       expect(translationTableCellElement1).toBeInTheDocument();
 
-      // Second row.
+      /* Second row. */
       const idTableCellElement2 = screen.getByText("4");
       expect(idTableCellElement2).toBeInTheDocument();
 

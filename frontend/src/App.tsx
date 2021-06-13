@@ -1,4 +1,5 @@
 import React from "react";
+import { Switch, Route, Link } from "react-router-dom";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -9,27 +10,44 @@ export const App = () => {
       <hr />
       <NavigationBar />
       <hr />
-      <Home />
-      <hr />
-      <About />
-      <hr />
-      <Register />
-      <hr />
-      <Login />
-      <hr />
-      <RequestPasswordReset />
-      <hr />
-      <Account />
-      <hr />
-      <OwnVocabTreasury />
-      <hr />
-      <RecordNewExample />
-      <hr />
-      <SingleExample />
-      <hr />
-      <EditExample />
-      <hr />
-      <Search />
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route exact path="/home">
+          <Home />
+        </Route>
+        <Route exact path="/about">
+          <About />
+        </Route>
+        <Route exact path="/register">
+          <Register />
+        </Route>
+        <Route exact path="/login">
+          <Login />
+        </Route>
+        <Route exact path="/reset_password">
+          <RequestPasswordReset />
+        </Route>
+        <Route exact path="/account">
+          <Account />
+        </Route>
+        <Route exact path="/own-vocabtreasury">
+          <OwnVocabTreasury />
+        </Route>
+        <Route exact path="/example/new">
+          <RecordNewExample />
+        </Route>
+        <Route exact path="/example/:id">
+          <SingleExample />
+        </Route>
+        <Route exact path="/example/:id/edit">
+          <EditExample />
+        </Route>
+        <Route exact path="/search">
+          <Search />
+        </Route>
+      </Switch>
     </React.Fragment>
   );
 };
@@ -42,24 +60,24 @@ export const NavigationBar = () => {
   const alwaysVisibleLinks = (
     <React.Fragment>
       <div>
-        <a href="/">VocabTreasury</a>
+        <Link to="/">VocabTreasury</Link>
       </div>
       <div>
-        <a href="/home">Home</a> <a href="/about">About</a>
+        <Link to="/home">Home</Link> <Link to="/about">About</Link>
       </div>
     </React.Fragment>
   );
 
   const guestUserLinks = (
     <div>
-      <a href="/login">Log in</a> <a href="/register">Register</a>
+      <Link to="/login">Log in</Link> <Link to="/register">Register</Link>
     </div>
   );
 
   const loggedInUserLinks = (
     <div>
-      <a href="/own-vocabtreasury">Own VocabTreasury</a>{" "}
-      <a href="/account">Account</a> <a href="/logout">Log out</a>
+      <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
+      <Link to="/account">Account</Link> <Link to="/logout">Log out</Link>
     </div>
   );
 
@@ -197,7 +215,7 @@ export const Register = () => {
       </div>
       <div>
         <small>
-          ALREADY HAVE AN ACCOUNT? <a href="/login">CLICK HERE TO LOG IN</a>
+          ALREADY HAVE AN ACCOUNT? <Link to="/login">CLICK HERE TO LOG IN</Link>
         </small>
       </div>
     </React.Fragment>
@@ -270,14 +288,14 @@ export const Login = () => {
               value="LOG INTO MY ACCOUNT"
             />
             <small>
-              <a href="/reset_password">FORGOT PASSWORD?</a>
+              <Link to="/reset_password">FORGOT PASSWORD?</Link>
             </small>
           </div>
         </form>
       </div>
       <div>
         <small>
-          NEED AN ACCOUNT? <a href="/register">CLICK HERE TO REGISTER</a>
+          NEED AN ACCOUNT? <Link to="/register">CLICK HERE TO REGISTER</Link>
         </small>
       </div>
     </React.Fragment>
@@ -368,10 +386,10 @@ export const OwnVocabTreasury = () => {
       {"<OwnVocabTreasury>"}
       <h1>Own VocabTreasury for {emailOfLoggedInUser}</h1>
       <div>
-        <a href="/example/new">Record new example</a>
+        <Link to="/example/new">Record new example</Link>
       </div>
       <div>
-        <a href="/own-vocabtreasury/search">Search</a>
+        <Link to="/own-vocabtreasury/search">Search</Link>
       </div>
       <br />
       <table style={styleForTable}>
@@ -386,7 +404,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/1?page=1">1</a>
+              <Link to="/example/1?page=1">1</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>vihata + P</th>
@@ -396,7 +414,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/2?page=1">2</a>
+              <Link to="/example/2?page=1">2</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>tulinen</th>
@@ -410,7 +428,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/3?page=1">3</a>
+              <Link to="/example/3?page=1">3</Link>
             </th>
             <th style={styleForBorder}>German</th>
             <th style={styleForBorder}>der Termin</th>
@@ -424,7 +442,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/4?page=1">4</a>
+              <Link to="/example/4?page=1">4</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>sama</th>
@@ -434,7 +452,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/5?page=1">5</a>
+              <Link to="/example/5?page=1">5</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>pitää</th>
@@ -444,7 +462,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/6?page=1">6</a>
+              <Link to="/example/6?page=1">6</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>tykätä</th>
@@ -454,7 +472,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/7?page=1">7</a>
+              <Link to="/example/7?page=1">7</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>kannettava tietokone</th>
@@ -466,7 +484,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/10?page=1">10</a>
+              <Link to="/example/10?page=1">10</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>teeskennellä</th>
@@ -476,7 +494,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/11?page=1">11</a>
+              <Link to="/example/11?page=1">11</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>teeskennellä</th>
@@ -486,7 +504,7 @@ export const OwnVocabTreasury = () => {
 
           <tr>
             <th style={styleForBorder}>
-              <a href="/example/12?page=1">12</a>
+              <Link to="/example/12?page=1">12</Link>
             </th>
             <th style={styleForBorder}>Finnish</th>
             <th style={styleForBorder}>teeskennellä</th>
@@ -507,12 +525,12 @@ export const OwnVocabTreasury = () => {
                 so TS will not include it in its type definitions.
                 This, as well as many other tags, have been deprecated
                 in favor of using CSS to style elements. */}
-      <a style={styleForLinkToCurrentPage} href="/own-vocabtreasury?page=1">
+      <Link style={styleForLinkToCurrentPage} to="/own-vocabtreasury?page=1">
         1
-      </a>{" "}
+      </Link>{" "}
       {/* </font> */}
-      <a href="/own-vocabtreasury?page=2">2</a> ...{" "}
-      <a href="/own-vocabtreasury?page=281">281</a>
+      <Link to="/own-vocabtreasury?page=2">2</Link> ...{" "}
+      <Link to="/own-vocabtreasury?page=281">281</Link>
     </React.Fragment>
   );
 };
@@ -641,14 +659,14 @@ export const SingleExample = () => {
 
       <br />
       <div>
-        <a href="/own-vocabtreasury?page=1">
+        <Link to="/own-vocabtreasury?page=1">
           Return to this example within my Own VocabTreasury
-        </a>
+        </Link>
       </div>
 
       <br />
       <div>
-        <a href="/example/4/edit?page=1">Edit this example</a>
+        <Link to="/example/4/edit?page=1">Edit this example</Link>
       </div>
 
       <br />
