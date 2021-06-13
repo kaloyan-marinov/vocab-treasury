@@ -372,6 +372,88 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
+interface IEntry {
+  id: number;
+  source_language: string;
+  new_word: string;
+  content: string;
+  content_translation: string;
+}
+
+const entriesMock: IEntry[] = [
+  {
+    id: 1,
+    source_language: "Finnish",
+    new_word: "vihata + P",
+    content: "Älä vihaa ketään!",
+    content_translation: "Don't hate anyone!",
+  },
+  {
+    id: 2,
+    source_language: "Finnish",
+    new_word: "tulinen",
+    content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
+    content_translation: `"spicy" and "volcano" are similar words.`,
+  },
+  {
+    id: 3,
+    source_language: "German",
+    new_word: "der Termin",
+    content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
+    content_translation:
+      "One must firstly fix the deadline and then meet/observe it.",
+  },
+  {
+    id: 4,
+    source_language: "Finnish",
+    new_word: "sama",
+    content: "Olemme samaa mieltä.",
+    content_translation: "I agree.",
+  },
+  {
+    id: 5,
+    source_language: "Finnish",
+    new_word: "pitää",
+    content: "Pidätkö koirista?",
+    content_translation: "Do you like dogs?",
+  },
+  {
+    id: 6,
+    source_language: "Finnish",
+    new_word: "tykätä",
+    content: "Tykkäätkö koirista?",
+    content_translation: "Do you like dogs?",
+  },
+  {
+    id: 7,
+    source_language: "Finnish",
+    new_word: "kannettava tietokone",
+    content: "Ota sinun kannettava tietokone kotiin!",
+    content_translation: "Ota sinun kannettava tietokone kotiin!",
+  },
+  {
+    id: 10,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Älä teeskentele, että olet sairas!",
+    content_translation: "Don't pretend that you're sick!",
+  },
+  {
+    id: 11,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Älä teeskentele olevasi sairas!",
+    content_translation: "Don't pretend that you're sick!",
+  },
+  {
+    id: 12,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
+    content_translation: "Why did we pretend to like his jokes?",
+  },
+];
+
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
@@ -380,6 +462,18 @@ export const OwnVocabTreasury = () => {
   const emailOfLoggedInUser = "john.doe@protonmail.com";
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
+
+  const entryTableRows = entriesMock.map((e: IEntry) => (
+    <tr>
+      <th style={styleForBorder}>
+        <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
+      </th>
+      <th style={styleForBorder}>{e.source_language}</th>
+      <th style={styleForBorder}>{e.new_word}</th>
+      <th style={styleForBorder}>{e.content}</th>
+      <th style={styleForBorder}>{e.content_translation}</th>
+    </tr>
+  ));
 
   return (
     <React.Fragment>
@@ -401,120 +495,7 @@ export const OwnVocabTreasury = () => {
             <th style={styleForBorder}>EXAMPLE</th>
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/1?page=1">1</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>vihata + P</th>
-            <th style={styleForBorder}>Älä vihaa ketään!</th>
-            <th style={styleForBorder}>Don't hate anyone!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/2?page=1">2</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>tulinen</th>
-            <th style={styleForBorder}>
-              "tulinen" ja "tulivuori" ovat samanlaisia sanoja.
-            </th>
-            <th style={styleForBorder}>
-              "spicy" and "volcano" are similar words.
-            </th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/3?page=1">3</Link>
-            </th>
-            <th style={styleForBorder}>German</th>
-            <th style={styleForBorder}>der Termin</th>
-            <th style={styleForBorder}>
-              Man muss erstens den Termin festsetzen und dann ihn einhalten.
-            </th>
-            <th style={styleForBorder}>
-              One must firstly fix the deadline and then meet/observe it.
-            </th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/4?page=1">4</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>sama</th>
-            <th style={styleForBorder}>Olemme samaa mieltä.</th>
-            <th style={styleForBorder}>I agree.</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/5?page=1">5</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>pitää</th>
-            <th style={styleForBorder}>Pidätkö koirista?</th>
-            <th style={styleForBorder}>Do you like dogs?</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/6?page=1">6</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>tykätä</th>
-            <th style={styleForBorder}>Tykkäätkö koirista?</th>
-            <th style={styleForBorder}>Do you like dogs?</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/7?page=1">7</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>kannettava tietokone</th>
-            <th style={styleForBorder}>
-              Ota sinun kannettava tietokone kotiin!
-            </th>
-            <th style={styleForBorder}>Take your laptop home!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/10?page=1">10</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>Älä teeskentele, että olet sairas!</th>
-            <th style={styleForBorder}>Don't pretend that you're sick!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/11?page=1">11</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>Älä teeskentele olevasi sairas!</th>
-            <th style={styleForBorder}>Don't pretend that you're sick!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <Link to="/example/12?page=1">12</Link>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>
-              Miksi teeskentelimme pitävänsä hänen vitsistään?
-            </th>
-            <th style={styleForBorder}>
-              Why did we pretend to like his jokes?
-            </th>
-          </tr>
+          {entryTableRows}
         </tbody>
       </table>
       {/* <font size="14"> */}
@@ -631,6 +612,8 @@ export const SingleExample = () => {
     `${new Date().toISOString()} - React is rendering <SingleExample>`
   );
 
+  const entry: IEntry = entriesMock[3];
+
   return (
     <React.Fragment>
       {"<SingleExample>"}
@@ -648,11 +631,11 @@ export const SingleExample = () => {
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
           <tr>
-            <th style={styleForBorder}>4</th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>sama</th>
-            <th style={styleForBorder}>Olemme samaa mieltä.</th>
-            <th style={styleForBorder}>I agree.</th>
+            <th style={styleForBorder}>{entry.id}</th>
+            <th style={styleForBorder}>{entry.source_language}</th>
+            <th style={styleForBorder}>{entry.new_word}</th>
+            <th style={styleForBorder}>{entry.content}</th>
+            <th style={styleForBorder}>{entry.content_translation}</th>
           </tr>
         </tbody>
       </table>
@@ -689,6 +672,8 @@ export const EditExample = () => {
     );
   };
 
+  const entry: IEntry = entriesMock[3];
+
   return (
     <React.Fragment>
       {"<EditExample>"}
@@ -704,7 +689,7 @@ export const EditExample = () => {
               id="<EE>-source_language"
               name="source_language"
               type="text"
-              value="Finnish"
+              value={entry.source_language}
               // data-kwimpalastatus="alive"
               // data-kwimpalaid="1623570528862-0"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -720,7 +705,7 @@ export const EditExample = () => {
               name="new_word"
               // required
               type="text"
-              value="sama"
+              value={entry.new_word}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -733,7 +718,7 @@ export const EditExample = () => {
               id="<EE>-content"
               name="content"
               // required
-              value="Olemme samaa mieltä."
+              value={entry.content}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -745,7 +730,7 @@ export const EditExample = () => {
             <textarea
               id="<EE>-content_translation"
               name="content_translation"
-              value="I agree."
+              value={entry.content_translation}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
