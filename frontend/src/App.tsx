@@ -17,6 +17,8 @@ export const App = () => {
       <hr />
       <Login />
       <hr />
+      <RequestPasswordReset />
+      <hr />
       <Account />
       <hr />
       <OwnVocabTreasury />
@@ -277,6 +279,58 @@ export const Login = () => {
         <small>
           NEED AN ACCOUNT? <a href="/register">CLICK HERE TO REGISTER</a>
         </small>
+      </div>
+    </React.Fragment>
+  );
+};
+
+export const RequestPasswordReset = () => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <RequestPasswordReset>`
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
+  };
+
+  return (
+    <React.Fragment>
+      {"<RequestPasswordReset>"}
+
+      <div>
+        <form method="POST" action="">
+          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMXboQ.CdFDKfaFrkgfbpYdhkamWmwJ0cA"> */}
+          <fieldset>
+            <legend>RESET PASSWORD</legend>
+            <div>
+              <label htmlFor="<RPR>-email">EMAIL</label>
+
+              <input
+                id="<RPR>-email"
+                name="email"
+                // required
+                type="text"
+                value=""
+                // data-kwimpalastatus="alive"
+                // data-kwimpalaid="1623579553224-0"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e)
+                }
+              />
+            </div>
+          </fieldset>
+          <div>
+            <input
+              id="submit"
+              name="submit"
+              type="submit"
+              value="REQUEST PASSWORD RESET"
+            />
+          </div>
+        </form>
       </div>
     </React.Fragment>
   );

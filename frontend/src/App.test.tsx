@@ -6,6 +6,7 @@ import {
   About,
   Register,
   Login,
+  RequestPasswordReset,
   Account,
   OwnVocabTreasury,
   RecordNewExample,
@@ -123,6 +124,23 @@ describe("<Login>", () => {
       name: "LOG INTO MY ACCOUNT",
     });
     expect(submitInputElement).toBeInTheDocument();
+  });
+});
+
+describe("<RequestPasswordReset>", () => {
+  test("render the fields of a form for requesting a password reset", () => {
+    render(<RequestPasswordReset />);
+
+    const legendElement = screen.getByText("RESET PASSWORD");
+    expect(legendElement).toBeInTheDocument();
+
+    const emailLabelElement = screen.getByText("EMAIL");
+    expect(emailLabelElement).toBeInTheDocument();
+
+    const requestPaswordResetElement = screen.getByText(
+      "REQUEST PASSWORD RESET"
+    );
+    expect(requestPaswordResetElement).toBeInTheDocument();
   });
 });
 
