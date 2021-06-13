@@ -354,14 +354,26 @@ describe("<SingleExample>", () => {
 
 describe("<EditExample>", () => {
   test("renders the fields of a form for editing an existing Example resource", () => {
-    render(<EditExample />);
+    /* Arrange. */
+    const history = createMemoryHistory();
+    history.push("/example/4/edit");
 
+    /* Act. */
+    render(
+      <Router history={history}>
+        <Route exact path="/example/:id/edit">
+          <EditExample />
+        </Route>
+      </Router>
+    );
+
+    /* Assert. */
     const legendElement = screen.getByText(
       "[legend-tag]: EDIT EXISTING EXAMPLE"
     );
     expect(legendElement).toBeInTheDocument();
 
-    // Labels of form fields.
+    /* Labels of form fields. */
     const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
     expect(sourceLanguageLabelElement).toBeInTheDocument();
 
@@ -379,7 +391,7 @@ describe("<EditExample>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
 
-    // Values of form fields.
+    /* Values of form fields. */
     const sourceLanguageTableCellElement2 = screen.getByDisplayValue("Finnish");
     expect(sourceLanguageTableCellElement2).toBeInTheDocument();
 

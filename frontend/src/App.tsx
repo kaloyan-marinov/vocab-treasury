@@ -671,7 +671,7 @@ export const SingleExample = () => {
 
       <br />
       <div>
-        <Link to="/example/4/edit?page=1">Edit this example</Link>
+        <Link to={`/example/${example.id}/edit?page=1`}>Edit this example</Link>
       </div>
 
       <br />
@@ -685,6 +685,14 @@ export const SingleExample = () => {
 export const EditExample = () => {
   console.log(`${new Date().toISOString()} - React is rendering <EditExample>`);
 
+  const params: { id: string } = useParams();
+  console.log(
+    `${new Date().toISOString()} - inspecting the \`params\` passed in to <EditExample>`
+  );
+  console.log(params);
+  const exampleId: number = parseInt(params.id);
+  const example: IExample = examplesMockEntities[exampleId];
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -693,8 +701,6 @@ export const EditExample = () => {
         ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
     );
   };
-
-  const example: IExample = examplesMock[3];
 
   return (
     <React.Fragment>
