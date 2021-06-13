@@ -10,6 +10,7 @@ import {
   OwnVocabTreasury,
   RecordNewExample,
   SingleExample,
+  EditExample,
   Search,
 } from "./App";
 
@@ -270,9 +271,53 @@ describe("<SingleExample>", () => {
   );
 });
 
+describe("<EditExample>", () => {
+  test("renders the fields of a form for editing an existing Example resource", () => {
+    render(<EditExample />);
+
+    const legendElement = screen.getByText(
+      "[legend-tag]: EDIT EXISTING EXAMPLE"
+    );
+    expect(legendElement).toBeInTheDocument();
+
+    // Labels of form fields.
+    const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
+    expect(sourceLanguageLabelElement).toBeInTheDocument();
+
+    const newWordLabelElement = screen.getByText("NEW WORD");
+    expect(newWordLabelElement).toBeInTheDocument();
+
+    const exampleLabelElement = screen.getByText("EXAMPLE");
+    expect(exampleLabelElement).toBeInTheDocument();
+
+    const translationLabelElement = screen.getByText("TRANSLATION");
+    expect(translationLabelElement).toBeInTheDocument();
+
+    const submitInputElement = screen.getByRole("button", {
+      name: "RECORD THIS EXAMPLE",
+    });
+    expect(submitInputElement).toBeInTheDocument();
+
+    // Values of form fields.
+    const sourceLanguageTableCellElement2 = screen.getByDisplayValue("Finnish");
+    expect(sourceLanguageTableCellElement2).toBeInTheDocument();
+
+    const newWordTableCellElement2 = screen.getByDisplayValue("sama");
+    expect(newWordTableCellElement2).toBeInTheDocument();
+
+    const exampleTableCellElement2 = screen.getByDisplayValue(
+      "Olemme samaa mieltä."
+    );
+    expect(exampleTableCellElement2).toBeInTheDocument();
+
+    const translationTableCellElement2 = screen.getByDisplayValue("I agree.");
+    expect(translationTableCellElement2).toBeInTheDocument();
+  });
+});
+
 describe("<Search>", () => {
   test(
-    "renders the fiels of a form" +
+    "renders the fields of a form" +
       " for searching through the logged-in user's Example resources",
     () => {
       render(<Search />);

@@ -25,6 +25,8 @@ export const App = () => {
       <hr />
       <SingleExample />
       <hr />
+      <EditExample />
+      <hr />
       <Search />
     </React.Fragment>
   );
@@ -598,6 +600,94 @@ export const SingleExample = () => {
       <br />
       <form action="/example/4/delete?page=1" method="POST">
         <input type="submit" value="Delete this example" />
+      </form>
+    </React.Fragment>
+  );
+};
+
+export const EditExample = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <EditExample>`);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    console.log(
+      `running the function,` +
+        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+    );
+  };
+
+  return (
+    <React.Fragment>
+      {"<EditExample>"}
+
+      <form method="POST" action="">
+        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMW4YA.0bfe9pIF_AacUmo92b_dQpHUMVQ"> */}
+        <fieldset>
+          <legend>[legend-tag]: EDIT EXISTING EXAMPLE</legend>
+          <div>
+            <label htmlFor="<EE>-source_language">SOURCE LANGUAGE</label>
+
+            <input
+              id="<EE>-source_language"
+              name="source_language"
+              type="text"
+              value="Finnish"
+              // data-kwimpalastatus="alive"
+              // data-kwimpalaid="1623570528862-0"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+            />
+          </div>
+          <div>
+            <label htmlFor="<EE>-new_word">NEW WORD</label>
+
+            <input
+              id="<EE>-new_word"
+              name="new_word"
+              // required
+              type="text"
+              value="sama"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+            />
+          </div>
+          <div>
+            <label htmlFor="<EE>-content">EXAMPLE</label>
+
+            <textarea
+              id="<EE>-content"
+              name="content"
+              // required
+              value="Olemme samaa mieltä."
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleChange(e)
+              }
+            />
+          </div>
+          <div>
+            <label htmlFor="<EE>-content_translation">TRANSLATION</label>
+
+            <textarea
+              id="<EE>-content_translation"
+              name="content_translation"
+              value="I agree."
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleChange(e)
+              }
+            />
+          </div>
+          <div>
+            <input
+              id="<EE>-submit"
+              name="submit"
+              type="submit"
+              value="RECORD THIS EXAMPLE"
+            />
+          </div>
+        </fieldset>
       </form>
     </React.Fragment>
   );
