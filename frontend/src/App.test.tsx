@@ -16,7 +16,7 @@ import {
 } from "./App";
 
 import { createMemoryHistory } from "history";
-import { Router } from "react-router-dom";
+import { Router, Route } from "react-router-dom";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -285,11 +285,14 @@ describe("<SingleExample>", () => {
     () => {
       /* Arrange. */
       const history = createMemoryHistory();
+      history.push("/example/4");
 
       /* Arrange. */
       render(
         <Router history={history}>
-          <SingleExample />
+          <Route exact path="/example/:id">
+            <SingleExample />
+          </Route>
         </Router>
       );
 

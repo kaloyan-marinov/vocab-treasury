@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, Link } from "react-router-dom";
+import { Switch, Route, Link, useParams } from "react-router-dom";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -454,6 +454,15 @@ const examplesMock: IExample[] = [
   },
 ];
 
+const examplesMockEntities: { [exampleId: string]: IExample } =
+  examplesMock.reduce(
+    (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
+      examplesObj[e.id] = e;
+      return examplesObj;
+    },
+    {}
+  );
+
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
@@ -463,17 +472,23 @@ export const OwnVocabTreasury = () => {
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
-  const exampleTableRows = examplesMock.map((e: IExample) => (
-    <tr>
-      <th style={styleForBorder}>
-        <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
-      </th>
-      <th style={styleForBorder}>{e.source_language}</th>
-      <th style={styleForBorder}>{e.new_word}</th>
-      <th style={styleForBorder}>{e.content}</th>
-      <th style={styleForBorder}>{e.content_translation}</th>
-    </tr>
-  ));
+  const exampleTableRows = Object.keys(examplesMockEntities).map(
+    (exampleIdStr: string) => {
+      const e: IExample = examplesMockEntities[exampleIdStr];
+
+      return (
+        <tr key={e.id}>
+          <th style={styleForBorder}>
+            <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
+          </th>
+          <th style={styleForBorder}>{e.source_language}</th>
+          <th style={styleForBorder}>{e.new_word}</th>
+          <th style={styleForBorder}>{e.content}</th>
+          <th style={styleForBorder}>{e.content_translation}</th>
+        </tr>
+      );
+    }
+  );
 
   return (
     <React.Fragment>
@@ -612,7 +627,14 @@ export const SingleExample = () => {
     `${new Date().toISOString()} - React is rendering <SingleExample>`
   );
 
-  const example: IExample = examplesMock[3];
+  const params: { id: string } = useParams();
+  console.log(
+    `${new Date().toISOString()} - inspecting the \`params\` passed in to <SingleExample>`
+  );
+  console.log(params);
+  const exampleId: number = parseInt(params.id);
+
+  const example: IExample = examplesMockEntities[exampleId];
 
   return (
     <React.Fragment>
