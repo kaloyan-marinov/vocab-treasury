@@ -29,116 +29,307 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 1. clone this repository, and navigate into your local repository
 
-2. create a Python virtual environment, activate it, and install all dependencies:
-    ```
-    $ python3 --version
-    Python 3.8.3
-
-    $ python3 -m venv venv
-
-    $ source venv/bin/activate
-    (venv) $ pip install --upgrade pip
-    (venv) $ pip install -r requirements.txt
-    ```
-
-3. at the the root of your local repository, create a `.env` file with the following structure:
+2. in the `backend` subfolder of your local repository, create a `.env` file with the following structure:
     ```
     SECRET_KEY=<specify-a-good-secret-key-here>
+
     SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
 
-
-    EMAIL_USER=<email-account-that-you-are-in-charge-of>
-    EMAIL_PASS=<the-password-associated-with-the-email-account>
+    MAIL_SERVER=
+    MAIL_PORT=
+    #MAIL_USE_TLS =  True
+    MAIL_USERNAME=
+    MAIL_PASSWORD=
     ```
+    (For deployment, you should generate a "good secret key" and store that value in SECRET_KEY within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
 
-    (For deployment, you should generate a "good secret key" and store that value in `SECRET_KEY` within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
+3. set up the backend:
 
-4. create a SQLite3 database and insert some data into it:
-    ```
-    (venv) $ python create_and_populate_db.py
-    ```
+    - navigate into the `backend` subfolder:
+        ```
+        $ cd backend
+        ```
 
-5. verify that the database was created successfully:
-    ```
-    (venv) $ ll <the-value-of-DATABASE_URL-in-your-.env-file> 
-    -rw-r--r--  1 <your-user>  <your-group>    20K Mar  5 15:03 <the-value-of-DATABASE_URL-in-your-.env-file>
-    (venv) $ sqlite3 <the-value-of-DATABASE_URL-in-your-.env-file> 
-    SQLite version 3.30.1 2019-10-10 20:19:45
-    Enter ".help" for usage hints.
-    sqlite> .tables
-    example  user   
-    sqlite> .schema user
-    CREATE TABLE user (
-            id INTEGER NOT NULL, 
-            username VARCHAR(20) NOT NULL, 
-            email VARCHAR(120) NOT NULL, 
-            password VARCHAR(60) NOT NULL, 
-            PRIMARY KEY (id), 
-            UNIQUE (username), 
-            UNIQUE (email)
-    );
-    sqlite> .schema example 
-    CREATE TABLE example (
-            id INTEGER NOT NULL, 
-            created DATETIME NOT NULL, 
-            user_id INTEGER NOT NULL, 
-            source_language VARCHAR(30), 
-            new_word VARCHAR(30) NOT NULL, 
-            content TEXT NOT NULL, 
-            content_translation TEXT, 
-            PRIMARY KEY (id), 
-            FOREIGN KEY(user_id) REFERENCES user (id)
-    );
-    ```
+    - create a Python virtual environment, activate it, and install all dependencies:
+        ```
+        backend $ python3 --version
+        Python 3.8.3
 
-6. optionally, take a look at the data that has just been inserted into the database:
-    ```
-    $ sqlite3 <the-value-of-DATABASE_URL-in-your-.env-file> 
-    SQLite version 3.30.1 2019-10-10 20:19:45
-    Enter ".help" for usage hints.
-    sqlite> .tables
-    example  user   
-    sqlite> SELECT * FROM user;
-    id          username    email                  password                                                    
-    ----------  ----------  ---------------------  ------------------------------------------------------------
-    1           du          DeployedUser@test.com  $2b$12$JxB1yI2QX1NL26dsIFbbDOUrH3oDMN3QdKUicyX1L62b5oOzRLNjm
-    2           jd          john.doe@gmail.com     $2b$12$j7ljn7S3gTh9z/obSRSLJuwHMnLCSqqrLOguqZdR2Unr1VPz2/gnS
-    3           ms          mary.smith@yahoo.com   $2b$12$U0S6cEuZkuJbQJlqpGj66u9kFA/16mQsCpRfYx.0Kgbm0bIjtQWFq
-    sqlite> SELECT * FROM example;
-    id          created                     user_id     source_language  new_word    content                   content_translation         
-    ----------  --------------------------  ----------  ---------------  ----------  ------------------------  ----------------------------
-    1           2021-03-22 14:21:57.850175  2           Finnish          lautanen    Lautasella on spagettia.  There is pasta on the plate.
-    2           2021-03-22 14:21:57.851096  1           l-1              ABC         PQR                       XYZ                         
-    3           2021-03-22 14:21:57.851227  1           l-2              ABC         XYZ                       PQR                         
-    4           2021-03-22 14:21:57.851321  1           l-3              PQR         ABC                       XYZ                         
-    5           2021-03-22 14:21:57.851410  1           l-4              PQR         XYZ                       ABC                         
-    6           2021-03-22 14:21:57.851498  1           l-5              XYZ         ABC                       PQR                         
-    7           2021-03-22 14:21:57.851582  1           l-6              XYZ         PQR                       ABC                         
-    8           2021-03-22 14:21:57.851664  2           German           sich (A) z  Ich finde mich gar nicht  I can't manage anymore.
-    ```
+        backend $ python3 -m venv venv
 
-7. ensure that running the tests results in a PASS:
-    ```
-    sqlite> .quit
-    (venv) $ python -m unittest discover -v tests/
-    .
-    .
-    .
-    ----------------------------------------------------------------------
-    Ran 26 tests in 6.245s
+        backend $ source venv/bin/activate
+        (venv) backend $ pip install --upgrade pip
+        (venv) backend $ pip install -r requirements.txt
+        ```
 
-    OK
-    ```
+    - ensure that running the tests results in a PASS by issuing one of the following - either:
+        ```
+        (venv) backend $ python -m unittest tests.py
 
-8. start a process responsible for serving the application instance:
-    ```
-    (venv) $ python run.py
-    ```
+        (venv) backend $ python \
+            -m unittest \
+            discover -v \
+            .
+        ```
 
-    (alternatively, if you wish to perform this step through VS Code's GUI, modify `.vscode/settings.json` by replacing the value associated to the `"python.pythonPath"` key with the location of the Python executable in your Python virtual environment)
+        or, even better:
+        ```
+        (venv) backend $ coverage run \
+            --source=./ \
+            --omit=venv/*,tests.py \
+            -m unittest \
+            discover -v \
+            .
 
-9. launch a web browser, navigate to `localhost:5000`, and interact with the web interface
+        (venv) backend $ coverage report
 
-# Future plans
+        (venv) backend $ coverage html
+        ```
 
-Since this is my first web application, I have cut a few corners during its development. I am currently planning how to improve the project, which will likely include modularizing the codebase into two loosely coupled sub-projects: a backend and a frontend.
+    - create an empty SQLite database and apply all database migrations:
+        ```
+        (venv) backend $ FLASK_APP=vocab_treasury.py flask db upgrade
+        ```
+
+    - verify that the previous step was successful by issuing `$ sqlite3 <the-value-of-SQLALCHEMY_DATABASE_URI-in-your.env-file>` and then issuing:
+        ```
+        SQLite version 3.32.3 2020-06-18 14:16:19
+        Enter ".help" for usage hints.
+        sqlite> .tables
+        alembic_version  user           
+        sqlite> .schema user
+        CREATE TABLE user (
+                id INTEGER NOT NULL, 
+                username VARCHAR(20) NOT NULL, 
+                email VARCHAR(120) NOT NULL, 
+                password_hash VARCHAR(60) NOT NULL, 
+                PRIMARY KEY (id), 
+                UNIQUE (email), 
+                UNIQUE (username)
+        );
+        sqlite> .schema example
+        CREATE TABLE example (
+                id INTEGER NOT NULL, 
+                created DATETIME NOT NULL, 
+                user_id INTEGER NOT NULL, 
+                source_language VARCHAR(30), 
+                new_word VARCHAR(30) NOT NULL, 
+                content TEXT NOT NULL, 
+                content_translation TEXT, 
+                PRIMARY KEY (id), 
+                FOREIGN KEY(user_id) REFERENCES user (id)
+        );
+        sqlite> .quit
+        ```
+
+    - create a pre-commit Git hook that runs the `black` formatter for Python code:
+        ```
+        (venv) $ pre-commit install
+        pre-commit installed at .git/hooks/pre-commit
+        (venv) $
+        ```
+
+    - launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
+        ```
+        (venv) backend $ python vocab_treasury.py
+
+        (venv) backend $ FLASK_APP=vocab_treasury.py flask run
+        ```
+
+    - launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
+        ```
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users \
+            | json_pp
+
+        200
+
+        ---------
+
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        404
+
+        ---------
+
+        $ curl -v \
+            -X POST \
+            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            localhost:5000/api/users \
+            | json_pp
+
+        400
+
+        $ curl -v \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            localhost:5000/api/users \
+            | json_pp
+        
+        201
+
+        $ curl -v \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "ms", "email": "mary.smith@yahoo.com", "password": "456"}' \
+            localhost:5000/api/users \
+            | json_pp
+
+        201
+
+        ----
+
+        $ curl -v \
+            -X PUT \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        401
+
+        $ curl -v \
+            -X PUT \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        400
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "j-d"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        403
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u john.doe@protonmail.com:123 \
+            -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        200
+
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users \
+            | json_pp
+
+        200
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u mary.smith@yahoo.com:456 \
+            -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        400
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u mary.smith@yahoo.com:wrong-password \
+            -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        401
+
+        ---
+
+        $ curl -v \
+            -X DELETE \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        401
+
+        $ curl -v \
+            -X DELETE \
+            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        403
+
+        $ curl -v \
+            -X DELETE \
+            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        204
+
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        404
+
+        $ curl -v \
+            -X DELETE \
+            -u mary.smith@yahoo.com:wrong-password \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        401
+
+        ---
+
+        $ curl -v \
+            -X POST \
+            -u mary.smith@yahoo.com:456 \
+            localhost:5000/api/tokens
+
+        200
+
+        $ export T2=<the-json-web-signature-token-from-the-previous-response>
+
+        $ curl -v \
+            -H "Authorization: Bearer ${T2}" \
+            localhost:5000/api/examples \
+            | json_pp
+
+        200
+
+        $ curl -v \
+            -X POST \
+            -H "Authorization: Bearer ${T2}" \
+            -H "Content-Type: application/json" \
+            -d '{"source_language": "German", "new_word": "die Tasse, -n", "content": "e-e Tasse Kaffe"}' \
+            localhost:5000/api/examples \
+            | json_pp
+
+        201
+
+        $ curl -v \
+            -H "Authorization: Bearer ${T2}" \
+            localhost:5000/api/examples/1 \
+            | json_pp
+
+        200
+
+        $ curl -v \
+            -X PUT \
+            -H "Authorization: Bearer ${T2}" \
+            -H "Content-Type: application/json" \
+            -d '{"content_translation": "a cup of coffee"}' \
+            localhost:5000/api/examples/1 \
+            | json_pp
+        
+        200
+        ```
