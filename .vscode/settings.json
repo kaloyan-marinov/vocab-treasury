@@ -13,4 +13,11 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": true,
     "python.pythonPath": "backend/venv/bin/python",
+
+    "editor.formatOnSave": false,
+    
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    }
 }
