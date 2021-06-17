@@ -333,3 +333,29 @@ Another aspect of the reality of purposeful language learning is that it takes a
         
         200
         ```
+
+4. set up the frontend:
+
+    - navigate into the `frontend` subfolder:
+        ```
+        $ cd frontend
+        ```
+    
+    - install the Node.js dependencies
+        ```
+        frontend $ npm install
+
+        frontend $ npm audit fix
+        ```
+    
+    - ensure that running the tests results in a PASS:
+        ```
+        frontend $ npm test -- --watchAll --coverage
+        ```
+    
+    - launch a terminal window and, in it, start a process responsible for serving the application instance:
+        ```
+        frontend $ npm start
+        ```
+    
+    - launch a web browser, and enter `localhost:3000` into its address bar
