@@ -118,11 +118,18 @@ export const About = () => {
 export const Register = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Register>`);
 
+  const [formData, setFormData] = React.useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
@@ -130,25 +137,15 @@ export const Register = () => {
       {"<Register>"}
       <div>
         <form method="POST" action="">
-          {/* <input
-            id="csrf_token"
-            name="csrf_token"
-            type="hidden"
-            value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBIog.Sx3_eThYVwEW83gYvO9LMaNY3VU"
-          /> */}
           <fieldset>
             <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
               <label htmlFor="<R>-username">USERNAME</label>
-
               <input
                 id="<R>-username"
                 name="username"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-2"
+                value={formData.username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -156,15 +153,11 @@ export const Register = () => {
             </div>
             <div>
               <label htmlFor="<R>-email">EMAIL</label>
-
               <input
                 id="<R>-email"
                 name="email"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-3"
+                value={formData.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -172,31 +165,23 @@ export const Register = () => {
             </div>
             <div>
               <label htmlFor="<R>-password">PASSWORD</label>
-
               <input
                 id="<R>-password"
                 name="password"
-                // required
                 type="password"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-0"
+                value={formData.password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
               />
             </div>
             <div>
-              <label htmlFor="<R>-confirm_password">CONFIRM PASSWORD</label>
-
+              <label htmlFor="<R>-confirmPassword">CONFIRM PASSWORD</label>
               <input
-                id="<R>-confirm_password"
-                name="confirm_password"
-                // required
+                id="<R>-confirmPassword"
+                name="confirmPassword"
                 type="password"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-1"
+                value={formData.confirmPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -205,7 +190,7 @@ export const Register = () => {
           </fieldset>
           <div>
             <input
-              // id="submit"
+              id="<R>-submit"
               name="submit"
               type="submit"
               value="CREATE MY ACCOUNT"
