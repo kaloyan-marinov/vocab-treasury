@@ -1,4 +1,5 @@
 import React from "react";
+import { Switch, Route, Link, useParams } from "react-router-dom";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -9,27 +10,44 @@ export const App = () => {
       <hr />
       <NavigationBar />
       <hr />
-      <Home />
-      <hr />
-      <About />
-      <hr />
-      <Register />
-      <hr />
-      <Login />
-      <hr />
-      <RequestPasswordReset />
-      <hr />
-      <Account />
-      <hr />
-      <OwnVocabTreasury />
-      <hr />
-      <RecordNewExample />
-      <hr />
-      <SingleExample />
-      <hr />
-      <EditExample />
-      <hr />
-      <Search />
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route exact path="/home">
+          <Home />
+        </Route>
+        <Route exact path="/about">
+          <About />
+        </Route>
+        <Route exact path="/register">
+          <Register />
+        </Route>
+        <Route exact path="/login">
+          <Login />
+        </Route>
+        <Route exact path="/reset_password">
+          <RequestPasswordReset />
+        </Route>
+        <Route exact path="/account">
+          <Account />
+        </Route>
+        <Route exact path="/own-vocabtreasury">
+          <OwnVocabTreasury />
+        </Route>
+        <Route exact path="/example/new">
+          <RecordNewExample />
+        </Route>
+        <Route exact path="/example/:id">
+          <SingleExample />
+        </Route>
+        <Route exact path="/example/:id/edit">
+          <EditExample />
+        </Route>
+        <Route exact path="/own-vocabtreasury/search">
+          <Search />
+        </Route>
+      </Switch>
     </React.Fragment>
   );
 };
@@ -42,24 +60,24 @@ export const NavigationBar = () => {
   const alwaysVisibleLinks = (
     <React.Fragment>
       <div>
-        <a href="/">VocabTreasury</a>
+        <Link to="/">VocabTreasury</Link>
       </div>
       <div>
-        <a href="/home">Home</a> <a href="/about">About</a>
+        <Link to="/home">Home</Link> <Link to="/about">About</Link>
       </div>
     </React.Fragment>
   );
 
   const guestUserLinks = (
     <div>
-      <a href="/login">Log in</a> <a href="/register">Register</a>
+      <Link to="/login">Log in</Link> <Link to="/register">Register</Link>
     </div>
   );
 
   const loggedInUserLinks = (
     <div>
-      <a href="/own-vocabtreasury">Own VocabTreasury</a>{" "}
-      <a href="/account">Account</a> <a href="/logout">Log out</a>
+      <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
+      <Link to="/account">Account</Link> <Link to="/logout">Log out</Link>
     </div>
   );
 
@@ -197,7 +215,7 @@ export const Register = () => {
       </div>
       <div>
         <small>
-          ALREADY HAVE AN ACCOUNT? <a href="/login">CLICK HERE TO LOG IN</a>
+          ALREADY HAVE AN ACCOUNT? <Link to="/login">CLICK HERE TO LOG IN</Link>
         </small>
       </div>
     </React.Fragment>
@@ -270,14 +288,14 @@ export const Login = () => {
               value="LOG INTO MY ACCOUNT"
             />
             <small>
-              <a href="/reset_password">FORGOT PASSWORD?</a>
+              <Link to="/reset_password">FORGOT PASSWORD?</Link>
             </small>
           </div>
         </form>
       </div>
       <div>
         <small>
-          NEED AN ACCOUNT? <a href="/register">CLICK HERE TO REGISTER</a>
+          NEED AN ACCOUNT? <Link to="/register">CLICK HERE TO REGISTER</Link>
         </small>
       </div>
     </React.Fragment>
@@ -354,6 +372,97 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
+interface IExample {
+  id: number;
+  source_language: string;
+  new_word: string;
+  content: string;
+  content_translation: string;
+}
+
+const examplesMock: IExample[] = [
+  {
+    id: 1,
+    source_language: "Finnish",
+    new_word: "vihata + P",
+    content: "Älä vihaa ketään!",
+    content_translation: "Don't hate anyone!",
+  },
+  {
+    id: 2,
+    source_language: "Finnish",
+    new_word: "tulinen",
+    content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
+    content_translation: `"spicy" and "volcano" are similar words.`,
+  },
+  {
+    id: 3,
+    source_language: "German",
+    new_word: "der Termin",
+    content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
+    content_translation:
+      "One must firstly fix the deadline and then meet/observe it.",
+  },
+  {
+    id: 4,
+    source_language: "Finnish",
+    new_word: "sama",
+    content: "Olemme samaa mieltä.",
+    content_translation: "I agree.",
+  },
+  {
+    id: 5,
+    source_language: "Finnish",
+    new_word: "pitää",
+    content: "Pidätkö koirista?",
+    content_translation: "Do you like dogs?",
+  },
+  {
+    id: 6,
+    source_language: "Finnish",
+    new_word: "tykätä",
+    content: "Tykkäätkö koirista?",
+    content_translation: "Do you like dogs?",
+  },
+  {
+    id: 7,
+    source_language: "Finnish",
+    new_word: "kannettava tietokone",
+    content: "Ota sinun kannettava tietokone kotiin!",
+    content_translation: "Ota sinun kannettava tietokone kotiin!",
+  },
+  {
+    id: 10,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Älä teeskentele, että olet sairas!",
+    content_translation: "Don't pretend that you're sick!",
+  },
+  {
+    id: 11,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Älä teeskentele olevasi sairas!",
+    content_translation: "Don't pretend that you're sick!",
+  },
+  {
+    id: 12,
+    source_language: "Finnish",
+    new_word: "teeskennellä",
+    content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
+    content_translation: "Why did we pretend to like his jokes?",
+  },
+];
+
+const examplesMockEntities: { [exampleId: string]: IExample } =
+  examplesMock.reduce(
+    (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
+      examplesObj[e.id] = e;
+      return examplesObj;
+    },
+    {}
+  );
+
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
@@ -363,15 +472,33 @@ export const OwnVocabTreasury = () => {
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
+  const exampleTableRows = Object.keys(examplesMockEntities).map(
+    (exampleIdStr: string) => {
+      const e: IExample = examplesMockEntities[exampleIdStr];
+
+      return (
+        <tr key={e.id}>
+          <th style={styleForBorder}>
+            <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
+          </th>
+          <th style={styleForBorder}>{e.source_language}</th>
+          <th style={styleForBorder}>{e.new_word}</th>
+          <th style={styleForBorder}>{e.content}</th>
+          <th style={styleForBorder}>{e.content_translation}</th>
+        </tr>
+      );
+    }
+  );
+
   return (
     <React.Fragment>
       {"<OwnVocabTreasury>"}
       <h1>Own VocabTreasury for {emailOfLoggedInUser}</h1>
       <div>
-        <a href="/example/new">Record new example</a>
+        <Link to="/example/new">Record new example</Link>
       </div>
       <div>
-        <a href="/own-vocabtreasury/search">Search</a>
+        <Link to="/own-vocabtreasury/search">Search</Link>
       </div>
       <br />
       <table style={styleForTable}>
@@ -383,120 +510,7 @@ export const OwnVocabTreasury = () => {
             <th style={styleForBorder}>EXAMPLE</th>
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/1?page=1">1</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>vihata + P</th>
-            <th style={styleForBorder}>Älä vihaa ketään!</th>
-            <th style={styleForBorder}>Don't hate anyone!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/2?page=1">2</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>tulinen</th>
-            <th style={styleForBorder}>
-              "tulinen" ja "tulivuori" ovat samanlaisia sanoja.
-            </th>
-            <th style={styleForBorder}>
-              "spicy" and "volcano" are similar words.
-            </th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/3?page=1">3</a>
-            </th>
-            <th style={styleForBorder}>German</th>
-            <th style={styleForBorder}>der Termin</th>
-            <th style={styleForBorder}>
-              Man muss erstens den Termin festsetzen und dann ihn einhalten.
-            </th>
-            <th style={styleForBorder}>
-              One must firstly fix the deadline and then meet/observe it.
-            </th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/4?page=1">4</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>sama</th>
-            <th style={styleForBorder}>Olemme samaa mieltä.</th>
-            <th style={styleForBorder}>I agree.</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/5?page=1">5</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>pitää</th>
-            <th style={styleForBorder}>Pidätkö koirista?</th>
-            <th style={styleForBorder}>Do you like dogs?</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/6?page=1">6</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>tykätä</th>
-            <th style={styleForBorder}>Tykkäätkö koirista?</th>
-            <th style={styleForBorder}>Do you like dogs?</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/7?page=1">7</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>kannettava tietokone</th>
-            <th style={styleForBorder}>
-              Ota sinun kannettava tietokone kotiin!
-            </th>
-            <th style={styleForBorder}>Take your laptop home!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/10?page=1">10</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>Älä teeskentele, että olet sairas!</th>
-            <th style={styleForBorder}>Don't pretend that you're sick!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/11?page=1">11</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>Älä teeskentele olevasi sairas!</th>
-            <th style={styleForBorder}>Don't pretend that you're sick!</th>
-          </tr>
-
-          <tr>
-            <th style={styleForBorder}>
-              <a href="/example/12?page=1">12</a>
-            </th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>teeskennellä</th>
-            <th style={styleForBorder}>
-              Miksi teeskentelimme pitävänsä hänen vitsistään?
-            </th>
-            <th style={styleForBorder}>
-              Why did we pretend to like his jokes?
-            </th>
-          </tr>
+          {exampleTableRows}
         </tbody>
       </table>
       {/* <font size="14"> */}
@@ -507,12 +521,12 @@ export const OwnVocabTreasury = () => {
                 so TS will not include it in its type definitions.
                 This, as well as many other tags, have been deprecated
                 in favor of using CSS to style elements. */}
-      <a style={styleForLinkToCurrentPage} href="/own-vocabtreasury?page=1">
+      <Link style={styleForLinkToCurrentPage} to="/own-vocabtreasury?page=1">
         1
-      </a>{" "}
+      </Link>{" "}
       {/* </font> */}
-      <a href="/own-vocabtreasury?page=2">2</a> ...{" "}
-      <a href="/own-vocabtreasury?page=281">281</a>
+      <Link to="/own-vocabtreasury?page=2">2</Link> ...{" "}
+      <Link to="/own-vocabtreasury?page=281">281</Link>
     </React.Fragment>
   );
 };
@@ -613,6 +627,15 @@ export const SingleExample = () => {
     `${new Date().toISOString()} - React is rendering <SingleExample>`
   );
 
+  const params: { id: string } = useParams();
+  console.log(
+    `${new Date().toISOString()} - inspecting the \`params\` passed in to <SingleExample>`
+  );
+  console.log(params);
+  const exampleId: number = parseInt(params.id);
+
+  const example: IExample = examplesMockEntities[exampleId];
+
   return (
     <React.Fragment>
       {"<SingleExample>"}
@@ -630,25 +653,25 @@ export const SingleExample = () => {
             <th style={styleForBorder}>TRANSLATION</th>
           </tr>
           <tr>
-            <th style={styleForBorder}>4</th>
-            <th style={styleForBorder}>Finnish</th>
-            <th style={styleForBorder}>sama</th>
-            <th style={styleForBorder}>Olemme samaa mieltä.</th>
-            <th style={styleForBorder}>I agree.</th>
+            <th style={styleForBorder}>{example.id}</th>
+            <th style={styleForBorder}>{example.source_language}</th>
+            <th style={styleForBorder}>{example.new_word}</th>
+            <th style={styleForBorder}>{example.content}</th>
+            <th style={styleForBorder}>{example.content_translation}</th>
           </tr>
         </tbody>
       </table>
 
       <br />
       <div>
-        <a href="/own-vocabtreasury?page=1">
+        <Link to="/own-vocabtreasury?page=1">
           Return to this example within my Own VocabTreasury
-        </a>
+        </Link>
       </div>
 
       <br />
       <div>
-        <a href="/example/4/edit?page=1">Edit this example</a>
+        <Link to={`/example/${example.id}/edit?page=1`}>Edit this example</Link>
       </div>
 
       <br />
@@ -661,6 +684,14 @@ export const SingleExample = () => {
 
 export const EditExample = () => {
   console.log(`${new Date().toISOString()} - React is rendering <EditExample>`);
+
+  const params: { id: string } = useParams();
+  console.log(
+    `${new Date().toISOString()} - inspecting the \`params\` passed in to <EditExample>`
+  );
+  console.log(params);
+  const exampleId: number = parseInt(params.id);
+  const example: IExample = examplesMockEntities[exampleId];
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -686,7 +717,7 @@ export const EditExample = () => {
               id="<EE>-source_language"
               name="source_language"
               type="text"
-              value="Finnish"
+              value={example.source_language}
               // data-kwimpalastatus="alive"
               // data-kwimpalaid="1623570528862-0"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -702,7 +733,7 @@ export const EditExample = () => {
               name="new_word"
               // required
               type="text"
-              value="sama"
+              value={example.new_word}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -715,7 +746,7 @@ export const EditExample = () => {
               id="<EE>-content"
               name="content"
               // required
-              value="Olemme samaa mieltä."
+              value={example.content}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -727,7 +758,7 @@ export const EditExample = () => {
             <textarea
               id="<EE>-content_translation"
               name="content_translation"
-              value="I agree."
+              value={example.content_translation}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
