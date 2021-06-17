@@ -153,7 +153,7 @@ describe("<Login>", () => {
     );
 
     /* Assert. */
-    const legendElement = screen.getByText("LOG IN");
+    const legendElement = screen.getByText("[legend-tag: LOG IN]");
     expect(legendElement).toBeInTheDocument();
 
     const emailLabelElement = screen.getByText("EMAIL");
