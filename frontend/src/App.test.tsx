@@ -173,7 +173,7 @@ describe("<RequestPasswordReset>", () => {
   test("render the fields of a form for requesting a password reset", () => {
     render(<RequestPasswordReset />);
 
-    const legendElement = screen.getByText("RESET PASSWORD");
+    const legendElement = screen.getByText("[legend-tag: RESET PASSWORD]");
     expect(legendElement).toBeInTheDocument();
 
     const emailLabelElement = screen.getByText("EMAIL");
@@ -256,7 +256,7 @@ describe("<RecordNewExample>", () => {
   test("renders the fields of a form for creating a new Example resource", () => {
     render(<RecordNewExample />);
 
-    const legendElement = screen.getByText("[legend-tag]: CREATE NEW EXAMPLE");
+    const legendElement = screen.getByText("[legend-tag: CREATE NEW EXAMPLE]");
     expect(legendElement).toBeInTheDocument();
 
     const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
@@ -369,7 +369,7 @@ describe("<EditExample>", () => {
 
     /* Assert. */
     const legendElement = screen.getByText(
-      "[legend-tag]: EDIT EXISTING EXAMPLE"
+      "[legend-tag: EDIT EXISTING EXAMPLE]"
     );
     expect(legendElement).toBeInTheDocument();
 

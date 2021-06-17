@@ -281,33 +281,26 @@ export const RequestPasswordReset = () => {
     `${new Date().toISOString()} - React is rendering <RequestPasswordReset>`
   );
 
+  const [email, setEmail] = React.useState("");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setEmail(e.target.value);
   };
 
   return (
     <React.Fragment>
       {"<RequestPasswordReset>"}
-
       <div>
         <form method="POST" action="">
-          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMXboQ.CdFDKfaFrkgfbpYdhkamWmwJ0cA"> */}
           <fieldset>
-            <legend>RESET PASSWORD</legend>
+            <legend>[legend-tag: RESET PASSWORD]</legend>
             <div>
               <label htmlFor="<RPR>-email">EMAIL</label>
-
               <input
                 id="<RPR>-email"
                 name="email"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623579553224-0"
+                value={email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -316,7 +309,7 @@ export const RequestPasswordReset = () => {
           </fieldset>
           <div>
             <input
-              id="submit"
+              id="<RPR>-submit"
               name="submit"
               type="submit"
               value="REQUEST PASSWORD RESET"
@@ -510,49 +503,48 @@ export const RecordNewExample = () => {
     `${new Date().toISOString()} - React is rendering <RecordNewExample>`
   );
 
+  const [formData, setFormData] = React.useState({
+    sourceLanguage: "",
+    newWord: "",
+    content: "",
+    contentTranslation: "",
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
     <React.Fragment>
       {"<RecordNewExample>"}
-
       <div>
         <form method="POST" action="">
-          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGUkA.375Xt02E9Mh-V4Gq7C7jOA7_LKc"> */}
           <fieldset>
-            <legend>[legend-tag]: CREATE NEW EXAMPLE</legend>
+            <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
             <div>
               <label htmlFor="<RNE>-source_language">SOURCE LANGUAGE</label>
-
               <input
                 id="<RNE>-source_language"
-                name="source_language"
+                name="sourceLanguage"
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623299217012-0"
+                value={formData.sourceLanguage}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
               />
             </div>
-
             <div>
               <label htmlFor="<RNE>-new_word">NEW WORD</label>
-
               <input
                 id="<RNE>-new_word"
-                name="new_word"
-                // required
+                name="newWord"
                 type="text"
-                value=""
+                value={formData.newWord}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -560,11 +552,10 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <label htmlFor="<RNE>-content">EXAMPLE</label>
-
               <textarea
                 id="<RNE>-content"
                 name="content"
-                // required
+                value={formData.content}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
@@ -572,10 +563,10 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <label htmlFor="<RNE>-content_translation">TRANSLATION</label>
-
               <textarea
                 id="<RNE>-content_translation"
-                name="content_translation"
+                name="contentTranslation"
+                value={formData.contentTranslation}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
@@ -583,7 +574,7 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <input
-                // id="submit"
+                id="<RNE>-submit"
                 name="submit"
                 type="submit"
                 value="RECORD THIS EXAMPLE"
@@ -667,6 +658,13 @@ export const EditExample = () => {
   const exampleId: number = parseInt(params.id);
   const example: IExample = examplesMockEntities[exampleId];
 
+  const [formData, setFormData] = React.useState({
+    sourceLanguage: example.source_language,
+    newWord: example.new_word,
+    content: example.content,
+    contentTranslation: example.content_translation,
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -679,21 +677,16 @@ export const EditExample = () => {
   return (
     <React.Fragment>
       {"<EditExample>"}
-
       <form method="POST" action="">
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMW4YA.0bfe9pIF_AacUmo92b_dQpHUMVQ"> */}
         <fieldset>
-          <legend>[legend-tag]: EDIT EXISTING EXAMPLE</legend>
+          <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
           <div>
             <label htmlFor="<EE>-source_language">SOURCE LANGUAGE</label>
-
             <input
               id="<EE>-source_language"
-              name="source_language"
+              name="sourceLanguage"
               type="text"
-              value={example.source_language}
-              // data-kwimpalastatus="alive"
-              // data-kwimpalaid="1623570528862-0"
+              value={formData.sourceLanguage}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -701,13 +694,11 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-new_word">NEW WORD</label>
-
             <input
               id="<EE>-new_word"
-              name="new_word"
-              // required
+              name="newWord"
               type="text"
-              value={example.new_word}
+              value={formData.newWord}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -715,12 +706,10 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-content">EXAMPLE</label>
-
             <textarea
               id="<EE>-content"
               name="content"
-              // required
-              value={example.content}
+              value={formData.content}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -728,11 +717,10 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-content_translation">TRANSLATION</label>
-
             <textarea
               id="<EE>-content_translation"
-              name="content_translation"
-              value={example.content_translation}
+              name="contentTranslation"
+              value={formData.contentTranslation}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -759,17 +747,22 @@ const styleForCenter = { display: "flex", justifyContent: "center" };
 export const Search = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Search>`);
 
+  const [formData, setFormData] = React.useState({
+    newWord: "",
+    content: "",
+    contentTranslation: "",
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
     <React.Fragment>
       {"<Search>"}
-
       <form method="POST" action="">
         <table style={styleForTable}>
           <tbody>
@@ -781,15 +774,14 @@ export const Search = () => {
               <th style={styleForBorder}>TRANSLATION</th>
             </tr>
             <tr>
-              {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGeIw.YoZgSG4uYKnMwx7EtMnwkEeNoD0"> */}
               <th style={styleForBorder}></th>
               <th style={styleForBorder}></th>
               <th style={styleForBorder}>
                 <input
                   id="<S>-new_word"
-                  name="new_word"
+                  name="newWord"
                   type="text"
-                  value=""
+                  value={formData.newWord}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -800,7 +792,7 @@ export const Search = () => {
                   id="<S>-content"
                   name="content"
                   type="text"
-                  value=""
+                  value={formData.content}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -809,9 +801,9 @@ export const Search = () => {
               <th style={styleForBorder}>
                 <input
                   id="<S>-content_translation"
-                  name="content_translation"
+                  name="contentTranslation"
                   type="text"
-                  value=""
+                  value={formData.contentTranslation}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -823,12 +815,7 @@ export const Search = () => {
 
         <br />
         <div style={styleForCenter}>
-          <input
-            // id="submit"
-            name="submit"
-            type="submit"
-            value="SEARCH"
-          />
+          <input id="<S>-submit" name="submit" type="submit" value="SEARCH" />
         </div>
         <br />
       </form>
