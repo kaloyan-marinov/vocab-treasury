@@ -1,5 +1,128 @@
+import { composeWithDevTools } from "redux-devtools-extension";
+import { createStore, Dispatch } from "redux";
 import React from "react";
 import { Switch, Route, Link, useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
+
+interface IAlert {
+  id: string;
+  message: string;
+}
+
+export interface IState {
+  alertsIds: string[];
+  alertsEntities: { [alertId: string]: IAlert };
+}
+
+export const initialState: IState = {
+  alertsIds: [],
+  alertsEntities: {},
+};
+
+/* alerts/* action creators */
+export enum ActionTypesAlerts {
+  CREATE = "alerts/create",
+  REMOVE = "alerts/remove",
+}
+
+export interface IActionAlertsCreate {
+  type: typeof ActionTypesAlerts.CREATE;
+  payload: IAlert;
+}
+
+export interface IActionAlertsRemove {
+  type: typeof ActionTypesAlerts.REMOVE;
+  payload: {
+    id: string;
+  };
+}
+
+export const alertsCreate = (
+  id: string,
+  message: string
+): IActionAlertsCreate => ({
+  type: ActionTypesAlerts.CREATE,
+  payload: {
+    id,
+    message,
+  },
+});
+
+export const alertsRemove = (id: string): IActionAlertsRemove => ({
+  type: ActionTypesAlerts.REMOVE,
+  payload: {
+    id,
+  },
+});
+
+export type ActionAlerts = IActionAlertsCreate | IActionAlertsRemove;
+
+/*
+Define a root reducer function,
+which serves to instantiate a single Redux store.
+
+(In turn, that store will be responsible for keeping track of the React application's
+global state.)
+*/
+
+export const rootReducer = (
+  state: IState = initialState,
+  action: ActionAlerts
+): IState => {
+  switch (action.type) {
+    case ActionTypesAlerts.CREATE: {
+      const alert: IAlert = action.payload;
+
+      // For the sake of keeping track of mistakes,
+      // the commented-out code-block below contains a mistake.
+      /*
+      const newState: IState = { ...state };
+      newState.alertsIds.push(alert.id);
+      newState.alertsEntities[alert.id] = alert;
+      */
+
+      // The following code-block fixes the commented-out code-block's mistake.
+      const newAlertsIds: string[] = [alert.id, ...state.alertsIds];
+
+      const newAlertsEntities = { ...state.alertsEntities };
+      newAlertsEntities[alert.id] = alert;
+
+      return {
+        ...state,
+        alertsIds: newAlertsIds,
+        alertsEntities: newAlertsEntities,
+      };
+    }
+
+    case ActionTypesAlerts.REMOVE: {
+      const alertIdToRemove: string = action.payload.id;
+
+      const newAlertsIds = state.alertsIds.filter(
+        (aId: string) => aId !== alertIdToRemove
+      );
+
+      const newAlertsEntities = { ...state.alertsEntities };
+      delete newAlertsEntities[alertIdToRemove];
+
+      return {
+        ...state,
+        alertsIds: newAlertsIds,
+        alertsEntities: newAlertsEntities,
+      };
+    }
+
+    default:
+      return state;
+  }
+};
+
+const composedEnhancer = composeWithDevTools();
+export const store = createStore(rootReducer, composedEnhancer);
+
+/* Selector functions. */
+const selectAlertsIds = (state: IState) => state.alertsIds;
+const selectAlertsEntities = (state: IState) => state.alertsEntities;
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -9,6 +132,8 @@ export const App = () => {
       {"<App>"}
       <hr />
       <NavigationBar />
+      <hr />
+      <Alerts />
       <hr />
       <Switch>
         <Route exact path="/">
@@ -91,6 +216,42 @@ export const NavigationBar = () => {
   );
 };
 
+export const Alerts = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Alerts>`);
+
+  const alertsIds = useSelector(selectAlertsIds);
+  const alertsEntities = useSelector(selectAlertsEntities);
+
+  const dispatch: Dispatch<IActionAlertsRemove> = useDispatch();
+
+  const handleClick = (
+    alertId: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    dispatch(alertsRemove(alertId));
+  };
+
+  const alertsDivs = alertsIds.map((aId: string) => (
+    <div key={aId} style={{ color: "red" }}>
+      <button
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          handleClick(aId, e)
+        }
+      >
+        Clear alert
+      </button>
+      {alertsEntities[aId].message}
+    </div>
+  ));
+
+  return (
+    <React.Fragment>
+      {"<Alerts>"}
+      {alertsDivs}
+    </React.Fragment>
+  );
+};
+
 export const Home = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Home>`);
 
@@ -125,6 +286,8 @@ export const Register = () => {
     confirmPassword: "",
   });
 
+  const dispatch: Dispatch<IActionAlertsCreate> = useDispatch();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -132,11 +295,31 @@ export const Register = () => {
     });
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (
+      formData.username === "" &&
+      formData.email === "" &&
+      formData.password === "" &&
+      formData.confirmPassword === ""
+    ) {
+      dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));
+    } else if (formData.password !== formData.confirmPassword) {
+      dispatch(alertsCreate(id, "THE PROVIDED PASSWORDS DON'T MATCH"));
+    } else {
+      console.log("TODO: issue a POST request to /api/users");
+    }
+  };
+
   return (
     <React.Fragment>
       {"<Register>"}
       <div>
-        <form method="POST" action="">
+        <form
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
             <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
