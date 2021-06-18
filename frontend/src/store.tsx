@@ -1,7 +1,7 @@
 import { composeWithDevTools } from "redux-devtools-extension";
 import { createStore } from "redux";
 
-interface IAlert {
+export interface IAlert {
   id: string;
   message: string;
 }

@@ -189,9 +189,9 @@ export const Register = () => {
 
     const id: string = uuidv4();
     if (
-      formData.username === "" &&
-      formData.email === "" &&
-      formData.password === "" &&
+      formData.username === "" ||
+      formData.email === "" ||
+      formData.password === "" ||
       formData.confirmPassword === ""
     ) {
       dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));

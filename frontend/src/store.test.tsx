@@ -1,6 +1,9 @@
 import {
+  IAlert,
   IState,
   initialState,
+  selectAlertsIds,
+  selectAlertsEntities,
   ActionTypesAlerts,
   IActionAlertsCreate,
   IActionAlertsRemove,
@@ -8,6 +11,41 @@ import {
   alertsRemove,
   rootReducer,
 } from "./store";
+
+describe("selector functions", () => {
+  let state: IState;
+
+  beforeAll(() => {
+    state = {
+      ...initialState,
+      alertsIds: ["alert-id-17"],
+      alertsEntities: {
+        "alert-id-17": {
+          id: "alert-id-17",
+          message: "PLEASE LOG IN.",
+        },
+      },
+    };
+  });
+
+  test("selectAlertsIds", () => {
+    const alertsIds: string[] = selectAlertsIds(state);
+
+    expect(alertsIds).toEqual(["alert-id-17"]);
+  });
+
+  test("selectAlertsEntities", () => {
+    const alertsEntities: { [alertId: string]: IAlert } =
+      selectAlertsEntities(state);
+
+    expect(alertsEntities).toEqual({
+      "alert-id-17": {
+        id: "alert-id-17",
+        message: "PLEASE LOG IN.",
+      },
+    });
+  });
+});
 
 describe("action creators", () => {
   test("alertsCreate", () => {

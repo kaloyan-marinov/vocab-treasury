@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { createStore } from "redux";
 import { Provider } from "react-redux";
@@ -7,9 +7,10 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router, Route } from "react-router-dom";
 
-import { rootReducer } from "./store";
+import { IState, initialState, rootReducer } from "./store";
 import {
   NavigationBar,
+  Alerts,
   Home,
   About,
   Register,
@@ -102,6 +103,75 @@ describe("<NavigationBar>", () => {
   });
 });
 
+describe("<Alerts>", () => {
+  test("renders the alerts, which are present in the Redux state", () => {
+    /* Arrange. */
+    const initState: IState = {
+      ...initialState,
+      alertsIds: ["alert-id-17"],
+      alertsEntities: {
+        "alert-id-17": {
+          id: "alert-id-17",
+          message: "PLEASE LOG IN.",
+        },
+      },
+    };
+    const realStore = createStore(rootReducer, initState);
+
+    /* Act. */
+    render(
+      <Provider store={realStore}>
+        <Alerts />
+      </Provider>
+    );
+
+    /* Assert. */
+    const buttonElement = screen.getByRole("button", { name: "Clear alert" });
+    expect(buttonElement).toBeInTheDocument();
+
+    screen.getByText("PLEASE LOG IN.");
+  });
+
+  test("re-renders the alerts after the user has cleared one of them", () => {
+    /* Arrange. */
+    const initState: IState = {
+      ...initialState,
+      alertsIds: ["alert-id-17", "alert-id-34"],
+      alertsEntities: {
+        "alert-id-17": {
+          id: "alert-id-17",
+          message: "YOU HAVE BEEN LOGGED OUT.",
+        },
+        "alert-id-34": {
+          id: "alert-id-34",
+          message: "PLEASE LOG BACK IN.",
+        },
+      },
+    };
+    const realStore = createStore(rootReducer, initState);
+
+    render(
+      <Provider store={realStore}>
+        <Alerts />
+      </Provider>
+    );
+
+    /* Act. */
+    const buttons = screen.getAllByRole("button", { name: "Clear alert" });
+    expect(buttons.length).toEqual(2);
+
+    fireEvent.click(buttons[0]);
+
+    /* Assert. */
+    const nullValue: HTMLElement | null = screen.queryByText(
+      "YOU HAVE BEEN LOGGED OUT."
+    );
+    expect(nullValue).not.toBeInTheDocument();
+
+    screen.getByText("PLEASE LOG BACK IN.");
+  });
+});
+
 describe("<About>", () => {
   test("renders an 'About VocabTreasury...' message", () => {
     render(<About />);
@@ -146,6 +216,94 @@ describe("<Register>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
   });
+
+  test(
+    "+ <Alerts> - renders an alert" +
+      " after the user has submitted the form" +
+      " without completing all its fields",
+    () => {
+      /* Arrange. */
+      const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Register />
+          </Router>
+        </Provider>
+      );
+
+      const usernameInputElement = screen.getByLabelText("USERNAME");
+      expect(usernameInputElement).toBeInTheDocument();
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      // const confirmPasswordInputElement =
+      //   screen.getByLabelText("CONFIRM PASSWORD");
+
+      fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+      // fireEvent.change(confirmPasswordInputElement, {target: {value: 'test-123'}})
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "CREATE MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      screen.getByText("ALL FORM FIELDS MUST BE FILLED OUT");
+    }
+  );
+
+  test(
+    "+ <Alerts> - renders an alert" +
+      " after the user has submitted the form" +
+      " with non-matching values in the form's password fields",
+    () => {
+      /* Arrange. */
+      const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Register />
+          </Router>
+        </Provider>
+      );
+
+      const usernameInputElement = screen.getByLabelText("USERNAME");
+      expect(usernameInputElement).toBeInTheDocument();
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      const confirmPasswordInputElement =
+        screen.getByLabelText("CONFIRM PASSWORD");
+
+      fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+      fireEvent.change(confirmPasswordInputElement, {
+        target: { value: "different-from-test-123" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "CREATE MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      screen.getByText("THE PROVIDED PASSWORDS DON'T MATCH");
+    }
+  );
 });
 
 describe("<Login>", () => {
