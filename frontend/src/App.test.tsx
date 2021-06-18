@@ -7,16 +7,7 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router, Route } from "react-router-dom";
 
-import {
-  IState,
-  initialState,
-  ActionTypesAlerts,
-  IActionAlertsCreate,
-  IActionAlertsRemove,
-  alertsCreate,
-  alertsRemove,
-  rootReducer,
-} from "./App";
+import { rootReducer } from "./store";
 import {
   NavigationBar,
   Home,
@@ -31,82 +22,6 @@ import {
   EditExample,
   Search,
 } from "./App";
-
-describe("action creators", () => {
-  test("alertsCreate", () => {
-    const action = alertsCreate("alert-id-17", "PLEASE LOG IN.");
-
-    expect(action).toEqual({
-      type: "alerts/create",
-      payload: {
-        id: "alert-id-17",
-        message: "PLEASE LOG IN.",
-      },
-    });
-  });
-
-  test("alertsRemove", () => {
-    const action = alertsRemove("alert-id-17");
-
-    expect(action).toEqual({
-      type: "alerts/remove",
-      payload: {
-        id: "alert-id-17",
-      },
-    });
-  });
-});
-
-describe("rootReducer", () => {
-  test("alerts/create", () => {
-    const initState: IState = { ...initialState };
-    const action: IActionAlertsCreate = {
-      type: ActionTypesAlerts.CREATE,
-      payload: {
-        id: "alert-id-17",
-        message: "PLEASE LOG IN.",
-      },
-    };
-
-    const newState: IState = rootReducer(initState, action);
-
-    expect(newState).toEqual({
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
-        },
-      },
-    });
-  });
-
-  test("alerts/remove", () => {
-    const initState: IState = {
-      ...initialState,
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
-        },
-      },
-    };
-    const action: IActionAlertsRemove = {
-      type: ActionTypesAlerts.REMOVE,
-      payload: {
-        id: "alert-id-17",
-      },
-    };
-
-    const newState: IState = rootReducer(initState, action);
-
-    expect(newState).toEqual({
-      alertsIds: [],
-      alertsEntities: {},
-    });
-  });
-});
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
