@@ -1,5 +1,15 @@
 import { composeWithDevTools } from "redux-devtools-extension";
+import { applyMiddleware, Dispatch } from "redux";
+import thunkMiddleware from "redux-thunk";
 import { createStore } from "redux";
+import axios from "axios";
+
+export enum RequestStatus {
+  IDLE = "idle",
+  LOADING = "loading",
+  FAILED = "failed",
+  SUCCEEDED = "succeeded",
+}
 
 export interface IAlert {
   id: string;
@@ -7,11 +17,15 @@ export interface IAlert {
 }
 
 export interface IState {
+  requestStatus: RequestStatus;
+  requestError: string | null;
   alertsIds: string[];
   alertsEntities: { [alertId: string]: IAlert };
 }
 
 export const initialState: IState = {
+  requestStatus: RequestStatus.IDLE,
+  requestError: null,
   alertsIds: [],
   alertsEntities: {},
 };
@@ -58,6 +72,87 @@ export const alertsRemove = (id: string): IActionAlertsRemove => ({
 
 export type ActionAlerts = IActionAlertsCreate | IActionAlertsRemove;
 
+/* "auth/createUser/" action creators */
+export enum ActionTypesCreateUser {
+  PENDING = "auth/createUser/pending",
+  REJECTED = "auth/createUser/rejected",
+  FULFILLED = "auth/createUser/fulfilled",
+}
+
+export interface IActionCreateUserPending {
+  type: typeof ActionTypesCreateUser.PENDING;
+}
+
+export interface IActionCreateUserRejected {
+  type: typeof ActionTypesCreateUser.REJECTED;
+  error: string;
+}
+
+export interface IActionCreateUserFulfilled {
+  type: typeof ActionTypesCreateUser.FULFILLED;
+}
+
+export const createUserPending = (): IActionCreateUserPending => ({
+  type: ActionTypesCreateUser.PENDING,
+});
+
+export const createUserRejected = (
+  error: string
+): IActionCreateUserRejected => ({
+  type: ActionTypesCreateUser.REJECTED,
+  error,
+});
+
+export const createUserFulfilled = (): IActionCreateUserFulfilled => ({
+  type: ActionTypesCreateUser.FULFILLED,
+});
+
+export type ActionCreateUser =
+  | IActionCreateUserPending
+  | IActionCreateUserRejected
+  | IActionCreateUserFulfilled;
+
+/* "auth/createUser" thunk-action creator */
+export const createUser = (
+  username: string,
+  email: string,
+  password: string
+) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for creating a new User resource.
+  */
+
+  return async (dispatch: Dispatch<ActionCreateUser>) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    const body = {
+      username,
+      email,
+      password,
+    };
+
+    dispatch(createUserPending());
+    try {
+      const response = await axios.post("/api/users", body, config);
+      dispatch(createUserFulfilled());
+      return Promise.resolve();
+    } catch (err) {
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(createUserRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
 /*
 Define a root reducer function,
 which serves to instantiate a single Redux store.
@@ -68,7 +163,7 @@ global state.)
 
 export const rootReducer = (
   state: IState = initialState,
-  action: ActionAlerts
+  action: ActionAlerts | ActionCreateUser
 ): IState => {
   switch (action.type) {
     case ActionTypesAlerts.CREATE: {
@@ -112,10 +207,36 @@ export const rootReducer = (
       };
     }
 
+    case ActionTypesCreateUser.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesCreateUser.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesCreateUser.FULFILLED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      };
+
     default:
       return state;
   }
 };
 
-const composedEnhancer = composeWithDevTools();
+const composedEnhancer = composeWithDevTools(
+  /* Add all middleware functions, which you actually want to use, here: */
+  applyMiddleware(thunkMiddleware)
+  /* Add other store enhancers if any */
+);
+
 export const store = createStore(rootReducer, composedEnhancer);

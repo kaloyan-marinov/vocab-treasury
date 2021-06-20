@@ -5,13 +5,17 @@ import { useSelector, useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  IState,
   selectAlertsIds,
   selectAlertsEntities,
   IActionAlertsCreate,
   IActionAlertsRemove,
   alertsCreate,
   alertsRemove,
+  ActionCreateUser,
+  createUser,
 } from "./store";
+import { ThunkDispatch } from "redux-thunk";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -175,7 +179,11 @@ export const Register = () => {
     confirmPassword: "",
   });
 
-  const dispatch: Dispatch<IActionAlertsCreate> = useDispatch();
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    IActionAlertsCreate | ActionCreateUser
+  > = useDispatch();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -184,7 +192,7 @@ export const Register = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const id: string = uuidv4();
@@ -198,7 +206,14 @@ export const Register = () => {
     } else if (formData.password !== formData.confirmPassword) {
       dispatch(alertsCreate(id, "THE PROVIDED PASSWORDS DON'T MATCH"));
     } else {
-      console.log("TODO: issue a POST request to /api/users");
+      try {
+        await dispatch(
+          createUser(formData.username, formData.email, formData.password)
+        );
+        dispatch(alertsCreate(id, "REGISTRATION SUCCESSFUL"));
+      } catch (thunkActionError) {
+        dispatch(alertsCreate(id, thunkActionError));
+      }
     }
   };
 
