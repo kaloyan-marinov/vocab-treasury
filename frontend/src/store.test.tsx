@@ -34,11 +34,13 @@ describe("selector functions", () => {
   beforeAll(() => {
     state = {
       ...initialState,
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
+      alerts: {
+        ids: ["alert-id-17"],
+        entities: {
+          "alert-id-17": {
+            id: "alert-id-17",
+            message: "PLEASE LOG IN.",
+          },
         },
       },
     };
@@ -127,26 +129,32 @@ describe("rootReducer", () => {
     const newState: IState = rootReducer(initState, action);
 
     expect(newState).toEqual({
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
+      alerts: {
+        ids: ["alert-id-17"],
+        entities: {
+          "alert-id-17": {
+            id: "alert-id-17",
+            message: "PLEASE LOG IN.",
+          },
         },
       },
-      requestStatus: RequestStatus.IDLE,
-      requestError: null,
+      auth: {
+        requestStatus: RequestStatus.IDLE,
+        requestError: null,
+      },
     });
   });
 
   test("alerts/remove", () => {
     const initState: IState = {
       ...initialState,
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
+      alerts: {
+        ids: ["alert-id-17"],
+        entities: {
+          "alert-id-17": {
+            id: "alert-id-17",
+            message: "PLEASE LOG IN.",
+          },
         },
       },
     };
@@ -160,18 +168,24 @@ describe("rootReducer", () => {
     const newState: IState = rootReducer(initState, action);
 
     expect(newState).toEqual({
-      alertsIds: [],
-      alertsEntities: {},
-      requestStatus: RequestStatus.IDLE,
-      requestError: null,
+      alerts: {
+        ids: [],
+        entities: {},
+      },
+      auth: {
+        requestStatus: RequestStatus.IDLE,
+        requestError: null,
+      },
     });
   });
 
   test("auth/createUser/pending", () => {
     const initState: IState = {
       ...initialState,
-      requestStatus: RequestStatus.FAILED,
-      requestError: "auth-createUser-rejected",
+      auth: {
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-createUser-rejected",
+      },
     };
     const action: IActionCreateUserPending = {
       type: ActionTypesCreateUser.PENDING,
@@ -180,18 +194,24 @@ describe("rootReducer", () => {
     const newState: IState = rootReducer(initState, action);
 
     expect(newState).toEqual({
-      alertsIds: [],
-      alertsEntities: {},
-      requestStatus: RequestStatus.LOADING,
-      requestError: null,
+      alerts: {
+        ids: [],
+        entities: {},
+      },
+      auth: {
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      },
     });
   });
 
   test("auth/createUser/rejected", () => {
     const initState: IState = {
       ...initialState,
-      requestStatus: RequestStatus.LOADING,
-      requestError: null,
+      auth: {
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      },
     };
     const action: IActionCreateUserRejected = {
       type: ActionTypesCreateUser.REJECTED,
@@ -201,18 +221,24 @@ describe("rootReducer", () => {
     const newState: IState = rootReducer(initState, action);
 
     expect(newState).toEqual({
-      alertsIds: [],
-      alertsEntities: {},
-      requestStatus: RequestStatus.FAILED,
-      requestError: "auth-createUser-rejected",
+      alerts: {
+        ids: [],
+        entities: {},
+      },
+      auth: {
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-createUser-rejected",
+      },
     });
   });
 
   test("auth/createUser/fulfilled", () => {
     const initState: IState = {
       ...initialState,
-      requestStatus: RequestStatus.LOADING,
-      requestError: null,
+      auth: {
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      },
     };
     const action: IActionCreateUserFulfilled = {
       type: ActionTypesCreateUser.FULFILLED,
@@ -221,10 +247,14 @@ describe("rootReducer", () => {
     const newState: IState = rootReducer(initState, action);
 
     expect(newState).toEqual({
-      alertsIds: [],
-      alertsEntities: {},
-      requestStatus: RequestStatus.SUCCEEDED,
-      requestError: null,
+      alerts: {
+        ids: [],
+        entities: {},
+      },
+      auth: {
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      },
     });
   });
 });

@@ -108,11 +108,13 @@ describe("<Alerts>", () => {
     /* Arrange. */
     const initState: IState = {
       ...initialState,
-      alertsIds: ["alert-id-17"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
+      alerts: {
+        ids: ["alert-id-17"],
+        entities: {
+          "alert-id-17": {
+            id: "alert-id-17",
+            message: "PLEASE LOG IN.",
+          },
         },
       },
     };
@@ -136,15 +138,17 @@ describe("<Alerts>", () => {
     /* Arrange. */
     const initState: IState = {
       ...initialState,
-      alertsIds: ["alert-id-17", "alert-id-34"],
-      alertsEntities: {
-        "alert-id-17": {
-          id: "alert-id-17",
-          message: "YOU HAVE BEEN LOGGED OUT.",
-        },
-        "alert-id-34": {
-          id: "alert-id-34",
-          message: "PLEASE LOG BACK IN.",
+      alerts: {
+        ids: ["alert-id-17", "alert-id-34"],
+        entities: {
+          "alert-id-17": {
+            id: "alert-id-17",
+            message: "YOU HAVE BEEN LOGGED OUT.",
+          },
+          "alert-id-34": {
+            id: "alert-id-34",
+            message: "PLEASE LOG BACK IN.",
+          },
         },
       },
     };

@@ -4,6 +4,8 @@ import thunkMiddleware from "redux-thunk";
 import { createStore } from "redux";
 import axios from "axios";
 
+import { combineReducers } from "redux";
+
 export enum RequestStatus {
   IDLE = "idle",
   LOADING = "loading",
@@ -16,23 +18,46 @@ export interface IAlert {
   message: string;
 }
 
-export interface IState {
-  requestStatus: RequestStatus;
-  requestError: string | null;
-  alertsIds: string[];
-  alertsEntities: { [alertId: string]: IAlert };
+// export interface IState {
+//   requestStatus: RequestStatus;
+//   requestError: string | null;
+//   alertsIds: string[];
+//   alertsEntities: { [alertId: string]: IAlert };
+// }
+
+export interface IStateAlerts {
+  ids: string[];
+  entities: { [id: string]: IAlert };
 }
 
-export const initialState: IState = {
+export interface IStateAuth {
+  requestStatus: RequestStatus;
+  requestError: string | null;
+}
+
+export interface IState {
+  alerts: IStateAlerts;
+  auth: IStateAuth;
+}
+
+export const initialStateAlerts: IStateAlerts = {
+  ids: [],
+  entities: {},
+};
+
+export const initialStateAuth: IStateAuth = {
   requestStatus: RequestStatus.IDLE,
   requestError: null,
-  alertsIds: [],
-  alertsEntities: {},
+};
+
+export const initialState: IState = {
+  alerts: initialStateAlerts,
+  auth: initialStateAuth,
 };
 
 /* Selector functions. */
-export const selectAlertsIds = (state: IState) => state.alertsIds;
-export const selectAlertsEntities = (state: IState) => state.alertsEntities;
+export const selectAlertsIds = (state: IState) => state.alerts.ids;
+export const selectAlertsEntities = (state: IState) => state.alerts.entities;
 
 /* alerts/* action creators */
 export enum ActionTypesAlerts {
@@ -153,18 +178,11 @@ export const createUser = (
   };
 };
 
-/*
-Define a root reducer function,
-which serves to instantiate a single Redux store.
-
-(In turn, that store will be responsible for keeping track of the React application's
-global state.)
-*/
-
-export const rootReducer = (
-  state: IState = initialState,
-  action: ActionAlerts | ActionCreateUser
-): IState => {
+/* Define slice reducers. */
+export const alertsReducer = (
+  state: IStateAlerts = initialStateAlerts,
+  action: ActionAlerts
+): IStateAlerts => {
   switch (action.type) {
     case ActionTypesAlerts.CREATE: {
       const alert: IAlert = action.payload;
@@ -172,41 +190,51 @@ export const rootReducer = (
       // For the sake of keeping track of mistakes,
       // the commented-out code-block below contains a mistake.
       /*
-      const newState: IState = { ...state };
-      newState.alertsIds.push(alert.id);
-      newState.alertsEntities[alert.id] = alert;
+      const newState: IStateAlerts = { ...state };
+      newState.ids.push(alert.id);
+      newState.entities[alert.id] = alert;
       */
 
       // The following code-block fixes the commented-out code-block's mistake.
-      const newAlertsIds: string[] = [alert.id, ...state.alertsIds];
+      const newAlertsIds: string[] = [alert.id, ...state.ids];
 
-      const newAlertsEntities = { ...state.alertsEntities };
+      const newAlertsEntities = { ...state.entities };
       newAlertsEntities[alert.id] = alert;
 
       return {
         ...state,
-        alertsIds: newAlertsIds,
-        alertsEntities: newAlertsEntities,
+        ids: newAlertsIds,
+        entities: newAlertsEntities,
       };
     }
 
     case ActionTypesAlerts.REMOVE: {
       const alertIdToRemove: string = action.payload.id;
 
-      const newAlertsIds = state.alertsIds.filter(
+      const newAlertsIds = state.ids.filter(
         (aId: string) => aId !== alertIdToRemove
       );
 
-      const newAlertsEntities = { ...state.alertsEntities };
+      const newAlertsEntities = { ...state.entities };
       delete newAlertsEntities[alertIdToRemove];
 
       return {
         ...state,
-        alertsIds: newAlertsIds,
-        alertsEntities: newAlertsEntities,
+        ids: newAlertsIds,
+        entities: newAlertsEntities,
       };
     }
 
+    default:
+      return state;
+  }
+};
+
+export const authReducer = (
+  state: IStateAuth = initialStateAuth,
+  action: ActionCreateUser
+): IStateAuth => {
+  switch (action.type) {
     case ActionTypesCreateUser.PENDING:
       return {
         ...state,
@@ -232,6 +260,18 @@ export const rootReducer = (
       return state;
   }
 };
+
+/*
+Define a root reducer function,
+which serves to instantiate a single Redux store.
+
+(In turn, that store will be responsible for keeping track of the React application's
+global state.)
+*/
+export const rootReducer = combineReducers({
+  alerts: alertsReducer,
+  auth: authReducer,
+});
 
 const composedEnhancer = composeWithDevTools(
   /* Add all middleware functions, which you actually want to use, here: */
