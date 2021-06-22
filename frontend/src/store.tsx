@@ -18,13 +18,6 @@ export interface IAlert {
   message: string;
 }
 
-// export interface IState {
-//   requestStatus: RequestStatus;
-//   requestError: string | null;
-//   alertsIds: string[];
-//   alertsEntities: { [alertId: string]: IAlert };
-// }
-
 export interface IStateAlerts {
   ids: string[];
   entities: { [id: string]: IAlert };

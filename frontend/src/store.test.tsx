@@ -1,3 +1,4 @@
+// 1
 import {
   IAlert,
   IState,
@@ -9,7 +10,6 @@ import {
   IActionAlertsRemove,
   alertsCreate,
   alertsRemove,
-  rootReducer,
   RequestStatus,
   createUserPending,
   createUserRejected,
@@ -20,6 +20,7 @@ import {
   IActionCreateUserFulfilled,
 } from "./store";
 
+// 2
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
@@ -27,6 +28,16 @@ import { AnyAction } from "redux";
 import configureMockStore, { MockStoreEnhanced } from "redux-mock-store";
 
 import { createUser } from "./store";
+
+// 3
+import {
+  IStateAlerts,
+  initialStateAlerts,
+  alertsReducer,
+  IStateAuth,
+  initialStateAuth,
+  authReducer,
+} from "./store";
 
 describe("selector functions", () => {
   let state: IState;
@@ -115,21 +126,23 @@ describe("action creators", () => {
   });
 });
 
-describe("rootReducer", () => {
-  test("alerts/create", () => {
-    const initState: IState = { ...initialState };
-    const action: IActionAlertsCreate = {
-      type: ActionTypesAlerts.CREATE,
-      payload: {
-        id: "alert-id-17",
-        message: "PLEASE LOG IN.",
-      },
-    };
+describe("slice reducers", () => {
+  describe("alertsReducer", () => {
+    test("alerts/create", () => {
+      const initState: IStateAlerts = {
+        ...initialStateAlerts,
+      };
+      const action: IActionAlertsCreate = {
+        type: ActionTypesAlerts.CREATE,
+        payload: {
+          id: "alert-id-17",
+          message: "PLEASE LOG IN.",
+        },
+      };
 
-    const newState: IState = rootReducer(initState, action);
+      const newState: IStateAlerts = alertsReducer(initState, action);
 
-    expect(newState).toEqual({
-      alerts: {
+      expect(newState).toEqual({
         ids: ["alert-id-17"],
         entities: {
           "alert-id-17": {
@@ -137,18 +150,12 @@ describe("rootReducer", () => {
             message: "PLEASE LOG IN.",
           },
         },
-      },
-      auth: {
-        requestStatus: RequestStatus.IDLE,
-        requestError: null,
-      },
+      });
     });
-  });
 
-  test("alerts/remove", () => {
-    const initState: IState = {
-      ...initialState,
-      alerts: {
+    test("alerts/remove", () => {
+      const initState: IStateAlerts = {
+        ...initialStateAlerts,
         ids: ["alert-id-17"],
         entities: {
           "alert-id-17": {
@@ -156,105 +163,77 @@ describe("rootReducer", () => {
             message: "PLEASE LOG IN.",
           },
         },
-      },
-    };
-    const action: IActionAlertsRemove = {
-      type: ActionTypesAlerts.REMOVE,
-      payload: {
-        id: "alert-id-17",
-      },
-    };
+      };
+      const action: IActionAlertsRemove = {
+        type: ActionTypesAlerts.REMOVE,
+        payload: {
+          id: "alert-id-17",
+        },
+      };
 
-    const newState: IState = rootReducer(initState, action);
+      const newState: IStateAlerts = alertsReducer(initState, action);
 
-    expect(newState).toEqual({
-      alerts: {
+      expect(newState).toEqual({
         ids: [],
         entities: {},
-      },
-      auth: {
-        requestStatus: RequestStatus.IDLE,
-        requestError: null,
-      },
+      });
     });
   });
 
-  test("auth/createUser/pending", () => {
-    const initState: IState = {
-      ...initialState,
-      auth: {
+  describe("authReducer", () => {
+    test("auth/createUser/pending", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
         requestStatus: RequestStatus.FAILED,
         requestError: "auth-createUser-rejected",
-      },
-    };
-    const action: IActionCreateUserPending = {
-      type: ActionTypesCreateUser.PENDING,
-    };
+      };
+      const action: IActionCreateUserPending = {
+        type: ActionTypesCreateUser.PENDING,
+      };
 
-    const newState: IState = rootReducer(initState, action);
+      const newState: IStateAuth = authReducer(initState, action);
 
-    expect(newState).toEqual({
-      alerts: {
-        ids: [],
-        entities: {},
-      },
-      auth: {
+      expect(newState).toEqual({
         requestStatus: RequestStatus.LOADING,
         requestError: null,
-      },
+      });
     });
-  });
 
-  test("auth/createUser/rejected", () => {
-    const initState: IState = {
-      ...initialState,
-      auth: {
+    test("auth/createUser/rejected", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
         requestStatus: RequestStatus.LOADING,
         requestError: null,
-      },
-    };
-    const action: IActionCreateUserRejected = {
-      type: ActionTypesCreateUser.REJECTED,
-      error: "auth-createUser-rejected",
-    };
+      };
+      const action: IActionCreateUserRejected = {
+        type: ActionTypesCreateUser.REJECTED,
+        error: "auth-createUser-rejected",
+      };
 
-    const newState: IState = rootReducer(initState, action);
+      const newState: IStateAuth = authReducer(initState, action);
 
-    expect(newState).toEqual({
-      alerts: {
-        ids: [],
-        entities: {},
-      },
-      auth: {
+      expect(newState).toEqual({
         requestStatus: RequestStatus.FAILED,
         requestError: "auth-createUser-rejected",
-      },
+      });
     });
-  });
 
-  test("auth/createUser/fulfilled", () => {
-    const initState: IState = {
-      ...initialState,
-      auth: {
+    test("auth/createUser/fulfilled", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
         requestStatus: RequestStatus.LOADING,
         requestError: null,
-      },
-    };
-    const action: IActionCreateUserFulfilled = {
-      type: ActionTypesCreateUser.FULFILLED,
-    };
+      };
+      const action: IActionCreateUserFulfilled = {
+        type: ActionTypesCreateUser.FULFILLED,
+      };
 
-    const newState: IState = rootReducer(initState, action);
+      const newState: IStateAuth = authReducer(initState, action);
 
-    expect(newState).toEqual({
-      alerts: {
-        ids: [],
-        entities: {},
-      },
-      auth: {
+      expect(newState).toEqual({
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
-      },
+      });
     });
   });
 });
@@ -284,7 +263,7 @@ const quasiServer = setupServer(...requestHandlersToMock);
 describe(
   "dispatching of async thunk-actions," +
     " with each test case focusing on the action-related logic only" +
-    " (and thunk completely disregarding the reducer-related logic",
+    " (and thus completely disregarding the reducer-related logic)",
   () => {
     let initState: IState;
     let storeMock: MockStoreEnhanced<
