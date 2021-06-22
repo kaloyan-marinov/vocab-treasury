@@ -1,3 +1,4 @@
+// 1
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 
@@ -23,6 +24,15 @@ import {
   EditExample,
   Search,
 } from "./App";
+
+// 2
+import { rest } from "msw";
+import { setupServer } from "msw/node";
+
+import { applyMiddleware } from "redux";
+import thunkMiddleware from "redux-thunk";
+
+import { waitFor } from "@testing-library/react";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -600,6 +610,151 @@ describe("<Search>", () => {
 
       const translationTableCellElement = screen.getByText("TRANSLATION");
       expect(translationTableCellElement).toBeInTheDocument();
+    }
+  );
+});
+
+/* Describe what requests should be mocked. */
+const requestHandlersToMock = [
+  rest.post("/api/users", (req, res, ctx) => {
+    return res(
+      ctx.status(201),
+      ctx.json({
+        id: 17,
+        username: "mocked-request-jd",
+      })
+    );
+  }),
+];
+
+/* Create an MSW "request-interception layer". */
+const quasiServer = setupServer(...requestHandlersToMock);
+
+describe("multiple components + mocking of HTTP requests to the backend", () => {
+  beforeAll(() => {
+    /* Enable API mocking. */
+    quasiServer.listen();
+  });
+
+  afterEach(() => {
+    quasiServer.resetHandlers();
+  });
+
+  afterAll(() => {
+    /* Disable API mocking. */
+    quasiServer.close();
+  });
+
+  test(
+    "<Alerts> + <Register> -" +
+      " the user fills out the form and submits it," +
+      " and the backend is _mocked_ to respond that" +
+      " the form submission was accepted as valid and processed",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Register />
+          </Router>
+        </Provider>
+      );
+
+      const usernameInputElement = screen.getByLabelText("USERNAME");
+      expect(usernameInputElement).toBeInTheDocument();
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      const confirmPasswordInputElement =
+        screen.getByLabelText("CONFIRM PASSWORD");
+
+      fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+      fireEvent.change(confirmPasswordInputElement, {
+        target: { value: "test-123" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "CREATE MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      await waitFor(() => {
+        screen.getByText("REGISTRATION SUCCESSFUL");
+      });
+    }
+  );
+
+  test(
+    "<Alerts> + <Register> -" +
+      " the user fills out the form and submits it," +
+      " but the backend is _mocked_ to respond that" +
+      " the form submission was determined to be invalid",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.post("/api/users", (req, res, ctx) => {
+          return res(
+            ctx.status(400),
+            ctx.json({
+              message: "[mocked-response] Failed to create a new User resource",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Register />
+          </Router>
+        </Provider>
+      );
+
+      const usernameInputElement = screen.getByLabelText("USERNAME");
+      expect(usernameInputElement).toBeInTheDocument();
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      const confirmPasswordInputElement =
+        screen.getByLabelText("CONFIRM PASSWORD");
+
+      fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+      fireEvent.change(confirmPasswordInputElement, {
+        target: { value: "test-123" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "CREATE MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      await waitFor(() => {
+        screen.getByText(
+          "[mocked-response] Failed to create a new User resource"
+        );
+      });
     }
   );
 });
