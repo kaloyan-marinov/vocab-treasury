@@ -380,6 +380,15 @@ def get_user(user_id):
     return u.to_dict()
 
 
+@app.route("/api/user-profile", methods=["GET"])
+@token_auth.login_required
+def get_user_profile():
+    u = User.query.get(token_auth.current_user().id)
+    r = u.to_dict()
+    r["email"] = u.email
+    return r
+
+
 @app.route("/api/users/<int:user_id>", methods=["PUT"])
 @basic_auth.login_required
 def edit_user(user_id):

@@ -1141,6 +1141,76 @@ class Test_06_IssueToken(TestBase):
         )
 
 
+class Test_07_GetUserProfile(TestBase):
+    """
+    Test the request responsible for getting the User Profile resource,
+    which is associated with a given User resource.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        data = {"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}
+        data_str = json.dumps(data)
+        rv = self.client.post(
+            "/api/users", data=data_str, headers={"Content-Type": "application/json"}
+        )
+
+    def test_1_missing_basic_auth(self):
+        """
+        Ensure that it is impossible for a user to get her own User Profile resource
+        without providing a Bearer-Token Auth credential.
+        """
+
+        rv = self.client.get("/api/user-profile")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "Authentication in the Bearer-Token Auth format is required."
+                ),
+            },
+        )
+
+    def test_2_get_user_profile(self):
+        """
+        Ensure that the user, who is authenticated by the issued request's header,
+        is able to fetch her own User Profile resource.
+        """
+
+        # Issue an access token for the user.
+        basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        rv_1 = self.client.post(
+            "/api/tokens",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Basic " + b_a_c,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        token = body_1["token"]
+
+        # Fetch the user's own User Profile resource.
+        rv_2 = self.client.get(
+            "/api/user-profile", headers={"Authorization": "Bearer " + token}
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}
+        )
+
+
 class TestBaseForExampleResources(TestBase):
     def create_user(self, username, email, password):
         # Create one User resource.
@@ -1175,7 +1245,7 @@ class TestBaseForExampleResources(TestBase):
         return body_1, token_auth
 
 
-class Test_07_CreateExample(TestBaseForExampleResources):
+class Test_08_CreateExample(TestBaseForExampleResources):
     """Test the request responsible for creating a new Example resource."""
 
     def setUp(self):
@@ -1468,7 +1538,7 @@ class Test_07_CreateExample(TestBaseForExampleResources):
         self.assertEqual(len(examples), 0)
 
 
-class Test_08_GetExamples(TestBaseForExampleResources):
+class Test_09_GetExamples(TestBaseForExampleResources):
     """
     Test the request responsible for getting all Example resources,
     which are associated with a given User resource.
@@ -1655,7 +1725,7 @@ class Test_08_GetExamples(TestBaseForExampleResources):
         )
 
 
-class Test_09_GetExample(TestBaseForExampleResources):
+class Test_10_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
 
     def setUp(self):
@@ -1843,7 +1913,7 @@ class Test_09_GetExample(TestBaseForExampleResources):
         )
 
 
-class Test_10_EditExample(TestBaseForExampleResources):
+class Test_11_EditExample(TestBaseForExampleResources):
     """Test the request responsible for editing a specific Example resource."""
 
     def setUp(self):
@@ -2146,7 +2216,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         )
 
 
-class Test_11_DeleteExample(TestBaseForExampleResources):
+class Test_12_DeleteExample(TestBaseForExampleResources):
     """Test the request responsible for deleting a specific Example resource."""
 
     def setUp(self):
