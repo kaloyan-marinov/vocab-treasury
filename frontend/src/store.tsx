@@ -6,6 +6,8 @@ import axios from "axios";
 
 import { combineReducers } from "redux";
 
+import { v4 as uuidv4 } from "uuid";
+
 export enum RequestStatus {
   IDLE = "idle",
   LOADING = "loading",
@@ -263,6 +265,35 @@ export const issueJWSToken = (email: string, password: string) => {
   };
 };
 
+/* "auth/clearSlice" action creator */
+export const ACTION_TYPE_AUTH_CLEAR_SLICE = "auth/clearSlice";
+
+export interface IActionAuthClearSlice {
+  type: typeof ACTION_TYPE_AUTH_CLEAR_SLICE;
+}
+
+export const authClearSlice = (): IActionAuthClearSlice => ({
+  type: ACTION_TYPE_AUTH_CLEAR_SLICE,
+});
+
+/* authSlice thunk-action creator */
+export const logOut = () => {
+  /*
+  Create a thunk-action.
+  When dispatched, it logs the user out
+  and creates an alert.
+  */
+
+  return (dispatch: Dispatch<IActionAuthClearSlice | IActionAlertsCreate>) => {
+    localStorage.removeItem(VOCAB_TREASURY_APP_TOKEN);
+
+    dispatch(authClearSlice());
+
+    const id: string = uuidv4();
+    dispatch(alertsCreate(id, "LOGOUT SUCCESSFUL"));
+  };
+};
+
 /* Define slice reducers. */
 export const alertsReducer = (
   state: IStateAlerts = initialStateAlerts,
@@ -317,7 +348,7 @@ export const alertsReducer = (
 
 export const authReducer = (
   state: IStateAuth = initialStateAuth,
-  action: ActionCreateUser | ActionIssueJWSToken
+  action: ActionCreateUser | ActionIssueJWSToken | IActionAuthClearSlice
 ): IStateAuth => {
   switch (action.type) {
     case ActionTypesCreateUser.PENDING:
@@ -363,6 +394,13 @@ export const authReducer = (
         requestError: null,
         token: action.payload.token,
         hasValidToken: true,
+      };
+
+    case ACTION_TYPE_AUTH_CLEAR_SLICE:
+      return {
+        ...state,
+        token: null,
+        hasValidToken: false,
       };
 
     default:

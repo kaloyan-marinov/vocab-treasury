@@ -65,12 +65,15 @@ describe("<Home>", () => {
 
 describe("<NavigationBar>", () => {
   test("renders navigation links that are always visible", () => {
+    const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
 
     render(
-      <Router history={history}>
-        <NavigationBar />
-      </Router>
+      <Provider store={realStore}>
+        <Router history={history}>
+          <NavigationBar />
+        </Router>
+      </Provider>
     );
 
     const navigationLinkTexts = ["VocabTreasury", "Home", "About"];
@@ -81,12 +84,15 @@ describe("<NavigationBar>", () => {
   });
 
   test("renders navigation links for guest users", () => {
+    const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
 
     render(
-      <Router history={history}>
-        <NavigationBar />
-      </Router>
+      <Provider store={realStore}>
+        <Router history={history}>
+          <NavigationBar />
+        </Router>
+      </Provider>
     );
 
     const navigationLinkTexts = ["Log in", "Register"];
@@ -97,12 +103,15 @@ describe("<NavigationBar>", () => {
   });
 
   test("renders navigation links for logged-in users", () => {
+    const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
 
     render(
-      <Router history={history}>
-        <NavigationBar />
-      </Router>
+      <Provider store={realStore}>
+        <Router history={history}>
+          <NavigationBar />
+        </Router>
+      </Provider>
     );
 
     const navigationLinkTexts = ["Own VocabTreasury", "Account", "Log out"];
@@ -111,6 +120,35 @@ describe("<NavigationBar>", () => {
       expect(element).toBeInTheDocument();
     }
   });
+
+  test(
+    "+ <Alerts> - renders an alert" +
+      " after the user clicks on the 'Log out' link",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <NavigationBar />
+          </Router>
+        </Provider>
+      );
+
+      /* Act. */
+      const logoutAnchor = screen.getByText("Log out");
+      fireEvent.click(logoutAnchor);
+
+      /* Assert. */
+      await waitFor(() => {
+        screen.getByText("LOGOUT SUCCESSFUL");
+      });
+    }
+  );
 });
 
 describe("<Alerts>", () => {

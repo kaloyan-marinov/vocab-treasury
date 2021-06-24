@@ -16,6 +16,7 @@ import {
   createUser,
   ActionIssueJWSToken,
   issueJWSToken,
+  logOut,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -77,6 +78,8 @@ export const NavigationBar = () => {
     `${new Date().toISOString()} - React is rendering <NavigationBar>`
   );
 
+  const dispatch = useDispatch();
+
   const alwaysVisibleLinks = (
     <React.Fragment>
       <div>
@@ -97,7 +100,10 @@ export const NavigationBar = () => {
   const loggedInUserLinks = (
     <div>
       <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
-      <Link to="/account">Account</Link> <Link to="/logout">Log out</Link>
+      <Link to="/account">Account</Link>{" "}
+      <a href="#!" onClick={() => dispatch(logOut())}>
+        Log out
+      </a>
     </div>
   );
 

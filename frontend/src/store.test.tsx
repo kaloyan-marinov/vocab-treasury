@@ -48,6 +48,11 @@ import {
   issueJWSTokenFulfilled,
   IActionIssueJWSTokenFulfilled,
   issueJWSToken,
+  VOCAB_TREASURY_APP_TOKEN,
+  ACTION_TYPE_AUTH_CLEAR_SLICE,
+  IActionAuthClearSlice,
+  authClearSlice,
+  logOut,
 } from "./store";
 
 describe("selector functions", () => {
@@ -161,6 +166,14 @@ describe("action creators", () => {
       payload: {
         token: "token-issued-by-the-backend",
       },
+    });
+  });
+
+  test("authClearSlice", () => {
+    const action = authClearSlice();
+
+    expect(action).toEqual({
+      type: "auth/clearSlice",
     });
   });
 });
@@ -342,6 +355,27 @@ describe("slice reducers", () => {
         requestError: null,
         token: "token-issued-by-the-backend",
         hasValidToken: true,
+      });
+    });
+
+    test("auth/clearSlice", () => {
+      const initState: IStateAuth = {
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        token: "token-issued-by-the-backend",
+        hasValidToken: true,
+      };
+      const action: IActionAuthClearSlice = {
+        type: ACTION_TYPE_AUTH_CLEAR_SLICE,
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        token: null,
+        hasValidToken: false,
       });
     });
   });
@@ -535,6 +569,45 @@ describe(
             error: "[mocked] Incorrect email and/or password.",
           },
         ]);
+      }
+    );
+
+    test(
+      "logOut()" +
+        " [Note: (a) not an async thunk-action," +
+        " and (b) does not dependent on mocking of any HTTP requests]",
+      () => {
+        /* Arrange. */
+        localStorage.setItem(
+          VOCAB_TREASURY_APP_TOKEN,
+          "token-issued-by-the-backend"
+        );
+
+        /* Act. */
+        storeMock.dispatch(logOut());
+
+        /* Assert. */
+        const dispatchedActions = storeMock.getActions();
+
+        expect(dispatchedActions.length).toEqual(2);
+
+        expect(dispatchedActions[0]).toEqual({
+          type: "auth/clearSlice",
+        });
+
+        expect({
+          type: dispatchedActions[1].type,
+          payload: {
+            message: dispatchedActions[1].payload.message,
+          },
+        }).toEqual({
+          type: "alerts/create",
+          payload: {
+            message: "LOGOUT SUCCESSFUL",
+          },
+        });
+
+        expect(localStorage.getItem(VOCAB_TREASURY_APP_TOKEN)).toEqual(null);
       }
     );
   }
