@@ -39,6 +39,17 @@ import {
   authReducer,
 } from "./store";
 
+import {
+  ActionTypesIssueJWSToken,
+  issueJWSTokenPending,
+  IActionIssueJWSTokenPending,
+  issueJWSTokenRejected,
+  IActionIssueJWSTokenRejected,
+  issueJWSTokenFulfilled,
+  IActionIssueJWSTokenFulfilled,
+  issueJWSToken,
+} from "./store";
+
 describe("selector functions", () => {
   let state: IState;
 
@@ -124,6 +135,34 @@ describe("action creators", () => {
       type: "auth/createUser/fulfilled",
     });
   });
+
+  test("issueJWSTokenPending", () => {
+    const action = issueJWSTokenPending();
+
+    expect(action).toEqual({
+      type: "auth/issueJWSToken/pending",
+    });
+  });
+
+  test("issueJWSTokenRejected", () => {
+    const action = issueJWSTokenRejected("auth-issueJWSToken-rejected");
+
+    expect(action).toEqual({
+      type: "auth/issueJWSToken/rejected",
+      error: "auth-issueJWSToken-rejected",
+    });
+  });
+
+  test("issueJWSTokenFulfilled", () => {
+    const action = issueJWSTokenFulfilled("token-issued-by-the-backend");
+
+    expect(action).toEqual({
+      type: "auth/issueJWSToken/fulfilled",
+      payload: {
+        token: "token-issued-by-the-backend",
+      },
+    });
+  });
 });
 
 describe("slice reducers", () => {
@@ -196,6 +235,8 @@ describe("slice reducers", () => {
       expect(newState).toEqual({
         requestStatus: RequestStatus.LOADING,
         requestError: null,
+        token: null,
+        hasValidToken: null,
       });
     });
 
@@ -215,6 +256,8 @@ describe("slice reducers", () => {
       expect(newState).toEqual({
         requestStatus: RequestStatus.FAILED,
         requestError: "auth-createUser-rejected",
+        token: null,
+        hasValidToken: null,
       });
     });
 
@@ -233,6 +276,72 @@ describe("slice reducers", () => {
       expect(newState).toEqual({
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
+        token: null,
+        hasValidToken: null,
+      });
+    });
+
+    test("auth/issueJWSToken/pending", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-issueJWSToken-rejected",
+      };
+      const action: IActionIssueJWSTokenPending = {
+        type: ActionTypesIssueJWSToken.PENDING,
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        token: null,
+        hasValidToken: null,
+      });
+    });
+
+    test("auth/issueJWSToken/rejected", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+      const action: IActionIssueJWSTokenRejected = {
+        type: ActionTypesIssueJWSToken.REJECTED,
+        error: "auth-issueJWSToken-rejected",
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-issueJWSToken-rejected",
+        token: null,
+        hasValidToken: false,
+      });
+    });
+
+    test("auth/issueJWSToken/fulfilled", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+      const action: IActionIssueJWSTokenFulfilled = {
+        type: ActionTypesIssueJWSToken.FULFILLED,
+        payload: {
+          token: "token-issued-by-the-backend",
+        },
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        token: "token-issued-by-the-backend",
+        hasValidToken: true,
       });
     });
   });
@@ -252,6 +361,15 @@ const requestHandlersToMock = [
       ctx.json({
         id: 17,
         username: "mocked-request-jd",
+      })
+    );
+  }),
+
+  rest.post("/api/tokens", (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        token: "mocked-token",
       })
     );
   }),
@@ -357,6 +475,64 @@ describe(
           {
             type: "auth/createUser/rejected",
             error: "[mocked] The provided email is already taken.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "issueJWSToken(email, password)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const issueJWSTokenPromise = storeMock.dispatch(
+          issueJWSToken("mocked-email@protonmail.com", "mocked-password")
+        );
+
+        await expect(issueJWSTokenPromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/issueJWSToken/pending",
+          },
+          {
+            type: "auth/issueJWSToken/fulfilled",
+            payload: {
+              token: "mocked-token",
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "issueJWSToken(email, password)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.post("/api/tokens", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Bad Request",
+                message: "[mocked] Incorrect email and/or password.",
+              })
+            );
+          })
+        );
+
+        const issueJWSTokenPromise = storeMock.dispatch(
+          issueJWSToken("mocked-email@protonmail.com", "mocked-password")
+        );
+
+        await expect(issueJWSTokenPromise).rejects.toEqual(
+          "[mocked] Incorrect email and/or password."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/issueJWSToken/pending",
+          },
+          {
+            type: "auth/issueJWSToken/rejected",
+            error: "[mocked] Incorrect email and/or password.",
           },
         ]);
       }

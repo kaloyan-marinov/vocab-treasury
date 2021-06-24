@@ -14,6 +14,8 @@ import {
   alertsRemove,
   ActionCreateUser,
   createUser,
+  ActionIssueJWSToken,
+  issueJWSToken,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -309,11 +311,35 @@ export const Login = () => {
     });
   };
 
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    IActionAlertsCreate | ActionIssueJWSToken
+  > = useDispatch();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.email === "" || formData.password === "") {
+      dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));
+    } else {
+      try {
+        await dispatch(issueJWSToken(formData.email, formData.password));
+        dispatch(alertsCreate(id, "LOGIN SUCCESSFUL"));
+      } catch (thunkActionError) {
+        dispatch(alertsCreate(id, thunkActionError));
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       {"<Login>"}
       <div>
-        <form method="POST" action="">
+        <form
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
             <legend>[legend-tag: LOG IN]</legend>
             <div>

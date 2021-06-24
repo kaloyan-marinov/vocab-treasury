@@ -26,6 +26,8 @@ export interface IStateAlerts {
 export interface IStateAuth {
   requestStatus: RequestStatus;
   requestError: string | null;
+  token: string | null;
+  hasValidToken: boolean | null;
 }
 
 export interface IState {
@@ -38,9 +40,13 @@ export const initialStateAlerts: IStateAlerts = {
   entities: {},
 };
 
+export const VOCAB_TREASURY_APP_TOKEN = "token-4-vocab-treasury";
+
 export const initialStateAuth: IStateAuth = {
   requestStatus: RequestStatus.IDLE,
   requestError: null,
+  token: localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+  hasValidToken: null,
 };
 
 export const initialState: IState = {
@@ -52,7 +58,7 @@ export const initialState: IState = {
 export const selectAlertsIds = (state: IState) => state.alerts.ids;
 export const selectAlertsEntities = (state: IState) => state.alerts.entities;
 
-/* alerts/* action creators */
+/* "alerts/*" action creators */
 export enum ActionTypesAlerts {
   CREATE = "alerts/create",
   REMOVE = "alerts/remove",
@@ -171,6 +177,92 @@ export const createUser = (
   };
 };
 
+/* "auth/issueJWSToken/" action creators */
+export enum ActionTypesIssueJWSToken {
+  PENDING = "auth/issueJWSToken/pending",
+  REJECTED = "auth/issueJWSToken/rejected",
+  FULFILLED = "auth/issueJWSToken/fulfilled",
+}
+
+export interface IActionIssueJWSTokenPending {
+  type: typeof ActionTypesIssueJWSToken.PENDING;
+}
+
+export interface IActionIssueJWSTokenRejected {
+  type: typeof ActionTypesIssueJWSToken.REJECTED;
+  error: string;
+}
+
+export interface IActionIssueJWSTokenFulfilled {
+  type: typeof ActionTypesIssueJWSToken.FULFILLED;
+  payload: {
+    token: string;
+  };
+}
+
+export const issueJWSTokenPending = (): IActionIssueJWSTokenPending => ({
+  type: ActionTypesIssueJWSToken.PENDING,
+});
+
+export const issueJWSTokenRejected = (
+  error: string
+): IActionIssueJWSTokenRejected => ({
+  type: ActionTypesIssueJWSToken.REJECTED,
+  error,
+});
+
+export const issueJWSTokenFulfilled = (
+  token: string
+): IActionIssueJWSTokenFulfilled => ({
+  type: ActionTypesIssueJWSToken.FULFILLED,
+  payload: {
+    token,
+  },
+});
+
+export type ActionIssueJWSToken =
+  | IActionIssueJWSTokenPending
+  | IActionIssueJWSTokenRejected
+  | IActionIssueJWSTokenFulfilled;
+
+/* "auth/issueJWSToken" thunk-action creator */
+export const issueJWSToken = (email: string, password: string) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for issuing a JSON Web Signature token.
+  */
+
+  return async (dispatch: Dispatch<ActionIssueJWSToken>) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      auth: {
+        username: email,
+        password,
+      },
+    };
+
+    const body = {};
+
+    dispatch(issueJWSTokenPending());
+    try {
+      const response = await axios.post("/api/tokens", body, config);
+      localStorage.setItem(VOCAB_TREASURY_APP_TOKEN, response.data.token);
+      dispatch(issueJWSTokenFulfilled(response.data.token));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(issueJWSTokenRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
 /* Define slice reducers. */
 export const alertsReducer = (
   state: IStateAlerts = initialStateAlerts,
@@ -225,7 +317,7 @@ export const alertsReducer = (
 
 export const authReducer = (
   state: IStateAuth = initialStateAuth,
-  action: ActionCreateUser
+  action: ActionCreateUser | ActionIssueJWSToken
 ): IStateAuth => {
   switch (action.type) {
     case ActionTypesCreateUser.PENDING:
@@ -247,6 +339,30 @@ export const authReducer = (
         ...state,
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
+      };
+
+    case ActionTypesIssueJWSToken.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesIssueJWSToken.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+        hasValidToken: false,
+      };
+
+    case ActionTypesIssueJWSToken.FULFILLED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        token: action.payload.token,
+        hasValidToken: true,
       };
 
     default:

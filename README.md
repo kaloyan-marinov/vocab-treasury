@@ -350,7 +350,10 @@ Another aspect of the reality of purposeful language learning is that it takes a
     
     - ensure that running the tests results in a PASS:
         ```
-        frontend $ npm test -- --watchAll --coverage
+        frontend $ npm test -- \
+            --watchAll \
+            --coverage \
+            --verbose
         ```
     
     - launch a terminal window and, in it, start a process responsible for serving the application instance:

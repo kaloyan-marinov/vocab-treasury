@@ -252,9 +252,12 @@ describe("<Register>", () => {
       const usernameInputElement = screen.getByLabelText("USERNAME");
       expect(usernameInputElement).toBeInTheDocument();
       const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
       const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
       // const confirmPasswordInputElement =
       //   screen.getByLabelText("CONFIRM PASSWORD");
+      // expect(confirmPasswordInputElement).toBeInTheDocument()
 
       fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
       fireEvent.change(emailInputElement, {
@@ -295,9 +298,12 @@ describe("<Register>", () => {
       const usernameInputElement = screen.getByLabelText("USERNAME");
       expect(usernameInputElement).toBeInTheDocument();
       const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
       const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
       const confirmPasswordInputElement =
         screen.getByLabelText("CONFIRM PASSWORD");
+      expect(confirmPasswordInputElement).toBeInTheDocument();
 
       fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
       fireEvent.change(emailInputElement, {
@@ -323,13 +329,16 @@ describe("<Register>", () => {
 describe("<Login>", () => {
   test("renders (a <legend> tag and) a login form", () => {
     /* Arrange. */
+    const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
 
     /* Act. */
     render(
-      <Router history={history}>
-        <Login />
-      </Router>
+      <Provider store={realStore}>
+        <Router history={history}>
+          <Login />
+        </Router>
+      </Provider>
     );
 
     /* Assert. */
@@ -347,6 +356,45 @@ describe("<Login>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
   });
+
+  test(
+    "+ <Alerts> - renders an alert" +
+      " after the user has submitted the form" +
+      " without completing all its fields",
+    () => {
+      /* Arrange. */
+      const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Login />
+          </Router>
+        </Provider>
+      );
+
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
+      // const passwordInputElement = screen.getByLabelText("PASSWORD");
+      // expect(passwordInputElement).toBeInTheDocument();
+
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      // fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "LOG INTO MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      screen.getByText("ALL FORM FIELDS MUST BE FILLED OUT");
+    }
+  );
 });
 
 describe("<RequestPasswordReset>", () => {
@@ -625,6 +673,15 @@ const requestHandlersToMock = [
       })
     );
   }),
+
+  rest.post("/api/tokens", (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        token: "mocked-token",
+      })
+    );
+  }),
 ];
 
 /* Create an MSW "request-interception layer". */
@@ -669,9 +726,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const usernameInputElement = screen.getByLabelText("USERNAME");
       expect(usernameInputElement).toBeInTheDocument();
       const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
       const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
       const confirmPasswordInputElement =
         screen.getByLabelText("CONFIRM PASSWORD");
+      expect(confirmPasswordInputElement).toBeInTheDocument();
 
       fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
       fireEvent.change(emailInputElement, {
@@ -730,9 +790,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const usernameInputElement = screen.getByLabelText("USERNAME");
       expect(usernameInputElement).toBeInTheDocument();
       const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
       const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
       const confirmPasswordInputElement =
         screen.getByLabelText("CONFIRM PASSWORD");
+      expect(confirmPasswordInputElement).toBeInTheDocument();
 
       fireEvent.change(usernameInputElement, { target: { value: "test-jd" } });
       fireEvent.change(emailInputElement, {
@@ -754,6 +817,106 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         screen.getByText(
           "[mocked-response] Failed to create a new User resource"
         );
+      });
+    }
+  );
+
+  test(
+    "<Alerts> + <Login> -" +
+      " the user fills out the form and submits it," +
+      " and the backend is _mocked_ to respond that" +
+      " the form submission was accepted as valid and processed",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Login />
+          </Router>
+        </Provider>
+      );
+
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
+
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "LOG INTO MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      await waitFor(() => {
+        screen.getByText("LOGIN SUCCESSFUL");
+      });
+    }
+  );
+
+  test(
+    "<Alerts> + <Login> -" +
+      " the user fills out the form and submits it," +
+      " but the backend is _mocked_ to respond that" +
+      " the form submission was determined to be invalid",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.post("/api/tokens", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Bad Request",
+              message: "[mocked] Incorrect email and/or password.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <Login />
+          </Router>
+        </Provider>
+      );
+
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
+
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "LOG INTO MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      await waitFor(() => {
+        screen.getByText("[mocked] Incorrect email and/or password.");
       });
     }
   );
