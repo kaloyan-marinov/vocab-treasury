@@ -25,11 +25,18 @@ export interface IStateAlerts {
   entities: { [id: string]: IAlert };
 }
 
+export interface IProfile {
+  id: number;
+  username: string;
+  email: string;
+}
+
 export interface IStateAuth {
   requestStatus: RequestStatus;
   requestError: string | null;
   token: string | null;
   hasValidToken: boolean | null;
+  loggedInUserProfile: IProfile | null;
 }
 
 export interface IState {
@@ -49,6 +56,7 @@ export const initialStateAuth: IStateAuth = {
   requestError: null,
   token: localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
   hasValidToken: null,
+  loggedInUserProfile: null,
 };
 
 export const initialState: IState = {
@@ -265,6 +273,86 @@ export const issueJWSToken = (email: string, password: string) => {
   };
 };
 
+/* "auth/fetchProfile/" action creators */
+export enum ActionTypesFetchProfile {
+  PENDING = "auth/fetchProfile/pending",
+  REJECTED = "auth/fetchProfile/rejected",
+  FULFILLED = "auth/fetchProfile/fulfilled",
+}
+
+export interface IActionFetchProfilePending {
+  type: typeof ActionTypesFetchProfile.PENDING;
+}
+
+export interface IActionFetchProfileRejected {
+  type: typeof ActionTypesFetchProfile.REJECTED;
+  error: string;
+}
+
+export interface IActionFetchProfileFulfilled {
+  type: typeof ActionTypesFetchProfile.FULFILLED;
+  payload: {
+    profile: IProfile;
+  };
+}
+
+export const fetchProfilePending = (): IActionFetchProfilePending => ({
+  type: ActionTypesFetchProfile.PENDING,
+});
+
+export const fetchProfileRejected = (
+  error: string
+): IActionFetchProfileRejected => ({
+  type: ActionTypesFetchProfile.REJECTED,
+  error,
+});
+
+export const fetchProfileFulfilled = (
+  profile: IProfile
+): IActionFetchProfileFulfilled => ({
+  type: ActionTypesFetchProfile.FULFILLED,
+  payload: {
+    profile,
+  },
+});
+
+export type ActionFetchProfile =
+  | IActionFetchProfilePending
+  | IActionFetchProfileRejected
+  | IActionFetchProfileFulfilled;
+
+/* "auth/fetchProfile" thunk-action creator */
+export const fetchProfile = () => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for fetching the Profile of a specific User.
+  */
+
+  return async (dispatch: Dispatch<ActionFetchProfile>) => {
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+      },
+    };
+
+    dispatch(fetchProfilePending());
+    try {
+      const response = await axios.get("/api/user-profile", config);
+      dispatch(fetchProfileFulfilled(response.data));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(fetchProfileRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
 /* "auth/clearSlice" action creator */
 export const ACTION_TYPE_AUTH_CLEAR_SLICE = "auth/clearSlice";
 
@@ -348,7 +436,11 @@ export const alertsReducer = (
 
 export const authReducer = (
   state: IStateAuth = initialStateAuth,
-  action: ActionCreateUser | ActionIssueJWSToken | IActionAuthClearSlice
+  action:
+    | ActionCreateUser
+    | ActionIssueJWSToken
+    | ActionFetchProfile
+    | IActionAuthClearSlice
 ): IStateAuth => {
   switch (action.type) {
     case ActionTypesCreateUser.PENDING:
@@ -393,14 +485,44 @@ export const authReducer = (
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
         token: action.payload.token,
+        // TODO: consider leaving it up only to ActionTypesFetchProfile
+        //       to update the following sub-slice of the Redux state
         hasValidToken: true,
       };
+
+    case ActionTypesFetchProfile.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesFetchProfile.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+        hasValidToken: false,
+      };
+
+    case ActionTypesFetchProfile.FULFILLED: {
+      const profile: IProfile = action.payload.profile;
+
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        hasValidToken: true,
+        loggedInUserProfile: profile,
+      };
+    }
 
     case ACTION_TYPE_AUTH_CLEAR_SLICE:
       return {
         ...state,
         token: null,
         hasValidToken: false,
+        loggedInUserProfile: null,
       };
 
     default:

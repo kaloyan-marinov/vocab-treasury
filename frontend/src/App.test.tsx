@@ -34,6 +34,9 @@ import thunkMiddleware from "redux-thunk";
 
 import { waitFor } from "@testing-library/react";
 
+// 3
+import { profileMock } from "./dataMocks";
+
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
     render(<Home />);
@@ -719,6 +722,10 @@ const requestHandlersToMock = [
         token: "mocked-token",
       })
     );
+  }),
+
+  rest.get("/api/user-profile", (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(profileMock));
   }),
 ];
 

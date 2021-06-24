@@ -48,12 +48,28 @@ import {
   issueJWSTokenFulfilled,
   IActionIssueJWSTokenFulfilled,
   issueJWSToken,
+} from "./store";
+
+import {
   VOCAB_TREASURY_APP_TOKEN,
   ACTION_TYPE_AUTH_CLEAR_SLICE,
   IActionAuthClearSlice,
   authClearSlice,
   logOut,
 } from "./store";
+
+import {
+  ActionTypesFetchProfile,
+  fetchProfilePending,
+  IActionFetchProfilePending,
+  fetchProfileRejected,
+  IActionFetchProfileRejected,
+  fetchProfileFulfilled,
+  IActionFetchProfileFulfilled,
+  IProfile,
+} from "./store";
+import { profileMock } from "./dataMocks";
+import { fetchProfile } from "./store";
 
 describe("selector functions", () => {
   let state: IState;
@@ -169,6 +185,43 @@ describe("action creators", () => {
     });
   });
 
+  test("fetchProfilePending", () => {
+    const action = fetchProfilePending();
+
+    expect(action).toEqual({
+      type: "auth/fetchProfile/pending",
+    });
+  });
+
+  test("fetchProfileRejected", () => {
+    const action = fetchProfileRejected("auth-fetchProfile-rejected");
+
+    expect(action).toEqual({
+      type: "auth/fetchProfile/rejected",
+      error: "auth-fetchProfile-rejected",
+    });
+  });
+
+  test("fetchProfileFulfilled", () => {
+    const profile: IProfile = {
+      id: 17,
+      username: "mocked-jd",
+      email: "mocked-john.doe@protonmail.com",
+    };
+    const action = fetchProfileFulfilled(profile);
+
+    expect(action).toEqual({
+      type: "auth/fetchProfile/fulfilled",
+      payload: {
+        profile: {
+          id: 17,
+          username: "mocked-jd",
+          email: "mocked-john.doe@protonmail.com",
+        },
+      },
+    });
+  });
+
   test("authClearSlice", () => {
     const action = authClearSlice();
 
@@ -250,6 +303,7 @@ describe("slice reducers", () => {
         requestError: null,
         token: null,
         hasValidToken: null,
+        loggedInUserProfile: null,
       });
     });
 
@@ -271,6 +325,7 @@ describe("slice reducers", () => {
         requestError: "auth-createUser-rejected",
         token: null,
         hasValidToken: null,
+        loggedInUserProfile: null,
       });
     });
 
@@ -291,6 +346,7 @@ describe("slice reducers", () => {
         requestError: null,
         token: null,
         hasValidToken: null,
+        loggedInUserProfile: null,
       });
     });
 
@@ -311,6 +367,7 @@ describe("slice reducers", () => {
         requestError: null,
         token: null,
         hasValidToken: null,
+        loggedInUserProfile: null,
       });
     });
 
@@ -332,6 +389,7 @@ describe("slice reducers", () => {
         requestError: "auth-issueJWSToken-rejected",
         token: null,
         hasValidToken: false,
+        loggedInUserProfile: null,
       });
     });
 
@@ -355,6 +413,85 @@ describe("slice reducers", () => {
         requestError: null,
         token: "token-issued-by-the-backend",
         hasValidToken: true,
+        loggedInUserProfile: null,
+      });
+    });
+
+    test("auth/fetchProfile/pending", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-fetchProfile-rejected",
+        token: "token-that-was-loaded-from-localStorage-but-is-no-longer-valid",
+      };
+      const action: IActionFetchProfilePending = {
+        type: ActionTypesFetchProfile.PENDING,
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        token: "token-that-was-loaded-from-localStorage-but-is-no-longer-valid",
+        hasValidToken: null,
+        loggedInUserProfile: null,
+      });
+    });
+
+    test("auth/fetchProfile/rejected", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        token: "token-that-was-loaded-from-localStorage-but-is-no-longer-valid",
+      };
+      const action: IActionFetchProfileRejected = {
+        type: ActionTypesFetchProfile.REJECTED,
+        error: "auth-fetchProfile-rejected",
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-fetchProfile-rejected",
+        token: "token-that-was-loaded-from-localStorage-but-is-no-longer-valid",
+        hasValidToken: false,
+        loggedInUserProfile: null,
+      });
+    });
+
+    test("auth/fetchProfile/fulfilled", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        token: "token-that-was-loaded-from-localStorate-and-is-still-valid",
+      };
+      const action: IActionFetchProfileFulfilled = {
+        type: ActionTypesFetchProfile.FULFILLED,
+        payload: {
+          profile: {
+            id: 17,
+            username: "mocked-jd",
+            email: "mocked-john.doe@protonmail.com",
+          },
+        },
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        token: "token-that-was-loaded-from-localStorate-and-is-still-valid",
+        hasValidToken: true,
+        loggedInUserProfile: {
+          id: 17,
+          username: "mocked-jd",
+          email: "mocked-john.doe@protonmail.com",
+        },
       });
     });
 
@@ -364,6 +501,11 @@ describe("slice reducers", () => {
         requestError: null,
         token: "token-issued-by-the-backend",
         hasValidToken: true,
+        loggedInUserProfile: {
+          id: 17,
+          username: "mocked-jd",
+          email: "mocked-john.doe@protonmail.com",
+        },
       };
       const action: IActionAuthClearSlice = {
         type: ACTION_TYPE_AUTH_CLEAR_SLICE,
@@ -376,6 +518,7 @@ describe("slice reducers", () => {
         requestError: null,
         token: null,
         hasValidToken: false,
+        loggedInUserProfile: null,
       });
     });
   });
@@ -406,6 +549,10 @@ const requestHandlersToMock = [
         token: "mocked-token",
       })
     );
+  }),
+
+  rest.get("/api/user-profile", (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(profileMock));
   }),
 ];
 
@@ -546,7 +693,7 @@ describe(
             return res(
               ctx.status(401),
               ctx.json({
-                error: "[mocked] Bad Request",
+                error: "[mocked] Unauthorized",
                 message: "[mocked] Incorrect email and/or password.",
               })
             );
@@ -567,6 +714,60 @@ describe(
           {
             type: "auth/issueJWSToken/rejected",
             error: "[mocked] Incorrect email and/or password.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "fetchProfile()" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const fetchProfilePromise = storeMock.dispatch(fetchProfile());
+
+        await expect(fetchProfilePromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/fetchProfile/pending",
+          },
+          {
+            type: "auth/fetchProfile/fulfilled",
+            payload: {
+              profile: profileMock,
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "fetchProfile()" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.get("/api/user-profile", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Unauthorized",
+                message: "[mocked] Expired access token.",
+              })
+            );
+          })
+        );
+
+        const fetchProfilePromise = storeMock.dispatch(fetchProfile());
+
+        await expect(fetchProfilePromise).rejects.toEqual(
+          "[mocked] Expired access token."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/fetchProfile/pending",
+          },
+          {
+            type: "auth/fetchProfile/rejected",
+            error: "[mocked] Expired access token.",
           },
         ]);
       }

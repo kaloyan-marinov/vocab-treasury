@@ -16,6 +16,8 @@ import {
   createUser,
   ActionIssueJWSToken,
   issueJWSToken,
+  ActionFetchProfile,
+  fetchProfile,
   logOut,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
@@ -320,7 +322,7 @@ export const Login = () => {
   const dispatch: ThunkDispatch<
     IState,
     unknown,
-    IActionAlertsCreate | ActionIssueJWSToken
+    IActionAlertsCreate | ActionIssueJWSToken | ActionFetchProfile
   > = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -333,6 +335,7 @@ export const Login = () => {
       try {
         await dispatch(issueJWSToken(formData.email, formData.password));
         dispatch(alertsCreate(id, "LOGIN SUCCESSFUL"));
+        await dispatch(fetchProfile());
       } catch (thunkActionError) {
         dispatch(alertsCreate(id, thunkActionError));
       }
