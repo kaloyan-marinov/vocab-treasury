@@ -1163,4 +1163,44 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(temp).toBeInTheDocument();
     }
   );
+
+  test(
+    "<App> -" +
+      " if the request issued by <App>'s useEffect hook fails," +
+      " the user should be (logged out and) prompted to log in",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/user-profile", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      /* Act. */
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      /* Assert. */
+      let temp: HTMLElement;
+      await waitFor(() => {
+        temp = screen.getByText("TO CONTINUE, PLEASE LOG IN");
+        expect(temp).toBeInTheDocument();
+      });
+    }
+  );
 });

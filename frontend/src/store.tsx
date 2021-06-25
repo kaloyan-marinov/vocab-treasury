@@ -367,7 +367,7 @@ export const authClearSlice = (): IActionAuthClearSlice => ({
 });
 
 /* authSlice thunk-action creator */
-export const logOut = () => {
+export const logOut = (message: string) => {
   /*
   Create a thunk-action.
   When dispatched, it logs the user out
@@ -380,7 +380,7 @@ export const logOut = () => {
     dispatch(authClearSlice());
 
     const id: string = uuidv4();
-    dispatch(alertsCreate(id, "LOGOUT SUCCESSFUL"));
+    dispatch(alertsCreate(id, message));
   };
 };
 

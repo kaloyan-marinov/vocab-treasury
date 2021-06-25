@@ -26,6 +26,26 @@ import { ThunkDispatch } from "redux-thunk";
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
 
+  const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    console.log(
+      `${new Date().toISOString()} - React is running <App>'s useEffect hook`
+    );
+
+    const effectFn = async () => {
+      console.log("    <App>'s useEffect hook is dispatching fetchProfile()");
+
+      try {
+        await dispatch(fetchProfile());
+      } catch (err) {
+        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      }
+    };
+
+    effectFn();
+  }, [dispatch]);
+
   return (
     <React.Fragment>
       {"<App>"}
@@ -106,7 +126,7 @@ export const NavigationBar = () => {
     <div>
       <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
       <Link to="/account">Account</Link>{" "}
-      <a href="#!" onClick={() => dispatch(logOut())}>
+      <a href="#!" onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}>
         Log out
       </a>
     </div>

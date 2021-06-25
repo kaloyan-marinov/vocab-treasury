@@ -785,7 +785,7 @@ describe(
         );
 
         /* Act. */
-        storeMock.dispatch(logOut());
+        storeMock.dispatch(logOut("LOGOUT SUCCESSFUL"));
 
         /* Assert. */
         const dispatchedActions = storeMock.getActions();
