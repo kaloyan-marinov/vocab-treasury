@@ -23,6 +23,8 @@ import {
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
+import { Redirect } from "react-router-dom";
+
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
 
@@ -211,11 +213,22 @@ export const Register = () => {
     confirmPassword: "",
   });
 
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
   const dispatch: ThunkDispatch<
     IState,
     unknown,
     IActionAlertsCreate | ActionCreateUser
   > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
+    console.log(
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
+    );
+    return <Redirect to={nextURL} />;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -334,18 +347,29 @@ export const Login = () => {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
 
   const dispatch: ThunkDispatch<
     IState,
     unknown,
     IActionAlertsCreate | ActionIssueJWSToken | ActionFetchProfile
   > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
+    console.log(
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
+    );
+    return <Redirect to={nextURL} />;
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

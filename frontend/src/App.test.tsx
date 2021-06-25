@@ -933,6 +933,8 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       await waitFor(() => {
         screen.getByText("LOGIN SUCCESSFUL");
       });
+
+      expect(history.location.pathname).toEqual("/home");
     }
   );
 
