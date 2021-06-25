@@ -8,7 +8,12 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router, Route } from "react-router-dom";
 
-import { IState, initialState, rootReducer } from "./store";
+import {
+  IState,
+  initialState,
+  rootReducer,
+  VOCAB_TREASURY_APP_TOKEN,
+} from "./store";
 import {
   NavigationBar,
   Alerts,
@@ -36,6 +41,10 @@ import { waitFor } from "@testing-library/react";
 
 // 3
 import { profileMock } from "./dataMocks";
+
+import { App } from "./App";
+import { initialStateAlerts, initialStateAuth } from "./store";
+import { cleanup } from "@testing-library/react";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -979,6 +988,154 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Assert. */
       await waitFor(() => {
         screen.getByText("[mocked] Incorrect email and/or password.");
+      });
+    }
+  );
+});
+
+describe("<App>", () => {
+  let enhancer: any;
+  let initState: IState;
+  let history: any;
+
+  beforeAll(() => {
+    // Enable API mocking.
+    quasiServer.listen();
+  });
+
+  beforeEach(() => {
+    enhancer = applyMiddleware(thunkMiddleware);
+
+    initState = {
+      alerts: {
+        ...initialStateAlerts,
+      },
+      auth: {
+        ...initialStateAuth,
+      },
+    };
+
+    history = createMemoryHistory();
+  });
+
+  afterEach(() => {
+    quasiServer.resetHandlers();
+  });
+
+  afterAll(() => {
+    // Disable API mocking.
+    quasiServer.close();
+  });
+
+  test.only(
+    "if a user signs in" +
+      " and goes on to manually change the URL in her browser's address bar" +
+      " to /my-monthly-journal ," +
+      " the frontend application should display only the following navigation links:" +
+      " 'Home', 'MyMonthlyJournal', and 'Sign Out'",
+    async () => {
+      /* Arrange. */
+      const realStore = createStore(rootReducer, initState, enhancer);
+
+      history.push("/login");
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const logInAnchor = screen.getByText("Log in");
+      fireEvent.click(logInAnchor);
+
+      /* Arrange. */
+      const emailInputElement = screen.getByLabelText("EMAIL");
+      expect(emailInputElement).toBeInTheDocument();
+      const passwordInputElement = screen.getByLabelText("PASSWORD");
+      expect(passwordInputElement).toBeInTheDocument();
+
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+      fireEvent.change(passwordInputElement, { target: { value: "test-123" } });
+
+      const submitButtonElement = screen.getByRole("button", {
+        name: "LOG INTO MY ACCOUNT",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Act. */
+      // history.push("/");
+      await waitFor(() => {
+        screen.getByText("Log out");
+      });
+
+      cleanup();
+
+      // window.location.reload();
+      const realStoreAfterReload = createStore(
+        rootReducer,
+        {
+          ...initState,
+          auth: {
+            ...initState.auth,
+            token: localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+          },
+        },
+        enhancer
+      );
+      console.log(realStoreAfterReload.getState());
+
+      // history.push("/");
+
+      render(
+        <Provider store={realStoreAfterReload}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      await waitFor(() => {
+        screen.getByText("ninja");
+      });
+
+      /*
+      // Act:
+
+      // - navigate to the root URL, and mount the application's entire React tree
+      history.push("/");
+
+      const { getByText: getByTextFromRootURL } = render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      // - unamount React trees that were mounted with render
+      cleanup();
+
+      // - navigate to the /my-monthly-journal URL,
+      //   and mount the application's entire React tree
+      history.push("/my-monthly-journal");
+      const { getByText: getByTextFromMyMonthlyJournalURL } = render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+      */
+
+      // Assert.
+      await waitFor(() => {
+        getByTextFromMyMonthlyJournalURL("Home");
+        getByTextFromMyMonthlyJournalURL("Sign Out");
+        getByTextFromMyMonthlyJournalURL("MyMonthlyJournal");
       });
     }
   );
