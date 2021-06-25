@@ -262,6 +262,31 @@ describe("<About>", () => {
 });
 
 describe("<Register>", () => {
+  test("redirects any logged-in user to /home", () => {
+    /* Arrange. */
+    const initState: IState = {
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        hasValidToken: true,
+      },
+    };
+    const realStore = createStore(rootReducer, initState);
+    const history = createMemoryHistory();
+
+    /* Act. */
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <Register />
+        </Router>
+      </Provider>
+    );
+
+    /* Assert. */
+    expect(history.location.pathname).toEqual("/home");
+  });
+
   test("renders (a <legend> tag and) a registration form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
