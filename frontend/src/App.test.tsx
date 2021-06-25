@@ -991,51 +991,31 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       });
     }
   );
-});
 
-describe("<App>", () => {
-  let enhancer: any;
-  let initState: IState;
-  let history: any;
-
-  beforeAll(() => {
-    // Enable API mocking.
-    quasiServer.listen();
-  });
-
-  beforeEach(() => {
-    enhancer = applyMiddleware(thunkMiddleware);
-
-    initState = {
-      alerts: {
-        ...initialStateAlerts,
-      },
-      auth: {
-        ...initialStateAuth,
-      },
-    };
-
-    history = createMemoryHistory();
-  });
-
-  afterEach(() => {
-    quasiServer.resetHandlers();
-  });
-
-  afterAll(() => {
-    // Disable API mocking.
-    quasiServer.close();
-  });
-
-  test.only(
-    "if a user signs in" +
-      " and goes on to manually change the URL in her browser's address bar" +
-      " to /my-monthly-journal ," +
-      " the frontend application should display only the following navigation links:" +
-      " 'Home', 'MyMonthlyJournal', and 'Sign Out'",
+  test(
+    "<App> -" +
+      " if a user logs in and goes on to hit her browser's Reload button," +
+      " the frontend application should continue to display" +
+      " a logged-in user's navigation links",
     async () => {
+      /*
+      This test case and the next one test the same thing.
+      
+      The difference between the two is as follows:
+      this test case is longer (and perhaps more complex)
+      but more closely resembles the way
+      in which a user would use her browser to interact with the frontend.
+
+      TODO: find out which of the two test cases is better and why!
+      */
+
       /* Arrange. */
+      const initState = {
+        ...initialState,
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, initState, enhancer);
+      const history = createMemoryHistory();
 
       history.push("/login");
 
@@ -1066,15 +1046,16 @@ describe("<App>", () => {
       });
       fireEvent.click(submitButtonElement);
 
-      /* Act. */
-      // history.push("/");
+      let temp: HTMLElement;
       await waitFor(() => {
-        screen.getByText("Log out");
+        temp = screen.getByText("Log out");
+        expect(temp).toBeInTheDocument();
       });
 
+      /* Act. */
+      /* Simulate the user's hitting her browser's Reload button. */
       cleanup();
 
-      // window.location.reload();
       const realStoreAfterReload = createStore(
         rootReducer,
         {
@@ -1086,9 +1067,6 @@ describe("<App>", () => {
         },
         enhancer
       );
-      console.log(realStoreAfterReload.getState());
-
-      // history.push("/");
 
       render(
         <Provider store={realStoreAfterReload}>
@@ -1098,45 +1076,91 @@ describe("<App>", () => {
         </Provider>
       );
 
+      /* Assert. */
       await waitFor(() => {
-        screen.getByText("ninja");
+        temp = screen.getByText("Own VocabTreasury");
+        expect(temp).toBeInTheDocument();
       });
+      temp = screen.getByText("Account");
+      expect(temp).toBeInTheDocument();
+      temp = screen.getByText("Log out");
+      expect(temp).toBeInTheDocument();
+    }
+  );
 
+  test(
+    "<App> -" +
+      " if a logged-in user hits her browser's Reload button," +
+      " the frontend application should continue to display" +
+      " a logged-in user's navigation links",
+    async () => {
       /*
-      // Act:
+      This test case and the previous one test the same thing.
 
-      // - navigate to the root URL, and mount the application's entire React tree
-      history.push("/");
-
-      const { getByText: getByTextFromRootURL } = render(
-        <Provider store={realStore}>
-          <Router history={history}>
-            <App />
-          </Router>
-        </Provider>
-      );
-
-      // - unamount React trees that were mounted with render
-      cleanup();
-
-      // - navigate to the /my-monthly-journal URL,
-      //   and mount the application's entire React tree
-      history.push("/my-monthly-journal");
-      const { getByText: getByTextFromMyMonthlyJournalURL } = render(
-        <Provider store={realStore}>
-          <Router history={history}>
-            <App />
-          </Router>
-        </Provider>
-      );
+      See the "docstring" comment of the previous test case.
       */
 
-      // Assert.
+      /* Arrange. */
+      const initState = {
+        ...initialState,
+        auth: {
+          ...initialStateAuth,
+          token: "token-issued-by-the-backend",
+          hasValidToken: true,
+          loggedInUserProfile: profileMock,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      let temp: HTMLElement;
       await waitFor(() => {
-        getByTextFromMyMonthlyJournalURL("Home");
-        getByTextFromMyMonthlyJournalURL("Sign Out");
-        getByTextFromMyMonthlyJournalURL("MyMonthlyJournal");
+        temp = screen.getByText("Log out");
+        expect(temp).toBeInTheDocument();
       });
+
+      /* Act. */
+      /* Simulate the user's hitting her browser's Reload button. */
+      cleanup();
+
+      const realStoreAfterReload = createStore(
+        rootReducer,
+        {
+          ...initialState,
+          auth: {
+            ...initialState.auth,
+            token: localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+          },
+        },
+        enhancer
+      );
+
+      render(
+        <Provider store={realStoreAfterReload}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      /* Assert. */
+      await waitFor(() => {
+        temp = screen.getByText("Own VocabTreasury");
+        expect(temp).toBeInTheDocument();
+      });
+      temp = screen.getByText("Account");
+      expect(temp).toBeInTheDocument();
+      temp = screen.getByText("Log out");
+      expect(temp).toBeInTheDocument();
     }
   );
 });
