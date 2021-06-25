@@ -67,10 +67,16 @@ describe("<Home>", () => {
 });
 
 describe("<NavigationBar>", () => {
-  test("renders navigation links that are always visible", () => {
+  const alwaysVisibleLinks = ["VocabTreasury", "Home", "About"];
+  const guestUserLinks = ["Log in", "Register"];
+  const loggedInUserLinks = ["Own VocabTreasury", "Account", "Log out"];
+
+  test("renders all of a guest user's navigation links", () => {
+    /* Arrange. */
     const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
 
+    /* Act. */
     render(
       <Provider store={realStore}>
         <Router history={history}>
@@ -79,17 +85,33 @@ describe("<NavigationBar>", () => {
       </Provider>
     );
 
-    const navigationLinkTexts = ["VocabTreasury", "Home", "About"];
-    for (const nLT of navigationLinkTexts) {
-      const element = screen.getByText(nLT);
+    /* Assert. */
+    for (const navigationLinkText of alwaysVisibleLinks.concat(
+      guestUserLinks
+    )) {
+      const element = screen.getByText(navigationLinkText);
       expect(element).toBeInTheDocument();
+    }
+
+    for (const navigationLinkText of loggedInUserLinks) {
+      const element = screen.queryByText(navigationLinkText);
+      expect(element).not.toBeInTheDocument();
     }
   });
 
-  test("renders navigation links for guest users", () => {
-    const realStore = createStore(rootReducer);
+  test("renders all of a logged-in user's navigation links", () => {
+    /* Arrange. */
+    const initState = {
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        hasValidToken: true,
+      },
+    };
+    const realStore = createStore(rootReducer, initState);
     const history = createMemoryHistory();
 
+    /* Act. */
     render(
       <Provider store={realStore}>
         <Router history={history}>
@@ -98,29 +120,17 @@ describe("<NavigationBar>", () => {
       </Provider>
     );
 
-    const navigationLinkTexts = ["Log in", "Register"];
-    for (const nLT of navigationLinkTexts) {
-      const element = screen.getByText(nLT);
+    /* Assert. */
+    for (const navigationLinkText of alwaysVisibleLinks.concat(
+      loggedInUserLinks
+    )) {
+      const element = screen.getByText(navigationLinkText);
       expect(element).toBeInTheDocument();
     }
-  });
 
-  test("renders navigation links for logged-in users", () => {
-    const realStore = createStore(rootReducer);
-    const history = createMemoryHistory();
-
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <NavigationBar />
-        </Router>
-      </Provider>
-    );
-
-    const navigationLinkTexts = ["Own VocabTreasury", "Account", "Log out"];
-    for (const nLT of navigationLinkTexts) {
-      const element = screen.getByText(nLT);
-      expect(element).toBeInTheDocument();
+    for (const navigationLinkText of guestUserLinks) {
+      const element = screen.queryByText(navigationLinkText);
+      expect(element).not.toBeInTheDocument();
     }
   });
 
@@ -129,8 +139,15 @@ describe("<NavigationBar>", () => {
       " after the user clicks on the 'Log out' link",
     async () => {
       /* Arrange. */
+      const initState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          hasValidToken: true,
+        },
+      };
       const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, enhancer);
+      const realStore = createStore(rootReducer, initState, enhancer);
       const history = createMemoryHistory();
 
       render(

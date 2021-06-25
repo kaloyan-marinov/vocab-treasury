@@ -68,6 +68,8 @@ export const initialState: IState = {
 export const selectAlertsIds = (state: IState) => state.alerts.ids;
 export const selectAlertsEntities = (state: IState) => state.alerts.entities;
 
+export const selectHasValidToken = (state: IState) => state.auth.hasValidToken;
+
 /* "alerts/*" action creators */
 export enum ActionTypesAlerts {
   CREATE = "alerts/create",

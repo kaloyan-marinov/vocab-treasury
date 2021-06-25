@@ -19,6 +19,7 @@ import {
   ActionFetchProfile,
   fetchProfile,
   logOut,
+  selectHasValidToken,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -80,6 +81,8 @@ export const NavigationBar = () => {
     `${new Date().toISOString()} - React is rendering <NavigationBar>`
   );
 
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+
   const dispatch = useDispatch();
 
   const alwaysVisibleLinks = (
@@ -113,8 +116,7 @@ export const NavigationBar = () => {
     <React.Fragment>
       {"<NavigationBar>"}
       {alwaysVisibleLinks}
-      {guestUserLinks}
-      {loggedInUserLinks}
+      {!hasValidToken ? guestUserLinks : loggedInUserLinks}
     </React.Fragment>
   );
 };
