@@ -47,9 +47,26 @@ export interface IExample {
   contentTranslation: string;
 }
 
+export interface IPaginationMeta {
+  totalItems: number | null;
+  perPage: number | null;
+  totalPages: number | null;
+  page: number | null;
+}
+
+export interface IPaginationLinks {
+  self: string | null;
+  next: string | null;
+  prev: string | null;
+  first: string | null;
+  last: string | null;
+}
+
 export interface IStateExamples {
   requestStatus: RequestStatus;
   requestError: string | null;
+  meta: IPaginationMeta;
+  links: IPaginationLinks;
   ids: number[];
   entities: {
     [exampleId: string]: IExample;
@@ -80,6 +97,19 @@ export const initialStateAuth: IStateAuth = {
 export const initialStateExamples: IStateExamples = {
   requestStatus: RequestStatus.IDLE,
   requestError: null,
+  meta: {
+    totalItems: null,
+    perPage: null,
+    totalPages: null,
+    page: null,
+  },
+  links: {
+    self: null,
+    next: null,
+    prev: null,
+    first: null,
+    last: null,
+  },
   ids: [],
   entities: {},
 };
@@ -408,6 +438,8 @@ export interface IFetchExamplesRejected {
 export interface IFetchExamplesFulfilled {
   type: typeof ActionTypesFetchExamples.FULFILLED;
   payload: {
+    meta: IPaginationMeta;
+    links: IPaginationLinks;
     items: IExample[];
   };
 }
@@ -424,10 +456,14 @@ export const fetchExamplesRejected = (
 });
 
 export const fetchExamplesFulfilled = (
+  meta: IPaginationMeta,
+  links: IPaginationLinks,
   examples: IExample[]
 ): IFetchExamplesFulfilled => ({
   type: ActionTypesFetchExamples.FULFILLED,
   payload: {
+    meta,
+    links,
     items: examples,
   },
 });
@@ -464,7 +500,13 @@ export const fetchExamples = () => {
         content: item.content,
         contentTranslation: item.content_translation,
       }));
-      dispatch(fetchExamplesFulfilled(examples));
+      dispatch(
+        fetchExamplesFulfilled(
+          response.data._meta,
+          response.data._links,
+          examples
+        )
+      );
       return Promise.resolve();
     } catch (err) {
       const responseBody = err.response.data;
@@ -674,6 +716,8 @@ export const examplesReducer = (
       };
 
     case ActionTypesFetchExamples.FULFILLED: {
+      const meta: IPaginationMeta = action.payload.meta;
+      const links: IPaginationLinks = action.payload.links;
       const examples: IExample[] = action.payload.items;
 
       const newIds: number[] = examples.map((e: IExample) => e.id);
@@ -691,6 +735,8 @@ export const examplesReducer = (
         ...state,
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
+        meta,
+        links,
         ids: newIds,
         entities: newEntities,
       };
