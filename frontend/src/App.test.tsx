@@ -507,11 +507,33 @@ describe("<RequestPasswordReset>", () => {
 });
 
 describe("<Account>", () => {
-  test("renders a greeting for the logged-in user", () => {
-    render(<Account />);
+  test("renders the logged-in user's profile details", () => {
+    /* Arrange. */
+    const initState = {
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        loggedInUserProfile: {
+          id: 17,
+          username: "auth-jd",
+          email: "auth-john.doe@protonmail.com",
+        },
+      },
+    };
+    const realStore = createStore(rootReducer, initState);
 
-    const headingElement = screen.getByText("jd");
-    expect(headingElement).toBeInTheDocument();
+    /* Act. */
+    render(
+      <Provider store={realStore}>
+        <Account />
+      </Provider>
+    );
+
+    /* Assert. */
+    for (const text of ["17", "auth-jd", "auth-john.doe@protonmail.com"]) {
+      const tableCellElement = screen.getByText(text);
+      expect(tableCellElement).toBeInTheDocument();
+    }
   });
 });
 
@@ -1226,6 +1248,80 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       let temp: HTMLElement;
       await waitFor(() => {
         temp = screen.getByText("TO CONTINUE, PLEASE LOG IN");
+        expect(temp).toBeInTheDocument();
+      });
+    }
+  );
+
+  test(
+    "(<App> >>) <PrivateRoute> renders based on its 1st condition -" +
+      " if the request issued by <App>'s useEffect hook succeeds," +
+      " the user's clicking on the 'Account' navigation link" +
+      " should navigate to the <PrivateRoute>, which wraps <Account>",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      /* Act. */
+      const accountAnchor = await screen.findByText("Account");
+      fireEvent.click(accountAnchor);
+
+      /* Assert. */
+      expect(history.location.pathname).toEqual("/account");
+    }
+  );
+
+  test(
+    "(<App> >>) <PrivateRoute> renders based on its 2nd condition -" +
+      " if a user hasn't logged in" +
+      " but manually changes the URL in her browser's address bar" +
+      " to /account ," +
+      " the frontend application should redirect the user to /login",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/user-profile", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      history.push("/account");
+
+      /* Act. */
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      /* Assert. */
+      expect(history.location.pathname).toEqual("/login");
+      await waitFor(() => {
+        const temp: HTMLElement = screen.getByText(
+          "TO CONTINUE, PLEASE LOG IN"
+        );
         expect(temp).toBeInTheDocument();
       });
     }

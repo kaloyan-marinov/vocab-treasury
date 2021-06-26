@@ -71,12 +71,13 @@ import {
 import { profileMock } from "./dataMocks";
 import { fetchProfile } from "./store";
 
+import { selectAuthRequestStatus, selectLoggedInUserProfile } from "./store";
+
 describe("selector functions", () => {
   let state: IState;
 
   beforeAll(() => {
     state = {
-      ...initialState,
       alerts: {
         ids: ["alert-id-17"],
         entities: {
@@ -84,6 +85,15 @@ describe("selector functions", () => {
             id: "alert-id-17",
             message: "PLEASE LOG IN.",
           },
+        },
+      },
+      auth: {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.SUCCEEDED,
+        loggedInUserProfile: {
+          id: 17,
+          username: "auth-jd",
+          email: "auth-john.doe@protonmail.com",
         },
       },
     };
@@ -104,6 +114,23 @@ describe("selector functions", () => {
         id: "alert-id-17",
         message: "PLEASE LOG IN.",
       },
+    });
+  });
+
+  test("selectAuthRequestStatus", () => {
+    const authRequestStatus: RequestStatus = selectAuthRequestStatus(state);
+
+    expect(authRequestStatus).toEqual("succeeded");
+  });
+
+  test("selectLoggedInUserProfile", () => {
+    const loggedInUserProfile: IProfile | null =
+      selectLoggedInUserProfile(state);
+
+    expect(loggedInUserProfile).toEqual({
+      id: 17,
+      username: "auth-jd",
+      email: "auth-john.doe@protonmail.com",
     });
   });
 });

@@ -20,6 +20,10 @@ import {
   fetchProfile,
   logOut,
   selectHasValidToken,
+  RequestStatus,
+  selectAuthRequestStatus,
+  IProfile,
+  selectLoggedInUserProfile,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -75,24 +79,24 @@ export const App = () => {
         <Route exact path="/reset_password">
           <RequestPasswordReset />
         </Route>
-        <Route exact path="/account">
+        <PrivateRoute exact path="/account">
           <Account />
-        </Route>
-        <Route exact path="/own-vocabtreasury">
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury">
           <OwnVocabTreasury />
-        </Route>
-        <Route exact path="/example/new">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/new">
           <RecordNewExample />
-        </Route>
-        <Route exact path="/example/:id">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id">
           <SingleExample />
-        </Route>
-        <Route exact path="/example/:id/edit">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id/edit">
           <EditExample />
-        </Route>
-        <Route exact path="/own-vocabtreasury/search">
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury/search">
           <Search />
-        </Route>
+        </PrivateRoute>
       </Switch>
     </React.Fragment>
   );
@@ -444,6 +448,46 @@ export const Login = () => {
   );
 };
 
+export const PrivateRoute = (props: any) => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <PrivateRoute>`
+  );
+
+  console.log("    its children are as follows:");
+  const childrenCount: number = React.Children.count(props.children);
+  React.Children.forEach(props.children, (child, ind) => {
+    console.log(
+      `    child #${ind + 1} (out of ${childrenCount}): <${child.type.name}>`
+    );
+  });
+
+  const { children, ...rest } = props;
+
+  const authRequestStatus: RequestStatus = useSelector(selectAuthRequestStatus);
+  console.log(`    authRequestStatus: ${authRequestStatus}`);
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  if (authRequestStatus === RequestStatus.LOADING) {
+    console.log(`    authRequestStatus: ${RequestStatus.LOADING}`);
+    return React.Children.map(props.children, (child) => (
+      <div>{`<${child.type.name}>`} - Loading...</div>
+    ));
+  } else if (!hasValidToken) {
+    const nextURL: string = "/login";
+    console.log(
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
+    );
+    return <Redirect to={nextURL} />;
+  } else {
+    console.log(
+      `    hasValidToken: ${hasValidToken} > rendering the above-listed children`
+    );
+    return <Route {...rest}>{children}</Route>;
+  }
+};
+
 export const RequestPasswordReset = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <RequestPasswordReset>`
@@ -492,12 +536,40 @@ export const RequestPasswordReset = () => {
 export const Account = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Account>`);
 
-  const usernameOfLoggedInUser = "jd";
+  const loggedInUserProfile: IProfile | null = useSelector(
+    selectLoggedInUserProfile
+  );
+
+  const accountDetails: null | JSX.Element =
+    loggedInUserProfile === null ? null : (
+      <table style={styleForTable}>
+        <thead>
+          <tr>
+            <th style={styleForBorder}>KEY</th>
+            <th style={styleForBorder}>VALUE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={styleForBorder}>ID</td>
+            <td style={styleForBorder}>{loggedInUserProfile.id}</td>
+          </tr>
+          <tr>
+            <td style={styleForBorder}>USERNAME</td>
+            <td style={styleForBorder}>{loggedInUserProfile.username}</td>
+          </tr>
+          <tr>
+            <td style={styleForBorder}>EMAIL</td>
+            <td style={styleForBorder}>{loggedInUserProfile.email}</td>
+          </tr>
+        </tbody>
+      </table>
+    );
 
   return (
     <React.Fragment>
       {"<Account>"}
-      <h1>{usernameOfLoggedInUser}</h1>
+      {accountDetails}
     </React.Fragment>
   );
 };
