@@ -457,7 +457,14 @@ export const fetchExamples = () => {
     dispatch(fetchExamplesPending());
     try {
       const response = await axios.get("/api/examples", config);
-      dispatch(fetchExamplesFulfilled(response.data.items));
+      const examples: IExample[] = response.data.items.map((item: any) => ({
+        id: item.id,
+        sourceLanguage: item.source_language,
+        newWord: item.new_word,
+        content: item.content,
+        contentTranslation: item.content_translation,
+      }));
+      dispatch(fetchExamplesFulfilled(examples));
       return Promise.resolve();
     } catch (err) {
       const responseBody = err.response.data;
@@ -652,6 +659,43 @@ export const examplesReducer = (
   action: ActionFetchExamples
 ): IStateExamples => {
   switch (action.type) {
+    case ActionTypesFetchExamples.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesFetchExamples.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesFetchExamples.FULFILLED: {
+      const examples: IExample[] = action.payload.items;
+
+      const newIds: number[] = examples.map((e: IExample) => e.id);
+      const newEntities: {
+        [exampleId: string]: IExample;
+      } = examples.reduce(
+        (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
+          examplesObj[e.id] = e;
+          return examplesObj;
+        },
+        {}
+      );
+
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        ids: newIds,
+        entities: newEntities,
+      };
+    }
+
     default:
       return state;
   }
