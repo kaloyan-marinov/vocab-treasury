@@ -27,6 +27,8 @@ import {
   IExample,
   selectExamplesIds,
   selectExamplesEntities,
+  ActionFetchExamples,
+  fetchExamples,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -679,25 +681,61 @@ export const OwnVocabTreasury = () => {
     [exampleId: string]: IExample;
   } = useSelector(selectExamplesEntities);
 
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionFetchExamples | IActionAlertsCreate
+  > = useDispatch();
+
+  React.useEffect(() => {
+    console.log(
+      `${new Date().toISOString()} - React is running <OwnVocabTreasury>'s useEffect hook`
+    );
+
+    const effectFn = async () => {
+      console.log(
+        "    <OwnVocabTreasury>'s useEffect hook is dispatching fetchExamples()"
+      );
+
+      try {
+        await dispatch(fetchExamples());
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(
+            logOut(
+              "[FROM <OwnVocabTreasury>'S useEffect hook] PLEASE LOG BACK IN"
+            )
+          );
+        } else {
+          const id: string = uuidv4();
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    };
+
+    effectFn();
+  }, [dispatch]);
+
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
-  const exampleTableRows = Object.keys(examplesMockEntities).map(
-    (exampleIdStr: string) => {
-      const e: IExample = examplesMockEntities[exampleIdStr];
+  const exampleTableRows = examplesIds.map((eId: number) => {
+    const e: IExample = examplesEntities[eId];
 
-      return (
-        <tr key={e.id}>
-          <th style={styleForBorder}>
-            <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
-          </th>
-          <th style={styleForBorder}>{e.sourceLanguage}</th>
-          <th style={styleForBorder}>{e.newWord}</th>
-          <th style={styleForBorder}>{e.content}</th>
-          <th style={styleForBorder}>{e.contentTranslation}</th>
-        </tr>
-      );
-    }
-  );
+    return (
+      <tr key={e.id}>
+        <th style={styleForBorder}>
+          <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
+        </th>
+        <th style={styleForBorder}>{e.sourceLanguage}</th>
+        <th style={styleForBorder}>{e.newWord}</th>
+        <th style={styleForBorder}>{e.content}</th>
+        <th style={styleForBorder}>{e.contentTranslation}</th>
+      </tr>
+    );
+  });
 
   return (
     <React.Fragment>

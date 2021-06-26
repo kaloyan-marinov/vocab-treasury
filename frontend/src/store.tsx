@@ -432,7 +432,7 @@ export const fetchExamplesFulfilled = (
   },
 });
 
-type ActionFetchExamples =
+export type ActionFetchExamples =
   | IFetchExamplesPending
   | IFetchExamplesRejected
   | IFetchExamplesFulfilled;
