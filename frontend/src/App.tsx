@@ -675,7 +675,9 @@ export const OwnVocabTreasury = () => {
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
   );
 
-  const emailOfLoggedInUser = "john.doe@protonmail.com";
+  const loggedInUserProfile: IProfile | null = useSelector(
+    selectLoggedInUserProfile
+  );
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
@@ -700,7 +702,11 @@ export const OwnVocabTreasury = () => {
   return (
     <React.Fragment>
       {"<OwnVocabTreasury>"}
-      <h1>Own VocabTreasury for {emailOfLoggedInUser}</h1>
+      <h1>
+        {loggedInUserProfile === null
+          ? "Something went wrong..."
+          : `Own VocabTreasury for ${loggedInUserProfile.email}`}
+      </h1>
       <div>
         <Link to="/example/new">Record new example</Link>
       </div>

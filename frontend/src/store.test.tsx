@@ -73,6 +73,8 @@ import { fetchProfile } from "./store";
 
 import { selectAuthRequestStatus, selectLoggedInUserProfile } from "./store";
 
+import { initialStateExamples } from "./store";
+
 describe("selector functions", () => {
   let state: IState;
 
@@ -95,6 +97,9 @@ describe("selector functions", () => {
           username: "auth-jd",
           email: "auth-john.doe@protonmail.com",
         },
+      },
+      examples: {
+        ...initialStateExamples,
       },
     };
   });

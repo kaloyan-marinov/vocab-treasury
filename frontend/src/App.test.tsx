@@ -540,18 +540,33 @@ describe("<OwnVocabTreasury>", () => {
       " and a page of the logged-in user's Example resources",
     () => {
       /* Arrange. */
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          loggedInUserProfile: {
+            id: 17,
+            username: "auth-jd",
+            email: "auth-john.doe@protonmail.com",
+          },
+        },
+      };
+      const realStore = createStore(rootReducer, initState);
+
       const history = createMemoryHistory();
 
       /* Act. */
       render(
-        <Router history={history}>
-          <OwnVocabTreasury />
-        </Router>
+        <Provider store={realStore}>
+          <Router history={history}>
+            <OwnVocabTreasury />
+          </Router>
+        </Provider>
       );
 
       /* Assert. */
       const headingElement = screen.getByText(
-        "Own VocabTreasury for john.doe@protonmail.com"
+        "Own VocabTreasury for auth-john.doe@protonmail.com"
       );
       expect(headingElement).toBeInTheDocument();
 

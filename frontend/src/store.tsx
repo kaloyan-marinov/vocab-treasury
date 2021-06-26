@@ -39,9 +39,27 @@ export interface IStateAuth {
   loggedInUserProfile: IProfile | null;
 }
 
+export interface IExample {
+  id: number;
+  sourceLanguage: string;
+  newWord: string;
+  content: string;
+  contentTranslation: string;
+}
+
+export interface IStateExamples {
+  requestStatus: RequestStatus;
+  requestError: string | null;
+  ids: number[];
+  entities: {
+    [exampleId: string]: IExample;
+  };
+}
+
 export interface IState {
   alerts: IStateAlerts;
   auth: IStateAuth;
+  examples: IStateExamples;
 }
 
 export const initialStateAlerts: IStateAlerts = {
@@ -59,9 +77,17 @@ export const initialStateAuth: IStateAuth = {
   loggedInUserProfile: null,
 };
 
+export const initialStateExamples: IStateExamples = {
+  requestStatus: RequestStatus.IDLE,
+  requestError: null,
+  ids: [],
+  entities: {},
+};
+
 export const initialState: IState = {
   alerts: initialStateAlerts,
   auth: initialStateAuth,
+  examples: initialStateExamples,
 };
 
 /* Selector functions. */
@@ -354,6 +380,87 @@ export const fetchProfile = () => {
         responseBody.message ||
         "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
       dispatch(fetchProfileRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
+/* "examples/fetchExamples/" action creators */
+export enum ActionTypesFetchExamples {
+  PENDING = "examples/fetchExamples/pending",
+  REJECTED = "examples/fetchExamples/rejected",
+  FULFILLED = "examples/fetchExamples/fulfilled",
+}
+
+export interface IFetchExamplesPending {
+  type: typeof ActionTypesFetchExamples.PENDING;
+}
+
+export interface IFetchExamplesRejected {
+  type: typeof ActionTypesFetchExamples.REJECTED;
+  error: string;
+}
+
+export interface IFetchExamplesFulfilled {
+  type: typeof ActionTypesFetchExamples.FULFILLED;
+  payload: {
+    items: IExample[];
+  };
+}
+
+export const fetchExamplesPending = (): IFetchExamplesPending => ({
+  type: ActionTypesFetchExamples.PENDING,
+});
+
+export const fetchExamplesRejected = (
+  error: string
+): IFetchExamplesRejected => ({
+  type: ActionTypesFetchExamples.REJECTED,
+  error,
+});
+
+export const fetchExamplesFulfilled = (
+  examples: IExample[]
+): IFetchExamplesFulfilled => ({
+  type: ActionTypesFetchExamples.FULFILLED,
+  payload: {
+    items: examples,
+  },
+});
+
+type ActionFetchExamples =
+  | IFetchExamplesPending
+  | IFetchExamplesRejected
+  | IFetchExamplesFulfilled;
+
+/* "examples/fetchExamples" thunk-action creator */
+export const fetchExamples = () => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for fetching Example resources,
+  which are associated with a specific User.
+  */
+
+  return async (dispatch: Dispatch<ActionFetchExamples>) => {
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+      },
+    };
+
+    dispatch(fetchExamplesPending());
+    try {
+      const response = await axios.get("/api/examples", config);
+      dispatch(fetchExamplesFulfilled(response.data.items));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(fetchExamplesRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };
