@@ -100,6 +100,10 @@ export const selectHasValidToken = (state: IState) => state.auth.hasValidToken;
 export const selectLoggedInUserProfile = (state: IState) =>
   state.auth.loggedInUserProfile;
 
+export const selectExamplesIds = (state: IState) => state.examples.ids;
+export const selectExamplesEntities = (state: IState) =>
+  state.examples.entities;
+
 /* "alerts/*" action creators */
 export enum ActionTypesAlerts {
   CREATE = "alerts/create",
@@ -643,6 +647,16 @@ export const authReducer = (
   }
 };
 
+export const examplesReducer = (
+  state: IStateExamples = initialStateExamples,
+  action: ActionFetchExamples
+): IStateExamples => {
+  switch (action.type) {
+    default:
+      return state;
+  }
+};
+
 /*
 Define a root reducer function,
 which serves to instantiate a single Redux store.
@@ -653,6 +667,7 @@ global state.)
 export const rootReducer = combineReducers({
   alerts: alertsReducer,
   auth: authReducer,
+  examples: examplesReducer,
 });
 
 const composedEnhancer = composeWithDevTools(

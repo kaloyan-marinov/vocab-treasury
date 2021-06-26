@@ -24,6 +24,9 @@ import {
   selectAuthRequestStatus,
   IProfile,
   selectLoggedInUserProfile,
+  IExample,
+  selectExamplesIds,
+  selectExamplesEntities,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -579,85 +582,77 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
-interface IExample {
-  id: number;
-  source_language: string;
-  new_word: string;
-  content: string;
-  content_translation: string;
-}
-
 const examplesMock: IExample[] = [
   {
     id: 1,
-    source_language: "Finnish",
-    new_word: "vihata + P",
+    sourceLanguage: "Finnish",
+    newWord: "vihata + P",
     content: "Älä vihaa ketään!",
-    content_translation: "Don't hate anyone!",
+    contentTranslation: "Don't hate anyone!",
   },
   {
     id: 2,
-    source_language: "Finnish",
-    new_word: "tulinen",
+    sourceLanguage: "Finnish",
+    newWord: "tulinen",
     content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
-    content_translation: `"spicy" and "volcano" are similar words.`,
+    contentTranslation: `"spicy" and "volcano" are similar words.`,
   },
   {
     id: 3,
-    source_language: "German",
-    new_word: "der Termin",
+    sourceLanguage: "German",
+    newWord: "der Termin",
     content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
-    content_translation:
+    contentTranslation:
       "One must firstly fix the deadline and then meet/observe it.",
   },
   {
     id: 4,
-    source_language: "Finnish",
-    new_word: "sama",
+    sourceLanguage: "Finnish",
+    newWord: "sama",
     content: "Olemme samaa mieltä.",
-    content_translation: "I agree.",
+    contentTranslation: "I agree.",
   },
   {
     id: 5,
-    source_language: "Finnish",
-    new_word: "pitää",
+    sourceLanguage: "Finnish",
+    newWord: "pitää",
     content: "Pidätkö koirista?",
-    content_translation: "Do you like dogs?",
+    contentTranslation: "Do you like dogs?",
   },
   {
     id: 6,
-    source_language: "Finnish",
-    new_word: "tykätä",
+    sourceLanguage: "Finnish",
+    newWord: "tykätä",
     content: "Tykkäätkö koirista?",
-    content_translation: "Do you like dogs?",
+    contentTranslation: "Do you like dogs?",
   },
   {
     id: 7,
-    source_language: "Finnish",
-    new_word: "kannettava tietokone",
+    sourceLanguage: "Finnish",
+    newWord: "kannettava tietokone",
     content: "Ota sinun kannettava tietokone kotiin!",
-    content_translation: "Ota sinun kannettava tietokone kotiin!",
+    contentTranslation: "Ota sinun kannettava tietokone kotiin!",
   },
   {
     id: 10,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
+    sourceLanguage: "Finnish",
+    newWord: "teeskennellä",
     content: "Älä teeskentele, että olet sairas!",
-    content_translation: "Don't pretend that you're sick!",
+    contentTranslation: "Don't pretend that you're sick!",
   },
   {
     id: 11,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
+    sourceLanguage: "Finnish",
+    newWord: "teeskennellä",
     content: "Älä teeskentele olevasi sairas!",
-    content_translation: "Don't pretend that you're sick!",
+    contentTranslation: "Don't pretend that you're sick!",
   },
   {
     id: 12,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
+    sourceLanguage: "Finnish",
+    newWord: "teeskennellä",
     content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
-    content_translation: "Why did we pretend to like his jokes?",
+    contentTranslation: "Why did we pretend to like his jokes?",
   },
 ];
 
@@ -679,6 +674,11 @@ export const OwnVocabTreasury = () => {
     selectLoggedInUserProfile
   );
 
+  const examplesIds: number[] = useSelector(selectExamplesIds);
+  const examplesEntities: {
+    [exampleId: string]: IExample;
+  } = useSelector(selectExamplesEntities);
+
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
   const exampleTableRows = Object.keys(examplesMockEntities).map(
@@ -690,10 +690,10 @@ export const OwnVocabTreasury = () => {
           <th style={styleForBorder}>
             <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
           </th>
-          <th style={styleForBorder}>{e.source_language}</th>
-          <th style={styleForBorder}>{e.new_word}</th>
+          <th style={styleForBorder}>{e.sourceLanguage}</th>
+          <th style={styleForBorder}>{e.newWord}</th>
           <th style={styleForBorder}>{e.content}</th>
-          <th style={styleForBorder}>{e.content_translation}</th>
+          <th style={styleForBorder}>{e.contentTranslation}</th>
         </tr>
       );
     }
@@ -705,7 +705,7 @@ export const OwnVocabTreasury = () => {
       <h1>
         {loggedInUserProfile === null
           ? "Something went wrong..."
-          : `Own VocabTreasury for ${loggedInUserProfile.email}`}
+          : `${loggedInUserProfile.username}'s Own VocabTreasury`}
       </h1>
       <div>
         <Link to="/example/new">Record new example</Link>
@@ -865,10 +865,10 @@ export const SingleExample = () => {
           </tr>
           <tr>
             <th style={styleForBorder}>{example.id}</th>
-            <th style={styleForBorder}>{example.source_language}</th>
-            <th style={styleForBorder}>{example.new_word}</th>
+            <th style={styleForBorder}>{example.sourceLanguage}</th>
+            <th style={styleForBorder}>{example.newWord}</th>
             <th style={styleForBorder}>{example.content}</th>
-            <th style={styleForBorder}>{example.content_translation}</th>
+            <th style={styleForBorder}>{example.contentTranslation}</th>
           </tr>
         </tbody>
       </table>
@@ -905,10 +905,10 @@ export const EditExample = () => {
   const example: IExample = examplesMockEntities[exampleId];
 
   const [formData, setFormData] = React.useState({
-    sourceLanguage: example.source_language,
-    newWord: example.new_word,
+    sourceLanguage: example.sourceLanguage,
+    newWord: example.newWord,
     content: example.content,
-    contentTranslation: example.content_translation,
+    contentTranslation: example.contentTranslation,
   });
 
   const handleChange = (

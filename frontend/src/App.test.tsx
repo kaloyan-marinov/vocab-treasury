@@ -565,9 +565,7 @@ describe("<OwnVocabTreasury>", () => {
       );
 
       /* Assert. */
-      const headingElement = screen.getByText(
-        "Own VocabTreasury for auth-john.doe@protonmail.com"
-      );
+      const headingElement = screen.getByText("auth-jd's Own VocabTreasury");
       expect(headingElement).toBeInTheDocument();
 
       const recordNewExampleAnchor = screen.getByText("Record new example");
