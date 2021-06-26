@@ -37,8 +37,6 @@ import { setupServer } from "msw/node";
 import { applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 
-import { waitFor } from "@testing-library/react";
-
 // 3
 import { profileMock } from "./dataMocks";
 
@@ -173,9 +171,8 @@ describe("<NavigationBar>", () => {
       fireEvent.click(logoutAnchor);
 
       /* Assert. */
-      await waitFor(() => {
-        screen.getByText("LOGOUT SUCCESSFUL");
-      });
+      const element: HTMLElement = await screen.findByText("LOGOUT SUCCESSFUL");
+      expect(element).toBeInTheDocument();
     }
   );
 });
@@ -867,9 +864,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       /* Assert. */
-      await waitFor(() => {
-        screen.getByText("REGISTRATION SUCCESSFUL");
-      });
+      const element: HTMLElement = await screen.findByText(
+        "REGISTRATION SUCCESSFUL"
+      );
+      expect(element).toBeInTheDocument();
     }
   );
 
@@ -931,11 +929,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       /* Assert. */
-      await waitFor(() => {
-        screen.getByText(
-          "[mocked-response] Failed to create a new User resource"
-        );
-      });
+      const element: HTMLElement = await screen.findByText(
+        "[mocked-response] Failed to create a new User resource"
+      );
+      expect(element).toBeInTheDocument();
     }
   );
 
@@ -977,9 +974,8 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       /* Assert. */
-      await waitFor(() => {
-        screen.getByText("LOGIN SUCCESSFUL");
-      });
+      const element: HTMLElement = await screen.findByText("LOGIN SUCCESSFUL");
+      expect(element).toBeInTheDocument();
 
       expect(history.location.pathname).toEqual("/home");
     }
@@ -1035,9 +1031,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       /* Assert. */
-      await waitFor(() => {
-        screen.getByText("[mocked] Incorrect email and/or password.");
-      });
+      const element: HTMLElement = await screen.findByText(
+        "[mocked] Incorrect email and/or password."
+      );
+      expect(element).toBeInTheDocument();
     }
   );
 
@@ -1096,10 +1093,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       let temp: HTMLElement;
-      await waitFor(() => {
-        temp = screen.getByText("Log out");
-        expect(temp).toBeInTheDocument();
-      });
+
+      temp = await screen.findByText("Log out");
+      expect(temp).toBeInTheDocument();
 
       /* Act. */
       /* Simulate the user's hitting her browser's Reload button. */
@@ -1126,10 +1122,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
 
       /* Assert. */
-      await waitFor(() => {
-        temp = screen.getByText("Own VocabTreasury");
-        expect(temp).toBeInTheDocument();
-      });
+      temp = await screen.findByText("Own VocabTreasury");
+      expect(temp).toBeInTheDocument();
+
       temp = screen.getByText("Account");
       expect(temp).toBeInTheDocument();
       temp = screen.getByText("Log out");
@@ -1172,10 +1167,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
 
       let temp: HTMLElement;
-      await waitFor(() => {
-        temp = screen.getByText("Log out");
-        expect(temp).toBeInTheDocument();
-      });
+
+      temp = await screen.findByText("Log out");
+      expect(temp).toBeInTheDocument();
 
       /* Act. */
       /* Simulate the user's hitting her browser's Reload button. */
@@ -1202,10 +1196,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
 
       /* Assert. */
-      await waitFor(() => {
-        temp = screen.getByText("Own VocabTreasury");
-        expect(temp).toBeInTheDocument();
-      });
+      temp = await screen.findByText("Own VocabTreasury");
+      expect(temp).toBeInTheDocument();
+
       temp = screen.getByText("Account");
       expect(temp).toBeInTheDocument();
       temp = screen.getByText("Log out");
@@ -1245,11 +1238,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
 
       /* Assert. */
-      let temp: HTMLElement;
-      await waitFor(() => {
-        temp = screen.getByText("TO CONTINUE, PLEASE LOG IN");
-        expect(temp).toBeInTheDocument();
-      });
+      const temp: HTMLElement = await screen.findByText(
+        "TO CONTINUE, PLEASE LOG IN"
+      );
+      expect(temp).toBeInTheDocument();
     }
   );
 
@@ -1318,12 +1310,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       expect(history.location.pathname).toEqual("/login");
-      await waitFor(() => {
-        const temp: HTMLElement = screen.getByText(
-          "TO CONTINUE, PLEASE LOG IN"
-        );
-        expect(temp).toBeInTheDocument();
-      });
+
+      const temp: HTMLElement = await screen.findByText(
+        "TO CONTINUE, PLEASE LOG IN"
+      );
+      expect(temp).toBeInTheDocument();
     }
   );
 });
