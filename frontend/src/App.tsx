@@ -29,6 +29,10 @@ import {
   selectExamplesEntities,
   ActionFetchExamples,
   fetchExamples,
+  IPaginationMeta,
+  selectExamplesMeta,
+  IPaginationLinks,
+  selectExamplesLinks,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -672,10 +676,14 @@ export const OwnVocabTreasury = () => {
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
   );
 
+  const [examplesUrl, setExamplesUrl] = React.useState<string>("/api/examples");
+
   const loggedInUserProfile: IProfile | null = useSelector(
     selectLoggedInUserProfile
   );
 
+  const examplesMeta: IPaginationMeta = useSelector(selectExamplesMeta);
+  const examplesLinks: IPaginationLinks = useSelector(selectExamplesLinks);
   const examplesIds: number[] = useSelector(selectExamplesIds);
   const examplesEntities: {
     [exampleId: string]: IExample;
@@ -698,7 +706,7 @@ export const OwnVocabTreasury = () => {
       );
 
       try {
-        await dispatch(fetchExamples());
+        await dispatch(fetchExamples(examplesUrl));
       } catch (err) {
         if (err.response.status === 401) {
           dispatch(
@@ -717,7 +725,7 @@ export const OwnVocabTreasury = () => {
     };
 
     effectFn();
-  }, [dispatch]);
+  }, [dispatch, examplesUrl]);
 
   const styleForLinkToCurrentPage = { fontSize: 40 };
 
@@ -736,6 +744,82 @@ export const OwnVocabTreasury = () => {
       </tr>
     );
   });
+
+  let paginationControllingButtons: JSX.Element;
+  if (examplesMeta.page === null) {
+    paginationControllingButtons = (
+      <div>Building pagination-controlling buttons...</div>
+    );
+  } else {
+    /*
+    TODO: find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
+    const paginationCtrlBtnPrev: JSX.Element =
+      examplesLinks.prev !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setExamplesUrl(examplesLinks.prev!)
+          }
+        >
+          Previous page
+        </button>
+      ) : (
+        <button disabled>Previous page</button>
+      );
+
+    const paginationCtrlBtnNext: JSX.Element =
+      examplesLinks.next !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setExamplesUrl(examplesLinks.next!)
+          }
+        >
+          Next page
+        </button>
+      ) : (
+        <button disabled>Next page</button>
+      );
+
+    const paginationCtrlBtnFirst: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === 1}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setExamplesUrl(examplesLinks.first!)
+        }
+      >
+        First page: 1
+      </button>
+    );
+
+    const paginationCtrlBtnLast: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === examplesMeta.totalPages}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setExamplesUrl(examplesLinks.last!)
+        }
+      >
+        Last page: {examplesMeta.totalPages}
+      </button>
+    );
+
+    paginationControllingButtons = (
+      <React.Fragment>
+        <div>
+          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
+          <span style={{ color: "red" }}>
+            Current page: {examplesMeta.page}{" "}
+          </span>
+          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
+        </div>
+      </React.Fragment>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -764,20 +848,7 @@ export const OwnVocabTreasury = () => {
           {exampleTableRows}
         </tbody>
       </table>
-      {/* <font size="14"> */}
-      {/* 
-                https://stackoverflow.com/questions/61002821/font-with-typescript-property-font-does-not-exist-on-type-jsx-intrinsicele
-                
-                `<font>`` is a deprecated tag in HTML,
-                so TS will not include it in its type definitions.
-                This, as well as many other tags, have been deprecated
-                in favor of using CSS to style elements. */}
-      <Link style={styleForLinkToCurrentPage} to="/own-vocabtreasury?page=1">
-        1
-      </Link>{" "}
-      {/* </font> */}
-      <Link to="/own-vocabtreasury?page=2">2</Link> ...{" "}
-      <Link to="/own-vocabtreasury?page=281">281</Link>
+      {paginationControllingButtons}
     </React.Fragment>
   );
 };

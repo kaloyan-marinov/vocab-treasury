@@ -130,6 +130,8 @@ export const selectHasValidToken = (state: IState) => state.auth.hasValidToken;
 export const selectLoggedInUserProfile = (state: IState) =>
   state.auth.loggedInUserProfile;
 
+export const selectExamplesMeta = (state: IState) => state.examples.meta;
+export const selectExamplesLinks = (state: IState) => state.examples.links;
 export const selectExamplesIds = (state: IState) => state.examples.ids;
 export const selectExamplesEntities = (state: IState) =>
   state.examples.entities;
@@ -474,7 +476,7 @@ export type ActionFetchExamples =
   | IFetchExamplesFulfilled;
 
 /* "examples/fetchExamples" thunk-action creator */
-export const fetchExamples = () => {
+export const fetchExamples = (urlForOnePageOfExamples: string) => {
   /*
   Create a thunk-action.
   When dispatched, it issues an HTTP request
@@ -492,7 +494,13 @@ export const fetchExamples = () => {
 
     dispatch(fetchExamplesPending());
     try {
-      const response = await axios.get("/api/examples", config);
+      const response = await axios.get(urlForOnePageOfExamples, config);
+      const meta: IPaginationMeta = {
+        totalItems: response.data._meta.total_items,
+        perPage: response.data._meta.per_page,
+        totalPages: response.data._meta.total_pages,
+        page: response.data._meta.page,
+      };
       const examples: IExample[] = response.data.items.map((item: any) => ({
         id: item.id,
         sourceLanguage: item.source_language,
@@ -500,13 +508,7 @@ export const fetchExamples = () => {
         content: item.content,
         contentTranslation: item.content_translation,
       }));
-      dispatch(
-        fetchExamplesFulfilled(
-          response.data._meta,
-          response.data._links,
-          examples
-        )
-      );
+      dispatch(fetchExamplesFulfilled(meta, response.data._links, examples));
       return Promise.resolve();
     } catch (err) {
       const responseBody = err.response.data;
