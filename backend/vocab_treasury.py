@@ -82,6 +82,12 @@ class PaginatedAPIMixin(object):
             if pagination_obj.has_prev
             else None
         )
+        link_to_first = url_for(endpoint, per_page=per_page, page=1, **kwargs)
+        link_to_last = (
+            url_for(endpoint, per_page=per_page, page=pagination_obj.pages, **kwargs)
+            if pagination_obj.pages > 0
+            else None
+        )
 
         resource_representations = {
             "items": [resource.to_dict() for resource in pagination_obj.items],
@@ -95,6 +101,8 @@ class PaginatedAPIMixin(object):
                 "self": link_to_self,
                 "next": link_to_next,
                 "prev": link_to_prev,
+                "first": link_to_first,
+                "last": link_to_last,
             },
         }
         return resource_representations

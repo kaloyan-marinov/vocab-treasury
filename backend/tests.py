@@ -287,6 +287,7 @@ class Test_02_GetUsers(TestBase):
         self.assertEqual(rv.status_code, 200)
         with app.test_request_context():
             _links_self = url_for("get_users", per_page=10, page=1)
+            _links_first = _links_self
         self.assertEqual(
             body,
             {
@@ -298,9 +299,11 @@ class Test_02_GetUsers(TestBase):
                     "page": 1,
                 },
                 "_links": {
+                    "self": _links_self,
                     "next": None,
                     "prev": None,
-                    "self": _links_self,
+                    "first": _links_first,
+                    "last": None,
                 },
             },
         )
@@ -351,6 +354,8 @@ class Test_02_GetUsers(TestBase):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": _links_self,
                 },
             },
         )
@@ -1583,6 +1588,8 @@ class Test_09_GetExamples(TestBaseForExampleResources):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": None,
                 },
             },
         )
@@ -1644,6 +1651,8 @@ class Test_09_GetExamples(TestBaseForExampleResources):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": _links_self,
                 },
             },
         )
