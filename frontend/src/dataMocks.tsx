@@ -1,4 +1,4 @@
-import { IProfile, IExample } from "./store";
+import { IProfile, IExampleFromBackend } from "./store";
 
 export const profileMock: IProfile = {
   id: 17,
@@ -6,8 +6,7 @@ export const profileMock: IProfile = {
   email: "mocked-john.doe@protonmail.com",
 };
 
-// export const exampleMock: IExample = {
-export const exampleMock = {
+export const exampleMock: IExampleFromBackend = {
   id: 17,
   source_language: "Finnish",
   new_word: "varjo",
@@ -15,7 +14,7 @@ export const exampleMock = {
   content_translation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
-/* Mock the pagination of Example resource. */
+/* Mock the pagination of Example resources. */
 
 const totalItems: number = 11;
 const perPage: number = 2;
@@ -23,7 +22,9 @@ const totalPages: number = Math.ceil(totalItems / perPage);
 const itemsOnLastPage: number =
   totalItems % perPage !== 0 ? totalItems % perPage : perPage;
 
-const examplesMock = Array.from({ length: totalItems }).map((_, index) => {
+const examplesMock: IExampleFromBackend[] = Array.from({
+  length: totalItems,
+}).map((_, index) => {
   return {
     id: index + 1,
     source_language: "Finnish",
@@ -33,14 +34,18 @@ const examplesMock = Array.from({ length: totalItems }).map((_, index) => {
   };
 });
 
-export const examplesMockEntities: { [exampleId: string]: IExample } =
-  examplesMock.reduce(
-    (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
-      examplesObj[e.id] = e;
-      return examplesObj;
-    },
-    {}
-  );
+export const examplesMockEntities: {
+  [exampleId: string]: IExampleFromBackend;
+} = examplesMock.reduce(
+  (
+    examplesObj: { [exampleId: string]: IExampleFromBackend },
+    e: IExampleFromBackend
+  ) => {
+    examplesObj[e.id] = e;
+    return examplesObj;
+  },
+  {}
+);
 
 export const paginate = (page: number = 1) => {
   if (page <= 0 || page > totalPages) {

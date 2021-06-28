@@ -39,6 +39,14 @@ export interface IStateAuth {
   loggedInUserProfile: IProfile | null;
 }
 
+export interface IExampleFromBackend {
+  id: number;
+  source_language: string;
+  new_word: string;
+  content: string;
+  content_translation: string;
+}
+
 export interface IExample {
   id: number;
   sourceLanguage: string;
