@@ -38,6 +38,8 @@ import { ThunkDispatch } from "redux-thunk";
 
 import { Redirect } from "react-router-dom";
 
+import { exampleMock, examplesMockEntities } from "./dataMocks";
+
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
 
@@ -588,89 +590,6 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
-const examplesMock: IExample[] = [
-  {
-    id: 1,
-    sourceLanguage: "Finnish",
-    newWord: "vihata + P",
-    content: "Älä vihaa ketään!",
-    contentTranslation: "Don't hate anyone!",
-  },
-  {
-    id: 2,
-    sourceLanguage: "Finnish",
-    newWord: "tulinen",
-    content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
-    contentTranslation: `"spicy" and "volcano" are similar words.`,
-  },
-  {
-    id: 3,
-    sourceLanguage: "German",
-    newWord: "der Termin",
-    content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
-    contentTranslation:
-      "One must firstly fix the deadline and then meet/observe it.",
-  },
-  {
-    id: 4,
-    sourceLanguage: "Finnish",
-    newWord: "sama",
-    content: "Olemme samaa mieltä.",
-    contentTranslation: "I agree.",
-  },
-  {
-    id: 5,
-    sourceLanguage: "Finnish",
-    newWord: "pitää",
-    content: "Pidätkö koirista?",
-    contentTranslation: "Do you like dogs?",
-  },
-  {
-    id: 6,
-    sourceLanguage: "Finnish",
-    newWord: "tykätä",
-    content: "Tykkäätkö koirista?",
-    contentTranslation: "Do you like dogs?",
-  },
-  {
-    id: 7,
-    sourceLanguage: "Finnish",
-    newWord: "kannettava tietokone",
-    content: "Ota sinun kannettava tietokone kotiin!",
-    contentTranslation: "Ota sinun kannettava tietokone kotiin!",
-  },
-  {
-    id: 10,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Älä teeskentele, että olet sairas!",
-    contentTranslation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 11,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Älä teeskentele olevasi sairas!",
-    contentTranslation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 12,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
-    contentTranslation: "Why did we pretend to like his jokes?",
-  },
-];
-
-const examplesMockEntities: { [exampleId: string]: IExample } =
-  examplesMock.reduce(
-    (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
-      examplesObj[e.id] = e;
-      return examplesObj;
-    },
-    {}
-  );
-
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
@@ -954,7 +873,8 @@ export const SingleExample = () => {
   console.log(params);
   const exampleId: number = parseInt(params.id);
 
-  const example: IExample = examplesMockEntities[exampleId];
+  // In the case of real data, the following should be computed out of `exampleId`:
+  const example: IExample = exampleMock;
 
   return (
     <React.Fragment>
@@ -1011,7 +931,8 @@ export const EditExample = () => {
   );
   console.log(params);
   const exampleId: number = parseInt(params.id);
-  const example: IExample = examplesMockEntities[exampleId];
+  // In the case of real data, the following should be computed out of `exampleId`:
+  const example: IExample = exampleMock;
 
   const [formData, setFormData] = React.useState({
     sourceLanguage: example.sourceLanguage,

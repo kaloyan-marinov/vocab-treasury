@@ -672,19 +672,23 @@ describe("<SingleExample>", () => {
       expect(translationTableCellElement1).toBeInTheDocument();
 
       /* Second row. */
-      const idTableCellElement2 = screen.getByText("4");
+      const idTableCellElement2 = screen.getByText("17");
       expect(idTableCellElement2).toBeInTheDocument();
 
       const sourceLanguageTableCellElement2 = screen.getByText("Finnish");
       expect(sourceLanguageTableCellElement2).toBeInTheDocument();
 
-      const newWordTableCellElement2 = screen.getByText("sama");
+      const newWordTableCellElement2 = screen.getByText("varjo");
       expect(newWordTableCellElement2).toBeInTheDocument();
 
-      const exampleTableCellElement2 = screen.getByText("Olemme samaa mieltä.");
+      const exampleTableCellElement2 = screen.getByText(
+        "Suomen ideaalisää on 24 astetta varjossa."
+      );
       expect(exampleTableCellElement2).toBeInTheDocument();
 
-      const translationTableCellElement2 = screen.getByText("I agree.");
+      const translationTableCellElement2 = screen.getByText(
+        "Finland's ideal weather is 24 degrees in the shade."
+      );
       expect(translationTableCellElement2).toBeInTheDocument();
 
       // HTML elements that enable user interaction.
@@ -747,15 +751,17 @@ describe("<EditExample>", () => {
     const sourceLanguageTableCellElement2 = screen.getByDisplayValue("Finnish");
     expect(sourceLanguageTableCellElement2).toBeInTheDocument();
 
-    const newWordTableCellElement2 = screen.getByDisplayValue("sama");
+    const newWordTableCellElement2 = screen.getByDisplayValue("varjo");
     expect(newWordTableCellElement2).toBeInTheDocument();
 
     const exampleTableCellElement2 = screen.getByDisplayValue(
-      "Olemme samaa mieltä."
+      "Suomen ideaalisää on 24 astetta varjossa."
     );
     expect(exampleTableCellElement2).toBeInTheDocument();
 
-    const translationTableCellElement2 = screen.getByDisplayValue("I agree.");
+    const translationTableCellElement2 = screen.getByDisplayValue(
+      "Finland's ideal weather is 24 degrees in the shade."
+    );
     expect(translationTableCellElement2).toBeInTheDocument();
   });
 });
