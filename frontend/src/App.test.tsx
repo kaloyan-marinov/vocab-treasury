@@ -537,7 +537,7 @@ describe("<Account>", () => {
   });
 });
 
-describe("<OwnVocabTreasury>", () => {
+describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
     quasiServer.listen();
@@ -583,16 +583,19 @@ describe("<OwnVocabTreasury>", () => {
       );
 
       /* Assert. */
-      const headingElement = screen.getByText("auth-jd's Own VocabTreasury");
-      expect(headingElement).toBeInTheDocument();
+      /* - items that appear above the table of Example resources */
+      let element: HTMLElement;
 
-      const recordNewExampleAnchor = screen.getByText("Record new example");
-      expect(recordNewExampleAnchor).toBeInTheDocument();
+      element = screen.getByText("auth-jd's Own VocabTreasury");
+      expect(element).toBeInTheDocument();
 
-      const searchAnchor = screen.getByText("Search");
-      expect(searchAnchor).toBeInTheDocument();
+      element = screen.getByText("Record new example");
+      expect(element).toBeInTheDocument();
 
-      /*
+      element = screen.getByText("Search");
+      expect(element).toBeInTheDocument();
+
+      /* - table headers */
       for (const columnName of [
         "ID",
         "SOURCE LANGUAGE",
@@ -604,23 +607,44 @@ describe("<OwnVocabTreasury>", () => {
         expect(tableCellElement).toBeInTheDocument();
       }
 
-      for (const columnValue of [
-        // "Finnish",
-        "sama",
-        "Olemme samaa mieltä.",
-        "I agree.",
-      ]) {
-        const tableCellElement = screen.getByText(columnValue);
-        expect(tableCellElement).toBeInTheDocument();
-      }
+      /* - after the component's 2nd re-rendering */
+      element = await screen.findByText(
+        "Building pagination-controlling buttons..."
+      );
+      expect(element).toBeInTheDocument();
 
-      const tableCellElementsForFinnish = screen.getAllByText("Finnish");
-      expect(tableCellElementsForFinnish.length).toEqual(9);
+      /* - after the component's 3rd re-rendering: */
+      /*    (a) [representations of] Example resources */
+      element = await screen.findByText("1");
+      expect(element).toBeInTheDocument();
 
-      const tableCellElementsForGerman = screen.getAllByText("German");
-      expect(tableCellElementsForGerman).toHaveLength(1);
-      */
-      await screen.findByText("käännös #1");
+      element = screen.getByText("sana #1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("lause #1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("käännös #1");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("2");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("sana #2");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("lause #2");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("käännös #2");
+      expect(element).toBeInTheDocument();
+
+      /*    (b) buttons for controlling pagination of Example resources */
+      element = screen.getByText("Previous page");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("Current page: 1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("Next page");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("First page: 1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("Last page: 6");
+      expect(element).toBeInTheDocument();
     }
   );
 });
@@ -1361,4 +1385,8 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(temp).toBeInTheDocument();
     }
   );
+
+  test("<Alerts> + <OwnVocabTreasury>", () => {
+    expect(true).toEqual(false);
+  });
 });
