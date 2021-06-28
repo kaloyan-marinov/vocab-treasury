@@ -6,12 +6,13 @@ export const profileMock: IProfile = {
   email: "mocked-john.doe@protonmail.com",
 };
 
-export const exampleMock: IExample = {
+// export const exampleMock: IExample = {
+export const exampleMock = {
   id: 17,
-  sourceLanguage: "Finnish",
-  newWord: "varjo",
+  source_language: "Finnish",
+  new_word: "varjo",
   content: "Suomen ideaalisää on 24 astetta varjossa.",
-  contentTranslation: "Finland's ideal weather is 24 degrees in the shade.",
+  content_translation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
 /* Mock the pagination of Example resource. */
@@ -25,10 +26,10 @@ const itemsOnLastPage: number =
 const examplesMock = Array.from({ length: totalItems }).map((_, index) => {
   return {
     id: index + 1,
-    sourceLanguage: "Finnish",
-    newWord: "sana #" + (index + 1).toString(),
+    source_language: "Finnish",
+    new_word: "sana #" + (index + 1).toString(),
     content: "lause #" + (index + 1).toString(),
-    contentTranslation: "käännös #" + (index + 1).toString(),
+    content_translation: "käännös #" + (index + 1).toString(),
   };
 });
 
@@ -47,9 +48,9 @@ export const paginate = (page: number = 1) => {
   }
 
   const _meta = {
-    totalItems,
-    perPage,
-    totalPages,
+    total_items: totalItems,
+    per_page: perPage,
+    total_pages: totalPages,
     page,
   };
 
@@ -78,6 +79,7 @@ export const paginate = (page: number = 1) => {
   };
 };
 
+/*
 console.log();
 console.log(paginate(1));
 
@@ -98,3 +100,4 @@ console.log(paginate(6));
 
 console.log();
 console.log(paginate(7));
+*/

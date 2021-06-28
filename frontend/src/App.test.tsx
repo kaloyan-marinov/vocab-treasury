@@ -1,6 +1,6 @@
 // 1
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { findByText, fireEvent, render, screen } from "@testing-library/react";
 
 import { createStore } from "redux";
 import { Provider } from "react-redux";
@@ -43,6 +43,9 @@ import { profileMock } from "./dataMocks";
 import { App } from "./App";
 import { initialStateAlerts, initialStateAuth } from "./store";
 import { cleanup } from "@testing-library/react";
+
+// 4
+import { paginate } from "./dataMocks";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -535,10 +538,24 @@ describe("<Account>", () => {
 });
 
 describe("<OwnVocabTreasury>", () => {
+  beforeAll(() => {
+    /* Enable API mocking. */
+    quasiServer.listen();
+  });
+
+  afterEach(() => {
+    quasiServer.resetHandlers();
+  });
+
+  afterAll(() => {
+    /* Disable API mocking. */
+    quasiServer.close();
+  });
+
   test(
     "renders a heading, manipulation links," +
       " and a page of the logged-in user's Example resources",
-    () => {
+    async () => {
       /* Arrange. */
       const initState: IState = {
         ...initialState,
@@ -551,7 +568,8 @@ describe("<OwnVocabTreasury>", () => {
           },
         },
       };
-      const realStore = createStore(rootReducer, initState);
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
 
       const history = createMemoryHistory();
 
@@ -574,6 +592,7 @@ describe("<OwnVocabTreasury>", () => {
       const searchAnchor = screen.getByText("Search");
       expect(searchAnchor).toBeInTheDocument();
 
+      /*
       for (const columnName of [
         "ID",
         "SOURCE LANGUAGE",
@@ -600,6 +619,8 @@ describe("<OwnVocabTreasury>", () => {
 
       const tableCellElementsForGerman = screen.getAllByText("German");
       expect(tableCellElementsForGerman).toHaveLength(1);
+      */
+      await screen.findByText("käännös #1");
     }
   );
 });
@@ -815,6 +836,10 @@ const requestHandlersToMock = [
 
   rest.get("/api/user-profile", (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(profileMock));
+  }),
+
+  rest.get("/api/examples", (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(paginate(1)));
   }),
 ];
 
