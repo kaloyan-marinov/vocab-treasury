@@ -38,7 +38,7 @@ import { ThunkDispatch } from "redux-thunk";
 
 import { Redirect } from "react-router-dom";
 
-import { exampleMock, examplesMockEntities } from "./dataMocks";
+import { exampleMock } from "./dataMocks";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);

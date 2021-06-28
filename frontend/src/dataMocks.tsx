@@ -14,79 +14,23 @@ export const exampleMock: IExample = {
   contentTranslation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
-const examplesMock: IExample[] = [
-  {
-    id: 1,
+/* Mock the pagination of Example resource. */
+
+const totalItems: number = 11;
+const perPage: number = 2;
+const totalPages: number = Math.ceil(totalItems / perPage);
+const itemsOnLastPage: number =
+  totalItems % perPage !== 0 ? totalItems % perPage : perPage;
+
+const examplesMock = Array.from({ length: totalItems }).map((_, index) => {
+  return {
+    id: index + 1,
     sourceLanguage: "Finnish",
-    newWord: "vihata + P",
-    content: "Älä vihaa ketään!",
-    contentTranslation: "Don't hate anyone!",
-  },
-  {
-    id: 2,
-    sourceLanguage: "Finnish",
-    newWord: "tulinen",
-    content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
-    contentTranslation: `"spicy" and "volcano" are similar words.`,
-  },
-  {
-    id: 3,
-    sourceLanguage: "German",
-    newWord: "der Termin",
-    content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
-    contentTranslation:
-      "One must firstly fix the deadline and then meet/observe it.",
-  },
-  {
-    id: 4,
-    sourceLanguage: "Finnish",
-    newWord: "sama",
-    content: "Olemme samaa mieltä.",
-    contentTranslation: "I agree.",
-  },
-  {
-    id: 5,
-    sourceLanguage: "Finnish",
-    newWord: "pitää",
-    content: "Pidätkö koirista?",
-    contentTranslation: "Do you like dogs?",
-  },
-  {
-    id: 6,
-    sourceLanguage: "Finnish",
-    newWord: "tykätä",
-    content: "Tykkäätkö koirista?",
-    contentTranslation: "Do you like dogs?",
-  },
-  {
-    id: 7,
-    sourceLanguage: "Finnish",
-    newWord: "kannettava tietokone",
-    content: "Ota sinun kannettava tietokone kotiin!",
-    contentTranslation: "Ota sinun kannettava tietokone kotiin!",
-  },
-  {
-    id: 10,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Älä teeskentele, että olet sairas!",
-    contentTranslation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 11,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Älä teeskentele olevasi sairas!",
-    contentTranslation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 12,
-    sourceLanguage: "Finnish",
-    newWord: "teeskennellä",
-    content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
-    contentTranslation: "Why did we pretend to like his jokes?",
-  },
-];
+    newWord: "sana #" + (index + 1).toString(),
+    content: "lause #" + (index + 1).toString(),
+    contentTranslation: "käännös #" + (index + 1).toString(),
+  };
+});
 
 export const examplesMockEntities: { [exampleId: string]: IExample } =
   examplesMock.reduce(
@@ -96,3 +40,61 @@ export const examplesMockEntities: { [exampleId: string]: IExample } =
     },
     {}
   );
+
+export const paginate = (page: number = 1) => {
+  if (page <= 0 || page > totalPages) {
+    throw new Error(`\`page\` must be >= 1 and <= ${totalPages}`);
+  }
+
+  const _meta = {
+    totalItems,
+    perPage,
+    totalPages,
+    page,
+  };
+
+  const _links = {
+    self: `/api/examples?per_page=${perPage}&page=${page}`,
+    next:
+      page === totalPages
+        ? null
+        : `/api/examples?per_page=${perPage}&page=${page + 1}`,
+    prev:
+      page === 1 ? null : `/api/examples?per_page=${perPage}&page=${page - 1}`,
+    first: `/api/examples?per_page=${perPage}&page=1`,
+    last: `/api/examples?per_page=${perPage}&page=${totalPages}`,
+  };
+
+  const startIndex: number = (page - 1) * perPage;
+  const length: number = page === totalPages ? itemsOnLastPage : perPage;
+  const items = Array.from({ length: length }).map((_, index) => {
+    return examplesMock[startIndex + index];
+  });
+
+  return {
+    _meta,
+    _links,
+    items,
+  };
+};
+
+console.log();
+console.log(paginate(1));
+
+console.log();
+console.log(paginate(2));
+
+console.log();
+console.log(paginate(3));
+
+console.log();
+console.log(paginate(4));
+
+console.log();
+console.log(paginate(5));
+
+console.log();
+console.log(paginate(6));
+
+console.log();
+console.log(paginate(7));
