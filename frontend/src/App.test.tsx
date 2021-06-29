@@ -586,14 +586,14 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       /* - items that appear above the table of Example resources */
       let element: HTMLElement;
 
-      element = screen.getByText("auth-jd's Own VocabTreasury");
-      expect(element).toBeInTheDocument();
-
-      element = screen.getByText("Record new example");
-      expect(element).toBeInTheDocument();
-
-      element = screen.getByText("Search");
-      expect(element).toBeInTheDocument();
+      for (const expectedText of [
+        "auth-jd's Own VocabTreasury",
+        "Record new example",
+        "Search",
+      ]) {
+        element = screen.getByText(expectedText);
+        expect(element).toBeInTheDocument();
+      }
 
       /* - table headers */
       for (const columnName of [
@@ -618,32 +618,36 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       element = await screen.findByText("1");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("sana #1");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("lause #1");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("käännös #1");
-      expect(element).toBeInTheDocument();
+      for (const textFromExample1 of ["sana #1", "lause #1", "käännös #1"]) {
+        element = screen.getByText(textFromExample1);
+        expect(element).toBeInTheDocument();
+      }
 
-      element = screen.getByText("2");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("sana #2");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("lause #2");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("käännös #2");
-      expect(element).toBeInTheDocument();
+      for (const textFromExample2 of [
+        "2",
+        "sana #2",
+        "lause #2",
+        "käännös #2",
+      ]) {
+        element = screen.getByText(textFromExample2);
+        expect(element).toBeInTheDocument();
+      }
 
-      /*    (b) buttons for controlling pagination of Example resources */
-      element = screen.getByText("Previous page");
-      expect(element).toBeInTheDocument();
+      /*    (b) elements for controlling pagination of Example resources */
+      for (const textOnPaginationControllingButton of [
+        "First page: 1",
+        "Previous page",
+        "Next page",
+        "Last page: 6",
+      ]) {
+        console.log("looking for ", textOnPaginationControllingButton);
+        element = screen.getByRole("button", {
+          name: textOnPaginationControllingButton,
+        });
+        expect(element).toBeInTheDocument();
+      }
+
       element = screen.getByText("Current page: 1");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("Next page");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("First page: 1");
-      expect(element).toBeInTheDocument();
-      element = screen.getByText("Last page: 6");
       expect(element).toBeInTheDocument();
     }
   );
@@ -1385,8 +1389,4 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(temp).toBeInTheDocument();
     }
   );
-
-  test("<Alerts> + <OwnVocabTreasury>", () => {
-    expect(true).toEqual(false);
-  });
 });
