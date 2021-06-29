@@ -71,9 +71,42 @@ import {
 import { profileMock } from "./dataMocks";
 import { fetchProfile } from "./store";
 
-import { selectAuthRequestStatus, selectLoggedInUserProfile } from "./store";
+import {
+  selectAuthRequestStatus,
+  selectHasValidToken,
+  selectLoggedInUserProfile,
+} from "./store";
 
-import { initialStateExamples } from "./store";
+import {
+  initialStateExamples,
+  IPaginationMeta,
+  selectExamplesMeta,
+  IPaginationLinks,
+  selectExamplesLinks,
+  IExample,
+  selectExamplesIds,
+  selectExamplesEntities,
+} from "./store";
+
+import { fetchExamplesPending, fetchExamplesRejected } from "./store";
+
+import { paginate } from "./dataMocks";
+import {
+  IPaginationMetaFromBackend,
+  IExampleFromBackend,
+  fetchExamplesFulfilled,
+} from "./store";
+
+import {
+  examplesReducer,
+  IStateExamples,
+  ActionTypesFetchExamples,
+  IActionFetchExamplesPending,
+  IActionFetchExamplesRejected,
+  IActionFetchExamplesFulfilled,
+} from "./store";
+
+import { fetchExamples } from "./store";
 
 describe("selector functions", () => {
   let state: IState;
@@ -100,6 +133,36 @@ describe("selector functions", () => {
       },
       examples: {
         ...initialStateExamples,
+        meta: {
+          totalItems: 11,
+          perPage: 2,
+          totalPages: 6,
+          page: 1,
+        },
+        links: {
+          self: "/api/examples?per_page=2&page=1",
+          next: "/api/examples?per_page=2&page=2",
+          prev: null,
+          first: "/api/examples?per_page=2&page=1",
+          last: "/api/examples?per_page=2&page=6",
+        },
+        ids: [1, 2],
+        entities: {
+          "1": {
+            id: 1,
+            sourceLanguage: "Finnish",
+            newWord: "sana #1",
+            content: "lause #1",
+            contentTranslation: "käännös #1",
+          },
+          "2": {
+            id: 2,
+            sourceLanguage: "Finnish",
+            newWord: "sana #2",
+            content: "lause #2",
+            contentTranslation: "käännös #2",
+          },
+        },
       },
     };
   });
@@ -128,6 +191,12 @@ describe("selector functions", () => {
     expect(authRequestStatus).toEqual("succeeded");
   });
 
+  test("selectHasValidToken", () => {
+    const hasValidToken: boolean | null = selectHasValidToken(state);
+
+    expect(hasValidToken).toEqual(null);
+  });
+
   test("selectLoggedInUserProfile", () => {
     const loggedInUserProfile: IProfile | null =
       selectLoggedInUserProfile(state);
@@ -136,6 +205,57 @@ describe("selector functions", () => {
       id: 17,
       username: "auth-jd",
       email: "auth-john.doe@protonmail.com",
+    });
+  });
+
+  test("selectExamplesMeta", () => {
+    const meta: IPaginationMeta = selectExamplesMeta(state);
+
+    expect(meta).toEqual({
+      totalItems: 11,
+      perPage: 2,
+      totalPages: 6,
+      page: 1,
+    });
+  });
+
+  test("selectExamplesLinks", () => {
+    const links: IPaginationLinks = selectExamplesLinks(state);
+
+    expect(links).toEqual({
+      self: "/api/examples?per_page=2&page=1",
+      next: "/api/examples?per_page=2&page=2",
+      prev: null,
+      first: "/api/examples?per_page=2&page=1",
+      last: "/api/examples?per_page=2&page=6",
+    });
+  });
+
+  test("selectExamplesIds", () => {
+    const ids: number[] = selectExamplesIds(state);
+
+    expect(ids).toEqual([1, 2]);
+  });
+
+  test("selectExamplesEntities", () => {
+    const entities: { [exampleId: string]: IExample } =
+      selectExamplesEntities(state);
+
+    expect(entities).toEqual({
+      "1": {
+        id: 1,
+        sourceLanguage: "Finnish",
+        newWord: "sana #1",
+        content: "lause #1",
+        contentTranslation: "käännös #1",
+      },
+      "2": {
+        id: 2,
+        sourceLanguage: "Finnish",
+        newWord: "sana #2",
+        content: "lause #2",
+        contentTranslation: "käännös #2",
+      },
     });
   });
 });
@@ -259,6 +379,115 @@ describe("action creators", () => {
 
     expect(action).toEqual({
       type: "auth/clearSlice",
+    });
+  });
+
+  test("fetchExamplesPending", () => {
+    const action = fetchExamplesPending();
+
+    expect(action).toEqual({
+      type: "examples/fetchExamples/pending",
+    });
+  });
+
+  test("fetchExamplesRejected", () => {
+    const action = fetchExamplesRejected("examples-fetchExamples-rejected");
+
+    expect(action).toEqual({
+      type: "examples/fetchExamples/rejected",
+      error: "examples-fetchExamples-rejected",
+    });
+  });
+
+  test("paginate (which is a function that helps test fetchExamplesFulfilled)", () => {
+    const page: number = 1;
+    const pagination = paginate(page);
+
+    const metaFromBackend: IPaginationMetaFromBackend = pagination._meta;
+    const links: IPaginationLinks = pagination._links;
+    const examplesFromBackend: IExampleFromBackend[] = pagination.items;
+
+    expect(metaFromBackend).toEqual({
+      total_items: 11,
+      per_page: 2,
+      total_pages: 6,
+      page: 1,
+    });
+    expect(links).toEqual({
+      self: "/api/examples?per_page=2&page=1",
+      next: "/api/examples?per_page=2&page=2",
+      prev: null,
+      first: "/api/examples?per_page=2&page=1",
+      last: "/api/examples?per_page=2&page=6",
+    });
+    expect(examplesFromBackend).toEqual([
+      {
+        id: 1,
+        source_language: "Finnish",
+        new_word: "sana #1",
+        content: "lause #1",
+        content_translation: "käännös #1",
+      },
+      {
+        id: 2,
+        source_language: "Finnish",
+        new_word: "sana #2",
+        content: "lause #2",
+        content_translation: "käännös #2",
+      },
+    ]);
+  });
+
+  test("fetchExamplesFulfilled", () => {
+    /* Arrange. */
+    const page: number = 1;
+    const pagination = paginate(page);
+
+    const metaFromBackend: IPaginationMetaFromBackend = pagination._meta;
+    const links: IPaginationLinks = pagination._links;
+    const examplesFromBackend: IExampleFromBackend[] = pagination.items;
+
+    /* Act. */
+    const action = fetchExamplesFulfilled(
+      metaFromBackend,
+      links,
+      examplesFromBackend
+    );
+
+    /* Assert. */
+    expect(action).toEqual({
+      type: "examples/fetchExamples/fulfilled",
+      payload: {
+        meta: {
+          totalItems: 11,
+          perPage: 2,
+          totalPages: 6,
+          page: 1,
+        },
+        links: {
+          self: "/api/examples?per_page=2&page=1",
+          next: "/api/examples?per_page=2&page=2",
+          prev: null,
+          first: "/api/examples?per_page=2&page=1",
+          last: "/api/examples?per_page=2&page=6",
+        },
+        items: [
+          {
+            id: 1,
+            sourceLanguage: "Finnish",
+            newWord: "sana #1",
+            content: "lause #1",
+            contentTranslation: "käännös #1",
+          },
+          {
+            id: 2,
+            sourceLanguage: "Finnish",
+            newWord: "sana #2",
+            content: "lause #2",
+            contentTranslation: "käännös #2",
+          },
+        ],
+      },
     });
   });
 });
@@ -554,6 +783,153 @@ describe("slice reducers", () => {
       });
     });
   });
+
+  describe("examplesReducer", () => {
+    test("examples/fetchExamples/pending", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "error-fetchExamples-rejected",
+      };
+      const action: IActionFetchExamplesPending = {
+        type: ActionTypesFetchExamples.PENDING,
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/fetchExamples/rejected", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+      };
+      const action: IActionFetchExamplesRejected = {
+        type: ActionTypesFetchExamples.REJECTED,
+        error: "examples-fetchExamples-rejected",
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.FAILED,
+        requestError: "examples-fetchExamples-rejected",
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/fetchExamples/fulfilled", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+      };
+      const page: number = 1;
+      const {
+        _meta,
+        _links,
+        items,
+      }: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = paginate(page);
+      const action: IActionFetchExamplesFulfilled = {
+        type: ActionTypesFetchExamples.FULFILLED,
+        payload: {
+          meta: {
+            totalItems: _meta.total_items,
+            perPage: _meta.per_page,
+            totalPages: _meta.total_pages,
+            page: _meta.page,
+          },
+          links: {
+            self: _links.self,
+            next: _links.next,
+            prev: _links.prev,
+            first: _links.first,
+            last: _links.last,
+          },
+          items: items.map((e: IExampleFromBackend) => ({
+            id: e.id,
+            sourceLanguage: e.source_language,
+            newWord: e.new_word,
+            content: e.content,
+            contentTranslation: e.content_translation,
+          })),
+        },
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        meta: {
+          totalItems: 11,
+          perPage: 2,
+          totalPages: 6,
+          page: 1,
+        },
+        links: {
+          self: "/api/examples?per_page=2&page=1",
+          next: "/api/examples?per_page=2&page=2",
+          prev: null,
+          first: "/api/examples?per_page=2&page=1",
+          last: "/api/examples?per_page=2&page=6",
+        },
+        ids: [1, 2],
+        entities: {
+          "1": {
+            id: 1,
+            sourceLanguage: "Finnish",
+            newWord: "sana #1",
+            content: "lause #1",
+            contentTranslation: "käännös #1",
+          },
+          "2": {
+            id: 2,
+            sourceLanguage: "Finnish",
+            newWord: "sana #2",
+            content: "lause #2",
+            contentTranslation: "käännös #2",
+          },
+        },
+      });
+    });
+  });
 });
 
 /* A function, which creates and returns a _correctly-typed_ mock of a Redux store. */
@@ -585,6 +961,10 @@ const requestHandlersToMock = [
 
   rest.get("/api/user-profile", (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(profileMock));
+  }),
+
+  rest.get("/api/examples", (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(paginate(1)));
   }),
 ];
 
@@ -841,6 +1221,94 @@ describe(
         });
 
         expect(localStorage.getItem(VOCAB_TREASURY_APP_TOKEN)).toEqual(null);
+      }
+    );
+
+    test(
+      "fetchExamples()" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const urlForOnePageOfExamples: string = "/api/examples";
+        const fetchExamplesPromise = storeMock.dispatch(
+          fetchExamples(urlForOnePageOfExamples)
+        );
+
+        await expect(fetchExamplesPromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/fetchExamples/pending",
+          },
+          {
+            type: "examples/fetchExamples/fulfilled",
+            payload: {
+              meta: {
+                totalItems: 11,
+                perPage: 2,
+                totalPages: 6,
+                page: 1,
+              },
+              links: {
+                self: "/api/examples?per_page=2&page=1",
+                next: "/api/examples?per_page=2&page=2",
+                prev: null,
+                first: "/api/examples?per_page=2&page=1",
+                last: "/api/examples?per_page=2&page=6",
+              },
+              items: [
+                {
+                  id: 1,
+                  sourceLanguage: "Finnish",
+                  newWord: "sana #1",
+                  content: "lause #1",
+                  contentTranslation: "käännös #1",
+                },
+                {
+                  id: 2,
+                  sourceLanguage: "Finnish",
+                  newWord: "sana #2",
+                  content: "lause #2",
+                  contentTranslation: "käännös #2",
+                },
+              ],
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "fetchExamples()" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.get("/api/examples", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Unauthorized",
+                message: "[mocked] Expired access token.",
+              })
+            );
+          })
+        );
+
+        const urlForOnePageOfExamples: string = "/api/examples";
+        const fetchExamplesPromise = storeMock.dispatch(
+          fetchExamples(urlForOnePageOfExamples)
+        );
+
+        await expect(fetchExamplesPromise).rejects.toEqual(
+          "[mocked] Expired access token."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/fetchExamples/pending",
+          },
+          {
+            type: "examples/fetchExamples/rejected",
+            error: "[mocked] Expired access token.",
+          },
+        ]);
       }
     );
   }

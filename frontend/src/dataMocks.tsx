@@ -1,4 +1,9 @@
-import { IProfile, IExampleFromBackend } from "./store";
+import {
+  IProfile,
+  IPaginationMetaFromBackend,
+  IPaginationLinks,
+  IExampleFromBackend,
+} from "./store";
 
 export const profileMock: IProfile = {
   id: 17,
@@ -47,19 +52,25 @@ export const examplesMockEntities: {
   {}
 );
 
-export const paginate = (page: number = 1) => {
+export const paginate = (
+  page: number = 1
+): {
+  _meta: IPaginationMetaFromBackend;
+  _links: IPaginationLinks;
+  items: IExampleFromBackend[];
+} => {
   if (page <= 0 || page > totalPages) {
     throw new Error(`\`page\` must be >= 1 and <= ${totalPages}`);
   }
 
-  const _meta = {
+  const _meta: IPaginationMetaFromBackend = {
     total_items: totalItems,
     per_page: perPage,
     total_pages: totalPages,
     page,
   };
 
-  const _links = {
+  const _links: IPaginationLinks = {
     self: `/api/examples?per_page=${perPage}&page=${page}`,
     next:
       page === totalPages
@@ -73,9 +84,11 @@ export const paginate = (page: number = 1) => {
 
   const startIndex: number = (page - 1) * perPage;
   const length: number = page === totalPages ? itemsOnLastPage : perPage;
-  const items = Array.from({ length: length }).map((_, index) => {
-    return examplesMock[startIndex + index];
-  });
+  const items: IExampleFromBackend[] = Array.from({ length: length }).map(
+    (_, index) => {
+      return examplesMock[startIndex + index];
+    }
+  );
 
   return {
     _meta,

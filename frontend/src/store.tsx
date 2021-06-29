@@ -55,6 +55,13 @@ export interface IExample {
   contentTranslation: string;
 }
 
+export interface IPaginationMetaFromBackend {
+  total_items: number;
+  per_page: number;
+  total_pages: number;
+  page: number;
+}
+
 export interface IPaginationMeta {
   totalItems: number | null;
   perPage: number | null;
@@ -436,16 +443,16 @@ export enum ActionTypesFetchExamples {
   FULFILLED = "examples/fetchExamples/fulfilled",
 }
 
-export interface IFetchExamplesPending {
+export interface IActionFetchExamplesPending {
   type: typeof ActionTypesFetchExamples.PENDING;
 }
 
-export interface IFetchExamplesRejected {
+export interface IActionFetchExamplesRejected {
   type: typeof ActionTypesFetchExamples.REJECTED;
   error: string;
 }
 
-export interface IFetchExamplesFulfilled {
+export interface IActionFetchExamplesFulfilled {
   type: typeof ActionTypesFetchExamples.FULFILLED;
   payload: {
     meta: IPaginationMeta;
@@ -454,34 +461,53 @@ export interface IFetchExamplesFulfilled {
   };
 }
 
-export const fetchExamplesPending = (): IFetchExamplesPending => ({
+export const fetchExamplesPending = (): IActionFetchExamplesPending => ({
   type: ActionTypesFetchExamples.PENDING,
 });
 
 export const fetchExamplesRejected = (
   error: string
-): IFetchExamplesRejected => ({
+): IActionFetchExamplesRejected => ({
   type: ActionTypesFetchExamples.REJECTED,
   error,
 });
 
 export const fetchExamplesFulfilled = (
-  meta: IPaginationMeta,
+  metaFromBackend: IPaginationMetaFromBackend,
   links: IPaginationLinks,
-  examples: IExample[]
-): IFetchExamplesFulfilled => ({
-  type: ActionTypesFetchExamples.FULFILLED,
-  payload: {
-    meta,
-    links,
-    items: examples,
-  },
-});
+  examplesFromBackend: IExampleFromBackend[]
+): IActionFetchExamplesFulfilled => {
+  const meta: IPaginationMeta = {
+    totalItems: metaFromBackend.total_items,
+    perPage: metaFromBackend.per_page,
+    totalPages: metaFromBackend.total_pages,
+    page: metaFromBackend.page,
+  };
+
+  const examples: IExample[] = examplesFromBackend.map(
+    (e: IExampleFromBackend) => ({
+      id: e.id,
+      sourceLanguage: e.source_language,
+      newWord: e.new_word,
+      content: e.content,
+      contentTranslation: e.content_translation,
+    })
+  );
+
+  return {
+    type: ActionTypesFetchExamples.FULFILLED,
+    payload: {
+      meta,
+      links,
+      items: examples,
+    },
+  };
+};
 
 export type ActionFetchExamples =
-  | IFetchExamplesPending
-  | IFetchExamplesRejected
-  | IFetchExamplesFulfilled;
+  | IActionFetchExamplesPending
+  | IActionFetchExamplesRejected
+  | IActionFetchExamplesFulfilled;
 
 /* "examples/fetchExamples" thunk-action creator */
 export const fetchExamples = (urlForOnePageOfExamples: string) => {
@@ -503,20 +529,13 @@ export const fetchExamples = (urlForOnePageOfExamples: string) => {
     dispatch(fetchExamplesPending());
     try {
       const response = await axios.get(urlForOnePageOfExamples, config);
-      const meta: IPaginationMeta = {
-        totalItems: response.data._meta.total_items,
-        perPage: response.data._meta.per_page,
-        totalPages: response.data._meta.total_pages,
-        page: response.data._meta.page,
-      };
-      const examples: IExample[] = response.data.items.map((item: any) => ({
-        id: item.id,
-        sourceLanguage: item.source_language,
-        newWord: item.new_word,
-        content: item.content,
-        contentTranslation: item.content_translation,
-      }));
-      dispatch(fetchExamplesFulfilled(meta, response.data._links, examples));
+      dispatch(
+        fetchExamplesFulfilled(
+          response.data._meta,
+          response.data._links,
+          response.data.items
+        )
+      );
       return Promise.resolve();
     } catch (err) {
       const responseBody = err.response.data;
