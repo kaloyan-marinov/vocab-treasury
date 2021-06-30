@@ -108,6 +108,12 @@ import {
 
 import { fetchExamples } from "./store";
 
+import {
+  ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
+  IActionExamplesClearSlice,
+  examplesClearSlice,
+} from "./store";
+
 describe("selector functions", () => {
   let state: IState;
 
@@ -488,6 +494,14 @@ describe("action creators", () => {
           },
         ],
       },
+    });
+  });
+
+  test("examplesClearSlice", () => {
+    const action = examplesClearSlice();
+
+    expect(action).toEqual({
+      type: "examples/clearSlice",
     });
   });
 });
@@ -929,6 +943,82 @@ describe("slice reducers", () => {
         },
       });
     });
+
+    test("examples/clearSlice", () => {
+      /* Arrange. */
+      const page: number = 1;
+      const {
+        _meta,
+        _links,
+        items,
+      }: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = paginate(page);
+
+      const meta: IPaginationMeta = {
+        totalItems: _meta.total_items,
+        perPage: _meta.per_page,
+        totalPages: _meta.total_pages,
+        page: _meta.page,
+      };
+      const ids: number[] = items.map((e: IExampleFromBackend) => e.id);
+      const entities: { [exampleId: string]: IExample } = items.reduce(
+        (
+          examplesObj: { [exampleId: string]: IExample },
+          e: IExampleFromBackend
+        ) => {
+          examplesObj[e.id] = {
+            id: e.id,
+            sourceLanguage: e.source_language,
+            newWord: e.new_word,
+            content: e.content,
+            contentTranslation: e.content_translation,
+          };
+
+          return examplesObj;
+        },
+        {}
+      );
+
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.SUCCEEDED,
+        meta,
+        links: _links,
+        ids,
+        entities,
+      };
+
+      const action: IActionExamplesClearSlice = {
+        type: ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
+      };
+
+      /* Act. */
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      /* Assert. */
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
   });
 });
 
@@ -1202,16 +1292,20 @@ describe(
         /* Assert. */
         const dispatchedActions = storeMock.getActions();
 
-        expect(dispatchedActions.length).toEqual(2);
+        expect(dispatchedActions.length).toEqual(3);
 
         expect(dispatchedActions[0]).toEqual({
           type: "auth/clearSlice",
         });
 
+        expect(dispatchedActions[1]).toEqual({
+          type: "examples/clearSlice",
+        });
+
         expect({
-          type: dispatchedActions[1].type,
+          type: dispatchedActions[2].type,
           payload: {
-            message: dispatchedActions[1].payload.message,
+            message: dispatchedActions[2].payload.message,
           },
         }).toEqual({
           type: "alerts/create",

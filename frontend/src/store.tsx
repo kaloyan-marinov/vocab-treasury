@@ -558,6 +558,17 @@ export const authClearSlice = (): IActionAuthClearSlice => ({
   type: ACTION_TYPE_AUTH_CLEAR_SLICE,
 });
 
+/* "examples/clearSlice" action creator */
+export const ACTION_TYPE_EXAMPLES_CLEAR_SLICE = "examples/clearSlice";
+
+export interface IActionExamplesClearSlice {
+  type: typeof ACTION_TYPE_EXAMPLES_CLEAR_SLICE;
+}
+
+export const examplesClearSlice = (): IActionExamplesClearSlice => ({
+  type: ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
+});
+
 /* authSlice thunk-action creator */
 export const logOut = (message: string) => {
   /*
@@ -566,10 +577,15 @@ export const logOut = (message: string) => {
   and creates an alert.
   */
 
-  return (dispatch: Dispatch<IActionAuthClearSlice | IActionAlertsCreate>) => {
+  return (
+    dispatch: Dispatch<
+      IActionAuthClearSlice | IActionExamplesClearSlice | IActionAlertsCreate
+    >
+  ) => {
     localStorage.removeItem(VOCAB_TREASURY_APP_TOKEN);
-
     dispatch(authClearSlice());
+
+    dispatch(examplesClearSlice());
 
     const id: string = uuidv4();
     dispatch(alertsCreate(id, message));
@@ -726,7 +742,7 @@ export const authReducer = (
 
 export const examplesReducer = (
   state: IStateExamples = initialStateExamples,
-  action: ActionFetchExamples
+  action: ActionFetchExamples | IActionExamplesClearSlice
 ): IStateExamples => {
   switch (action.type) {
     case ActionTypesFetchExamples.PENDING:
@@ -769,6 +785,15 @@ export const examplesReducer = (
         entities: newEntities,
       };
     }
+
+    case ACTION_TYPE_EXAMPLES_CLEAR_SLICE:
+      return {
+        ...state,
+        meta: initialStateExamples.meta,
+        links: initialStateExamples.links,
+        ids: [],
+        entities: {},
+      };
 
     default:
       return state;
