@@ -931,7 +931,9 @@ const requestHandlersToMock = [
   }),
 
   rest.get("/api/examples", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(paginate(1)));
+    const page = parseInt(req.url.searchParams.get("page") || "1");
+
+    return res(ctx.status(200), ctx.json(paginate(page)));
   }),
 ];
 
@@ -1451,6 +1453,224 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         "TO CONTINUE, PLEASE LOG IN"
       );
       expect(temp).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user clicks the navigation-controlling button for 'Next page'",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      history.push("/own-vocabtreasury");
+
+      /* Act. */
+      const paginationCtrlBtnNext = await screen.findByRole("button", {
+        name: "Next page",
+      });
+      fireEvent.click(paginationCtrlBtnNext);
+
+      /* Assert. */
+      /*    (a) [representations of] Example resources */
+      let element: HTMLElement;
+
+      element = await screen.findByText("3");
+      expect(element).toBeInTheDocument();
+
+      for (const textFromExample3 of ["sana #3", "lause #3", "käännös #3"]) {
+        element = screen.getByText(textFromExample3);
+        expect(element).toBeInTheDocument();
+      }
+
+      for (const textFromExample4 of [
+        "4",
+        "sana #4",
+        "lause #4",
+        "käännös #4",
+      ]) {
+        element = screen.getByText(textFromExample4);
+        expect(element).toBeInTheDocument();
+      }
+
+      /*    (b) elements for controlling pagination of Example resources */
+      element = screen.getByText("Current page: 2");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user clicks first the navigation-controlling button for 'Last page: N'",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      history.push("/own-vocabtreasury");
+
+      /* Act. */
+      const paginationCtrlBtnNext = await screen.findByRole("button", {
+        name: "Last page: 6",
+      });
+      fireEvent.click(paginationCtrlBtnNext);
+
+      /* Assert. */
+      /*    (a) [representations of] Example resources */
+      let element: HTMLElement;
+
+      element = await screen.findByText("11");
+      expect(element).toBeInTheDocument();
+
+      for (const textFromExample11 of [
+        "sana #11",
+        "lause #11",
+        "käännös #11",
+      ]) {
+        element = screen.getByText(textFromExample11);
+        expect(element).toBeInTheDocument();
+      }
+
+      /*    (b) elements for controlling pagination of Example resources */
+      element = screen.getByText("Current page: 6");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user clicks first the navigation-controlling button for 'Last page: N'" +
+      " and then that for 'Previous page'",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      history.push("/own-vocabtreasury");
+
+      /* Act. */
+      const paginationCtrlBtnNext = await screen.findByRole("button", {
+        name: "Last page: 6",
+      });
+      fireEvent.click(paginationCtrlBtnNext);
+
+      let element: HTMLElement;
+      element = await screen.findByText("Current page: 6");
+      const paginationCtrlBtnPrev = await screen.findByRole("button", {
+        name: "Previous page",
+      });
+      fireEvent.click(paginationCtrlBtnPrev);
+
+      /* Assert. */
+      /*    (a) [representations of] Example resources */
+      element = await screen.findByText("9");
+      expect(element).toBeInTheDocument();
+
+      for (const textFromExample9 of ["sana #9", "lause #9", "käännös #9"]) {
+        element = screen.getByText(textFromExample9);
+        expect(element).toBeInTheDocument();
+      }
+
+      for (const textFromExample10 of [
+        "10",
+        "sana #10",
+        "lause #10",
+        "käännös #10",
+      ]) {
+        element = screen.getByText(textFromExample10);
+        expect(element).toBeInTheDocument();
+      }
+
+      /*    (b) elements for controlling pagination of Example resources */
+      element = screen.getByText("Current page: 5");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user clicks first the navigation-controlling button for 'Next page'" +
+      " and then that for 'First page: 1'",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      history.push("/own-vocabtreasury");
+
+      /* Act. */
+      const paginationCtrlBtnNext = await screen.findByRole("button", {
+        name: "Next page",
+      });
+      fireEvent.click(paginationCtrlBtnNext);
+
+      let element: HTMLElement;
+      element = await screen.findByText("Current page: 2");
+      const paginationCtrlBtnFirst = await screen.findByRole("button", {
+        name: "First page: 1",
+      });
+      fireEvent.click(paginationCtrlBtnFirst);
+
+      /* Assert. */
+      /*    (a) [representations of] Example resources */
+      element = await screen.findByText("1");
+      expect(element).toBeInTheDocument();
+
+      for (const textFromExample1 of ["sana #1", "lause #1", "käännös #1"]) {
+        element = screen.getByText(textFromExample1);
+        expect(element).toBeInTheDocument();
+      }
+
+      for (const textFromExample2 of [
+        "2",
+        "sana #2",
+        "lause #2",
+        "käännös #2",
+      ]) {
+        element = screen.getByText(textFromExample2);
+        expect(element).toBeInTheDocument();
+      }
+
+      /*    (b) elements for controlling pagination of Example resources */
+      element = screen.getByText("Current page: 1");
+      expect(element).toBeInTheDocument();
     }
   );
 });
