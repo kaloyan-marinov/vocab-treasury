@@ -1298,7 +1298,7 @@ describe(
         );
 
         await expect(fetchExamplesPromise).rejects.toEqual(
-          "[mocked] Expired access token."
+          new Error("Request failed with status code 401")
         );
         expect(storeMock.getActions()).toEqual([
           {

@@ -630,7 +630,7 @@ export const OwnVocabTreasury = () => {
         if (err.response.status === 401) {
           dispatch(
             logOut(
-              "[FROM <OwnVocabTreasury>'S useEffect hook] PLEASE LOG BACK IN"
+              "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
             )
           );
         } else {

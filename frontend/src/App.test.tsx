@@ -651,6 +651,70 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       expect(element).toBeInTheDocument();
     }
   );
+
+  test(
+    " + <Alerts>" +
+      " a GET request to /api/examples is issued as part of the effect function," +
+      " but the backend is _mocked_" +
+      " to reject the client-provided authentication credential as invalid",
+    async () => {
+      /*
+      TODO: find out whether it would be better practice to convert this test case
+            into one that (fits under the
+            "multiple components + mocking of HTTP requests to the backend" `describe`
+            block and) renders the whole <App>, makes analogous assertions as this test,
+            and finally concludes by making the following extra assertion:
+              ```
+              expect(history.location.pathname).toEqual("/login")
+              ```
+      */
+
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/examples", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          loggedInUserProfile: {
+            id: 17,
+            username: "auth-jd",
+            email: "auth-john.doe@protonmail.com",
+          },
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+
+      const history = createMemoryHistory();
+
+      /* Act. */
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Alerts />
+            <OwnVocabTreasury />
+          </Router>
+        </Provider>
+      );
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
+      );
+      expect(element).toBeInTheDocument();
+    }
+  );
 });
 
 describe("<RecordNewExample>", () => {

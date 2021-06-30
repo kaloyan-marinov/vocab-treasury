@@ -538,12 +538,11 @@ export const fetchExamples = (urlForOnePageOfExamples: string) => {
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBody = err.response.data;
       const responseBodyMessage =
-        responseBody.message ||
+        err.response.data.message ||
         "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
       dispatch(fetchExamplesRejected(responseBodyMessage));
-      return Promise.reject(responseBodyMessage);
+      return Promise.reject(err);
     }
   };
 };
