@@ -628,17 +628,16 @@ export const OwnVocabTreasury = () => {
   > = useDispatch();
 
   let location = useLocation<LocationStateWithinOwnVocabTreasury>();
-
   let initialExamplesUrl: string;
   if (
     location.state &&
     location.state.fromRecordNewExample === true &&
     examplesLinks.last !== null
   ) {
-    console.log("    from /example/new (i.e. <RecordNewExample>)");
+    // console.log("    from /example/new (i.e. <RecordNewExample>)");
     initialExamplesUrl = examplesLinks.last;
   } else {
-    console.log("    NOT from /example/new (i.e. <RecordNewExample>)");
+    // console.log("    NOT from /example/new (i.e. <RecordNewExample>)");
     initialExamplesUrl = URL_FOR_FIRST_PAGE_OF_EXAMPLES;
   }
 
@@ -857,11 +856,14 @@ export const RecordNewExample = () => {
         );
         dispatch(alertsCreate(id, "EXAMPLE CREATION SUCCESSFUL"));
 
+        /*
+        Force
+        the contents within the "meta" and "links" sub-slices
+        of the app-level state's "examples" slice
+        to be updated.
+        */
         await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
 
-        // // if (examplesLinks.last !== null) {
-        // //   history.push(examplesLinks.last);
-        // // }
         const locationDescriptor = {
           pathname: "/own-vocabtreasury",
           state: {

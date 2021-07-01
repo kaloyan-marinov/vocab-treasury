@@ -907,53 +907,27 @@ export const examplesReducer = (
       };
 
     case ActionTypesCreateExample.FULFILLED: {
-      /*
-      let newMeta: IPaginationMeta;
-      let newLinks: IPaginationLinks;
-      let newIds: number[];
-      let newEntities: { [exampleId: string]: IExample };
-
-      newMeta = { ...state.meta };
-        if (newMeta.totalItems !== null) {
-          newMeta.totalItems++;
-        }
-
-      if (
-        state.meta.perPage !== null &&
-        state.ids.length < state.meta.perPage
-      ) {
-        newLinks = { ...state.links };
-
-        newIds = [...state.ids, action.payload.id];
-
-        newEntities = {
-          ...state.entities,
-        };
-        newEntities[action.payload.id] = action.payload;
-      } else {
-        if (newMeta.totalPages !== null) {
-          newMeta.totalPages++
-        }
-        if (newMeta.page !== null) {
-          newMeta.page++;
-        }
-
-        newLinks = 
-      }
+      const newMeta: IPaginationMeta = {
+        ...initialStateExamples.meta,
+        totalItems:
+          state.meta.totalItems !== null ? state.meta.totalItems + 1 : null,
+      };
+      const newLinks: IPaginationLinks = {
+        ...initialStateExamples.links,
+      };
+      const newIds: number[] = [action.payload.id];
+      const newEntities: { [exampleId: string]: IExample } = {
+        [action.payload.id]: action.payload,
+      };
 
       return {
         ...state,
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
         meta: newMeta,
+        links: newLinks,
         ids: newIds,
         entities: newEntities,
-      };
-      */
-      return {
-        ...state,
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
       };
     }
 
