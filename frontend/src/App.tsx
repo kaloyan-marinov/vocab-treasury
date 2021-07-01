@@ -1,6 +1,6 @@
 import { Dispatch } from "redux";
 import React from "react";
-import { Switch, Route, Link, useParams } from "react-router-dom";
+import { Switch, Route, Link, useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 
@@ -33,6 +33,8 @@ import {
   selectExamplesMeta,
   IPaginationLinks,
   selectExamplesLinks,
+  ActionCreateExample,
+  createExample,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -784,6 +786,14 @@ export const RecordNewExample = () => {
     contentTranslation: "",
   });
 
+  const history = useHistory();
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionCreateExample | IActionAlertsCreate
+  > = useDispatch();
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -793,11 +803,51 @@ export const RecordNewExample = () => {
     });
   };
 
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.newWord === "" || formData.content === "") {
+      dispatch(
+        alertsCreate(
+          id,
+          "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+        )
+      );
+    } else {
+      try {
+        await dispatch(
+          createExample(
+            formData.sourceLanguage !== "" ? formData.sourceLanguage : null,
+            formData.newWord,
+            formData.content,
+            formData.contentTranslation !== ""
+              ? formData.contentTranslation
+              : null
+          )
+        );
+        dispatch(alertsCreate(id, "EXAMPLE CREATION SUCCESSFUL"));
+        history.push("/home");
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+        } else {
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       {"<RecordNewExample>"}
       <div>
-        <form method="POST" action="">
+        <form
+          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
             <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
             <div>

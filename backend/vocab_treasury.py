@@ -692,7 +692,7 @@ def create_example():
         ("new_word", new_word),
         ("content", content),
     ):
-        if value is None:
+        if value is None or value == "":
             r = jsonify(
                 {
                     "error": "Bad Request",

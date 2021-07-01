@@ -44,7 +44,7 @@ export interface IExampleFromBackend {
   source_language: string;
   new_word: string;
   content: string;
-  content_translation: string;
+  content_translation: string /* can be "" */;
 }
 
 export interface IExample {
@@ -52,7 +52,7 @@ export interface IExample {
   sourceLanguage: string;
   newWord: string;
   content: string;
-  contentTranslation: string;
+  contentTranslation: string /* can be "" */;
 }
 
 export interface IPaginationMetaFromBackend {
@@ -547,6 +547,112 @@ export const fetchExamples = (urlForOnePageOfExamples: string) => {
   };
 };
 
+/* "examples/createExample" action creators */
+export enum ActionTypesCreateExample {
+  PENDING = "examples/createExample/pending",
+  REJECTED = "examples/createExample/rejected",
+  FULFILLED = "examples/createExample/fulfilled",
+}
+
+export interface IActionCreateExamplePending {
+  type: typeof ActionTypesCreateExample.PENDING;
+}
+
+export interface IActionCreateExampleRejected {
+  type: typeof ActionTypesCreateExample.REJECTED;
+  error: string;
+}
+
+export interface IActionCreateExampleFulfilled {
+  type: typeof ActionTypesCreateExample.FULFILLED;
+  payload: IExample;
+}
+
+export const createExamplePending = (): IActionCreateExamplePending => ({
+  type: ActionTypesCreateExample.PENDING,
+});
+
+export const createExampleRejected = (
+  error: string
+): IActionCreateExampleRejected => ({
+  type: ActionTypesCreateExample.REJECTED,
+  error,
+});
+
+export const createExampleFulfilled = (
+  id: number,
+  sourceLanguage: string,
+  newWord: string,
+  content: string,
+  contentTranslation: string /* can be "" */
+): IActionCreateExampleFulfilled => ({
+  type: ActionTypesCreateExample.FULFILLED,
+  payload: {
+    id,
+    sourceLanguage,
+    newWord,
+    content,
+    contentTranslation,
+  },
+});
+
+export type ActionCreateExample =
+  | IActionCreateExamplePending
+  | IActionCreateExampleRejected
+  | IActionCreateExampleFulfilled;
+
+/* "examples/createExample" thunk-action creator */
+export const createExample = (
+  sourceLanguage: string | null,
+  newWord: string,
+  content: string,
+  contentTranslation: string | null
+) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for create a new Example resource,
+  which will be associated with a specific User.
+  */
+  return async (dispatch: Dispatch<ActionCreateExample>) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization:
+          "Bearer " + localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+      },
+    };
+
+    const body = {
+      source_language: sourceLanguage,
+      new_word: newWord,
+      content,
+      content_translation: contentTranslation,
+    };
+
+    dispatch(createExamplePending());
+    try {
+      const response = await axios.post("/api/examples", body, config);
+      dispatch(
+        createExampleFulfilled(
+          response.data.id,
+          response.data.source_language,
+          response.data.new_word,
+          response.data.content,
+          response.data.content_translation
+        )
+      );
+      return Promise.resolve();
+    } catch (err) {
+      const responseBodyMessage =
+        err.response.data.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(createExampleRejected(responseBodyMessage));
+      return Promise.reject(err);
+    }
+  };
+};
+
 /* "auth/clearSlice" action creator */
 export const ACTION_TYPE_AUTH_CLEAR_SLICE = "auth/clearSlice";
 
@@ -742,7 +848,7 @@ export const authReducer = (
 
 export const examplesReducer = (
   state: IStateExamples = initialStateExamples,
-  action: ActionFetchExamples | IActionExamplesClearSlice
+  action: ActionFetchExamples | ActionCreateExample | IActionExamplesClearSlice
 ): IStateExamples => {
   switch (action.type) {
     case ActionTypesFetchExamples.PENDING:
@@ -785,6 +891,9 @@ export const examplesReducer = (
         entities: newEntities,
       };
     }
+
+    case ActionTypesCreateExample.PENDING:
+      return state;
 
     case ACTION_TYPE_EXAMPLES_CLEAR_SLICE:
       return {
