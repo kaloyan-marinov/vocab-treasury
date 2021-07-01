@@ -893,7 +893,69 @@ export const examplesReducer = (
     }
 
     case ActionTypesCreateExample.PENDING:
-      return state;
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesCreateExample.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesCreateExample.FULFILLED: {
+      /*
+      let newMeta: IPaginationMeta;
+      let newLinks: IPaginationLinks;
+      let newIds: number[];
+      let newEntities: { [exampleId: string]: IExample };
+
+      newMeta = { ...state.meta };
+        if (newMeta.totalItems !== null) {
+          newMeta.totalItems++;
+        }
+
+      if (
+        state.meta.perPage !== null &&
+        state.ids.length < state.meta.perPage
+      ) {
+        newLinks = { ...state.links };
+
+        newIds = [...state.ids, action.payload.id];
+
+        newEntities = {
+          ...state.entities,
+        };
+        newEntities[action.payload.id] = action.payload;
+      } else {
+        if (newMeta.totalPages !== null) {
+          newMeta.totalPages++
+        }
+        if (newMeta.page !== null) {
+          newMeta.page++;
+        }
+
+        newLinks = 
+      }
+
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        meta: newMeta,
+        ids: newIds,
+        entities: newEntities,
+      };
+      */
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      };
+    }
 
     case ACTION_TYPE_EXAMPLES_CLEAR_SLICE:
       return {

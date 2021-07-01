@@ -1,6 +1,13 @@
 import { Dispatch } from "redux";
 import React from "react";
-import { Switch, Route, Link, useParams, useHistory } from "react-router-dom";
+import {
+  Switch,
+  Route,
+  Link,
+  useParams,
+  useHistory,
+  useLocation,
+} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 
@@ -592,12 +599,16 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
+const URL_FOR_FIRST_PAGE_OF_EXAMPLES: string = "/api/examples";
+
+interface LocationStateWithinOwnVocabTreasury {
+  fromRecordNewExample: boolean;
+}
+
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
   );
-
-  const [examplesUrl, setExamplesUrl] = React.useState<string>("/api/examples");
 
   const loggedInUserProfile: IProfile | null = useSelector(
     selectLoggedInUserProfile
@@ -615,6 +626,24 @@ export const OwnVocabTreasury = () => {
     unknown,
     ActionFetchExamples | IActionAlertsCreate
   > = useDispatch();
+
+  let location = useLocation<LocationStateWithinOwnVocabTreasury>();
+
+  let initialExamplesUrl: string;
+  if (
+    location.state &&
+    location.state.fromRecordNewExample === true &&
+    examplesLinks.last !== null
+  ) {
+    console.log("    from /example/new (i.e. <RecordNewExample>)");
+    initialExamplesUrl = examplesLinks.last;
+  } else {
+    console.log("    NOT from /example/new (i.e. <RecordNewExample>)");
+    initialExamplesUrl = URL_FOR_FIRST_PAGE_OF_EXAMPLES;
+  }
+
+  const [examplesUrl, setExamplesUrl] =
+    React.useState<string>(initialExamplesUrl);
 
   React.useEffect(() => {
     console.log(
@@ -791,7 +820,7 @@ export const RecordNewExample = () => {
   const dispatch: ThunkDispatch<
     IState,
     unknown,
-    ActionCreateExample | IActionAlertsCreate
+    ActionCreateExample | IActionAlertsCreate | ActionFetchExamples
   > = useDispatch();
 
   const handleChange = (
@@ -827,7 +856,19 @@ export const RecordNewExample = () => {
           )
         );
         dispatch(alertsCreate(id, "EXAMPLE CREATION SUCCESSFUL"));
-        history.push("/home");
+
+        await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+
+        // // if (examplesLinks.last !== null) {
+        // //   history.push(examplesLinks.last);
+        // // }
+        const locationDescriptor = {
+          pathname: "/own-vocabtreasury",
+          state: {
+            fromRecordNewExample: true,
+          },
+        };
+        history.push(locationDescriptor);
       } catch (err) {
         if (err.response.status === 401) {
           dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
