@@ -1024,9 +1024,6 @@ const requestHandlersToMock = [
   rest.get("/api/examples", (req, res, ctx) => {
     const page = parseInt(req.url.searchParams.get("page") || "1");
 
-    console.log("inspecting page:");
-    console.log(page);
-
     return res(ctx.status(200), ctx.json(mockPaginationFromBackend(page)));
   }),
 
@@ -1986,82 +1983,81 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
     }
   );
 
-  test.only("<App> -" + " TODO!", async () => {
-    /* Arrange. */
-    const initState: IState = {
-      ...initialState,
-      auth: {
-        ...initialState.auth,
-        token: "token-issued-by-the-backend",
-        hasValidToken: true,
-        loggedInUserProfile: profileMock,
-      },
-    };
-    const enhancer = applyMiddleware(thunkMiddleware);
-    const realStore = createStore(rootReducer, initState, enhancer);
+  test(
+    "<App> -" +
+      " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+      " (b) navigates to a page [of examples] different from page 1," +
+      " and (c) clicks on one of that page's examples," +
+      " then by clicking on 'Return to this example within my Own VocabTreasury'" +
+      " the user should be navigated back to the same page [of examples]",
+    async () => {
+      /* Arrange. */
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          token: "token-issued-by-the-backend",
+          hasValidToken: true,
+          loggedInUserProfile: profileMock,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
 
-    const history = createMemoryHistory();
+      const history = createMemoryHistory();
 
-    history.push("/own-vocabtreasury");
+      history.push("/own-vocabtreasury");
 
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <App />
-        </Router>
-      </Provider>
-    );
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
 
-    /* Act. */
-    const nextPageButtonElement: HTMLElement = await screen.findByRole(
-      "button",
-      {
-        name: "Next page",
-      }
-    );
-    fireEvent.click(nextPageButtonElement);
+      /* Act. */
+      const nextPageButtonElement: HTMLElement = await screen.findByRole(
+        "button",
+        {
+          name: "Next page",
+        }
+      );
+      fireEvent.click(nextPageButtonElement);
 
-    const exampleOnPage2AnchorElement: HTMLElement = await screen.findByText(
-      "4"
-    );
-    fireEvent.click(exampleOnPage2AnchorElement);
+      const exampleOnPage2AnchorElement: HTMLElement = await screen.findByText(
+        "4"
+      );
+      fireEvent.click(exampleOnPage2AnchorElement);
 
-    const returnToOwnVocabTreasuryAnchorElement: HTMLElement = screen.getByText(
-      "Return to this example within my Own VocabTreasury"
-    );
-    fireEvent.click(returnToOwnVocabTreasuryAnchorElement);
+      const returnToOwnVocabTreasuryAnchorElement: HTMLElement =
+        screen.getByText("Return to this example within my Own VocabTreasury");
+      fireEvent.click(returnToOwnVocabTreasuryAnchorElement);
 
-    /* Assert. */
-    await screen.findByText("Current page: 2");
-    const newWord3TableCellElement: HTMLElement = screen.getByText("sana #3");
-    expect(newWord3TableCellElement).toBeInTheDocument();
+      /* Assert. */
+      /* - wait for the same page [of examples] to be rendered */
+      const currentPageSpanElement: HTMLElement = await screen.findByText(
+        "Current page: 2"
+      );
+      expect(currentPageSpanElement).toBeInTheDocument();
 
-    console.log("newWord3TableCellElement");
-    console.log(newWord3TableCellElement);
+      const newWord3TableCellElement: HTMLElement = screen.getByText("sana #3");
+      expect(newWord3TableCellElement).toBeInTheDocument();
 
-    const newWord4TableCellElement: HTMLElement = screen.getByText("sana #4");
-    expect(newWord4TableCellElement).toBeInTheDocument();
+      const newWord4TableCellElement: HTMLElement = screen.getByText("sana #4");
+      expect(newWord4TableCellElement).toBeInTheDocument();
 
-    /*
-    TODO: 
-    */
-    const p = waitForElementToBeRemoved(() =>
-      screen.queryByText("Current page: 2")
-    );
+      /*
+      - ensure that the page [of examples], which is now rendered,
+      will not be removed
+      */
+      const p = waitForElementToBeRemoved(() =>
+        screen.queryByText("Current page: 2")
+      );
 
-    await expect(p).rejects.toThrowError(
-      /Timed out in waitForElementToBeRemoved/
-    );
-
-    // await waitFor(() => {
-    //   const element: null | HTMLElement = screen.queryByText(
-    //     "Has the <App> erroneously undergone an additional re-rendering?"
-    //   );
-    //   expect(element).not.toBeInTheDocument();
-
-    //   // const element2: null | HTMLElement =
-    //   //   screen.queryByText("Current page: 1");
-    //   // expect(element2).not.toBeInTheDocument();
-    // });
-  });
+      await expect(p).rejects.toThrowError(
+        /Timed out in waitForElementToBeRemoved/
+      );
+    }
+  );
 });
