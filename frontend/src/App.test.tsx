@@ -1,6 +1,12 @@
 // 1
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 
 import { createStore } from "redux";
 import { Provider } from "react-redux";
@@ -1976,4 +1982,83 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(history.location.pathname).toEqual("/login");
     }
   );
+
+  test.only("<App> -" + " TODO!", async () => {
+    /* Arrange. */
+    const initState: IState = {
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        token: "token-issued-by-the-backend",
+        hasValidToken: true,
+        loggedInUserProfile: profileMock,
+      },
+    };
+    const enhancer = applyMiddleware(thunkMiddleware);
+    const realStore = createStore(rootReducer, initState, enhancer);
+
+    const history = createMemoryHistory();
+
+    history.push("/own-vocabtreasury");
+
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
+
+    /* Act. */
+    const nextPageButtonElement: HTMLElement = await screen.findByRole(
+      "button",
+      {
+        name: "Next page",
+      }
+    );
+    fireEvent.click(nextPageButtonElement);
+
+    const exampleOnPage2AnchorElement: HTMLElement = await screen.findByText(
+      "4"
+    );
+    fireEvent.click(exampleOnPage2AnchorElement);
+
+    const returnToOwnVocabTreasuryAnchorElement: HTMLElement = screen.getByText(
+      "Return to this example within my Own VocabTreasury"
+    );
+    fireEvent.click(returnToOwnVocabTreasuryAnchorElement);
+
+    /* Assert. */
+    await screen.findByText("Current page: 2");
+    const newWord3TableCellElement: HTMLElement = screen.getByText("sana #3");
+    expect(newWord3TableCellElement).toBeInTheDocument();
+
+    console.log("newWord3TableCellElement");
+    console.log(newWord3TableCellElement);
+
+    const newWord4TableCellElement: HTMLElement = screen.getByText("sana #4");
+    expect(newWord4TableCellElement).toBeInTheDocument();
+
+    /*
+    TODO: 
+    */
+    const p = waitForElementToBeRemoved(() =>
+      screen.queryByText("Current page: 2")
+    );
+
+    await expect(p).rejects.toThrowError(
+      /Timed out in waitForElementToBeRemoved/
+    );
+
+    // await waitFor(() => {
+    //   const element: null | HTMLElement = screen.queryByText(
+    //     "Has the <App> erroneously undergone an additional re-rendering?"
+    //   );
+    //   expect(element).not.toBeInTheDocument();
+
+    //   // const element2: null | HTMLElement =
+    //   //   screen.queryByText("Current page: 1");
+    //   // expect(element2).not.toBeInTheDocument();
+    // });
+  });
 });
