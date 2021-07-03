@@ -49,6 +49,15 @@ import { mockPaginationFromBackend } from "./dataMocks";
 
 import { exampleMock } from "./dataMocks";
 
+import {
+  IPaginationMetaFromBackend,
+  IPaginationLinks,
+  IExampleFromBackend,
+  IPaginationMeta,
+  IExample,
+} from "./store";
+import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
+
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
     render(<Home />);
@@ -796,16 +805,49 @@ describe("<SingleExample>", () => {
       " and HTML elements that enable user interaction",
     () => {
       /* Arrange. */
+      const page: number = 1;
+      const paginationFromBackend: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = mockPaginationFromBackend(page);
+      const {
+        meta,
+        links,
+        ids,
+        entities,
+      }: {
+        meta: IPaginationMeta;
+        links: IPaginationLinks;
+        ids: number[];
+        entities: { [exampleId: string]: IExample };
+      } = convertToPaginationInFrontend(paginationFromBackend);
+
+      const initState: IState = {
+        ...initialState,
+        examples: {
+          ...initialState.examples,
+          meta,
+          links,
+          ids,
+          entities,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+
       const history = createMemoryHistory();
-      history.push("/example/4");
+      history.push("/example/2");
 
       /* Arrange. */
       render(
-        <Router history={history}>
-          <Route exact path="/example/:id">
-            <SingleExample />
-          </Route>
-        </Router>
+        <Provider store={realStore}>
+          <Router history={history}>
+            <Route exact path="/example/:id">
+              <SingleExample />
+            </Route>
+          </Router>
+        </Provider>
       );
 
       /* Assert. */
@@ -832,23 +874,19 @@ describe("<SingleExample>", () => {
       expect(translationTableCellElement1).toBeInTheDocument();
 
       /* Second row. */
-      const idTableCellElement2 = screen.getByText("17");
+      const idTableCellElement2 = screen.getByText("2");
       expect(idTableCellElement2).toBeInTheDocument();
 
       const sourceLanguageTableCellElement2 = screen.getByText("Finnish");
       expect(sourceLanguageTableCellElement2).toBeInTheDocument();
 
-      const newWordTableCellElement2 = screen.getByText("varjo");
+      const newWordTableCellElement2 = screen.getByText("sana #2");
       expect(newWordTableCellElement2).toBeInTheDocument();
 
-      const exampleTableCellElement2 = screen.getByText(
-        "Suomen ideaalisää on 24 astetta varjossa."
-      );
+      const exampleTableCellElement2 = screen.getByText("lause #2");
       expect(exampleTableCellElement2).toBeInTheDocument();
 
-      const translationTableCellElement2 = screen.getByText(
-        "Finland's ideal weather is 24 degrees in the shade."
-      );
+      const translationTableCellElement2 = screen.getByText("käännös #2");
       expect(translationTableCellElement2).toBeInTheDocument();
 
       // HTML elements that enable user interaction.

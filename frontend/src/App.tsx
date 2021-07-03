@@ -966,14 +966,9 @@ export const SingleExample = () => {
   console.log(params);
   const exampleId: number = parseInt(params.id);
 
-  // In the case of real data, the following should be computed out of `exampleId`:
-  const example: IExample = {
-    id: exampleMock.id,
-    sourceLanguage: exampleMock.source_language,
-    newWord: exampleMock.new_word,
-    content: exampleMock.content,
-    contentTranslation: exampleMock.content_translation,
-  };
+  const examplesEntities = useSelector(selectExamplesEntities);
+
+  const example: IExample = examplesEntities[exampleId];
 
   return (
     <React.Fragment>
