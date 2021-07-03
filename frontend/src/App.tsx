@@ -42,6 +42,8 @@ import {
   selectExamplesLinks,
   ActionCreateExample,
   createExample,
+  deleteExample,
+  ActionDeleteExample,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -973,10 +975,16 @@ export const SingleExample = () => {
   console.log(
     `${new Date().toISOString()} - inspecting the \`params\` passed in to <SingleExample>`
   );
-  console.log(params);
+  console.log(`    ${JSON.stringify(params)}`);
   const exampleId: number = parseInt(params.id);
 
   const examplesEntities = useSelector(selectExamplesEntities);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionDeleteExample | IActionAlertsCreate
+  > = useDispatch();
 
   const example: IExample = examplesEntities[exampleId];
 
@@ -991,6 +999,29 @@ export const SingleExample = () => {
       Return to this example within my Own VocabTreasury
     </Link>
   );
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("    submitting <SingleExample>'s form");
+    console.log(`    ${JSON.stringify(example)}`);
+
+    const id: string = uuidv4();
+    try {
+      await dispatch(deleteExample(example.id));
+
+      dispatch(alertsCreate(id, `EXAMPLE DELETION SUCCESSFUL`));
+    } catch (err) {
+      if (err.response.status === 401) {
+        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      } else {
+        const message: string =
+          err.response.data.message ||
+          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+        dispatch(alertsCreate(id, message));
+      }
+    }
+  };
 
   return (
     <React.Fragment>
@@ -1027,7 +1058,9 @@ export const SingleExample = () => {
       </div>
 
       <br />
-      <form action="/example/4/delete?page=1" method="POST">
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <input type="submit" value="Delete this example" />
       </form>
     </React.Fragment>

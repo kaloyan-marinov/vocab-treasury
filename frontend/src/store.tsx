@@ -611,7 +611,7 @@ export const createExample = (
   /*
   Create a thunk-action.
   When dispatched, it issues an HTTP request
-  to the backend's endpoint for create a new Example resource,
+  to the backend's endpoint for creating a new Example resource,
   which will be associated with a specific User.
   */
   return async (dispatch: Dispatch<ActionCreateExample>) => {
@@ -648,6 +648,85 @@ export const createExample = (
         err.response.data.message ||
         "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
       dispatch(createExampleRejected(responseBodyMessage));
+      return Promise.reject(err);
+    }
+  };
+};
+
+/* "examples/deleteExample" action creators */
+export enum ActionTypesDeleteExample {
+  PENDING = "examples/deleteExample/pending",
+  REJECTED = "examples/deleteExample/rejected",
+  FULFILLED = "examples/deleteExample/fulfilled",
+}
+
+export interface IActionDeleteExamplePending {
+  type: typeof ActionTypesDeleteExample.PENDING;
+}
+
+export interface IActionDeleteExampleRejected {
+  type: typeof ActionTypesDeleteExample.REJECTED;
+  error: string;
+}
+
+export interface IActionDeleteExampleFulfilled {
+  type: typeof ActionTypesDeleteExample.FULFILLED;
+  payload: {
+    id: number;
+  };
+}
+
+export const deleteExamplePending = (): IActionDeleteExamplePending => ({
+  type: ActionTypesDeleteExample.PENDING,
+});
+
+export const deleteExampleRejected = (
+  error: string
+): IActionDeleteExampleRejected => ({
+  type: ActionTypesDeleteExample.REJECTED,
+  error,
+});
+
+export const deleteExampleFulfilled = (
+  exampleId: number
+): IActionDeleteExampleFulfilled => ({
+  type: ActionTypesDeleteExample.FULFILLED,
+  payload: {
+    id: exampleId,
+  },
+});
+
+export type ActionDeleteExample =
+  | IActionDeleteExamplePending
+  | IActionDeleteExampleRejected
+  | IActionDeleteExampleFulfilled;
+
+/* "examples/deleteExample" thunk-action creator */
+export const deleteExample = (exampleId: number) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for deleting an existing Example resource,
+  which must be associated with a specific User.
+  */
+  return async (dispatch: Dispatch<ActionDeleteExample>) => {
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+      },
+    };
+
+    dispatch(deleteExamplePending());
+    try {
+      const response = await axios.delete(`/api/examples/${exampleId}`, config);
+      dispatch(deleteExampleFulfilled(exampleId));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBodyMessage =
+        err.response.data.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(deleteExampleRejected(responseBodyMessage));
       return Promise.reject(err);
     }
   };
@@ -848,7 +927,11 @@ export const authReducer = (
 
 export const examplesReducer = (
   state: IStateExamples = initialStateExamples,
-  action: ActionFetchExamples | ActionCreateExample | IActionExamplesClearSlice
+  action:
+    | ActionFetchExamples
+    | ActionCreateExample
+    | ActionDeleteExample
+    | IActionExamplesClearSlice
 ): IStateExamples => {
   switch (action.type) {
     case ActionTypesFetchExamples.PENDING:
@@ -926,6 +1009,41 @@ export const examplesReducer = (
         requestError: null,
         meta: newMeta,
         links: newLinks,
+        ids: newIds,
+        entities: newEntities,
+      };
+    }
+
+    case ActionTypesDeleteExample.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesDeleteExample.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesDeleteExample.FULFILLED: {
+      const idOfDeletedExample: number = action.payload.id;
+
+      const newIds: number[] = state.ids.filter(
+        (id: number) => id !== idOfDeletedExample
+      );
+
+      const newEntities: { [exampleId: string]: IExample } = {
+        ...state.entities,
+      };
+      delete newEntities[idOfDeletedExample];
+
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
         ids: newIds,
         entities: newEntities,
       };
