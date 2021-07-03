@@ -39,26 +39,19 @@ const examplesMock: IExampleFromBackend[] = Array.from({
   };
 });
 
-export const examplesMockEntities: {
-  [exampleId: string]: IExampleFromBackend;
-} = examplesMock.reduce(
-  (
-    examplesObj: { [exampleId: string]: IExampleFromBackend },
-    e: IExampleFromBackend
-  ) => {
-    examplesObj[e.id] = e;
-    return examplesObj;
-  },
-  {}
-);
-
-export const paginate = (
+export const mockPaginationFromBackend = (
   page: number = 1
 ): {
   _meta: IPaginationMetaFromBackend;
   _links: IPaginationLinks;
   items: IExampleFromBackend[];
 } => {
+  /*
+  Mock the paginated list of Example resource,
+  which the backend responds with
+  upon receiving a GET request to /api/examples.
+  */
+
   if (page <= 0 || page > totalPages) {
     throw new Error(`\`page\` must be >= 1 and <= ${totalPages}`);
   }
@@ -99,23 +92,23 @@ export const paginate = (
 
 /*
 console.log();
-console.log(paginate(1));
+console.log(mockPaginationFromBackend(1));
 
 console.log();
-console.log(paginate(2));
+console.log(mockPaginationFromBackend(2));
 
 console.log();
-console.log(paginate(3));
+console.log(mockPaginationFromBackend(3));
 
 console.log();
-console.log(paginate(4));
+console.log(mockPaginationFromBackend(4));
 
 console.log();
-console.log(paginate(5));
+console.log(mockPaginationFromBackend(5));
 
 console.log();
-console.log(paginate(6));
+console.log(mockPaginationFromBackend(6));
 
 console.log();
-console.log(paginate(7));
+console.log(mockPaginationFromBackend(7));
 */

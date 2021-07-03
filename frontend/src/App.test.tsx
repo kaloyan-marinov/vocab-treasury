@@ -1,6 +1,6 @@
 // 1
 import "@testing-library/jest-dom";
-import { findByText, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { createStore } from "redux";
 import { Provider } from "react-redux";
@@ -41,11 +41,13 @@ import thunkMiddleware from "redux-thunk";
 import { profileMock } from "./dataMocks";
 
 import { App } from "./App";
-import { initialStateAlerts, initialStateAuth } from "./store";
+import { initialStateAuth } from "./store";
 import { cleanup } from "@testing-library/react";
 
 // 4
-import { paginate } from "./dataMocks";
+import { mockPaginationFromBackend } from "./dataMocks";
+
+import { exampleMock } from "./dataMocks";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -719,7 +721,12 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
 
 describe("<RecordNewExample>", () => {
   test("renders the fields of a form for creating a new Example resource", () => {
-    render(<RecordNewExample />);
+    const realStore = createStore(rootReducer);
+    render(
+      <Provider store={realStore}>
+        <RecordNewExample />
+      </Provider>
+    );
 
     const legendElement = screen.getByText("[legend-tag: CREATE NEW EXAMPLE]");
     expect(legendElement).toBeInTheDocument();
@@ -741,6 +748,46 @@ describe("<RecordNewExample>", () => {
     });
     expect(submitInputElement).toBeInTheDocument();
   });
+
+  test(
+    "+ <Alerts>" +
+      " - renders an alert after the user has submitted the form" +
+      " without completing all required fields",
+    () => {
+      /* Arrange. */
+      const realStore = createStore(rootReducer);
+
+      render(
+        <Provider store={realStore}>
+          <Alerts />
+          <RecordNewExample />
+        </Provider>
+      );
+
+      const newWordInputElement = screen.getByLabelText("NEW WORD");
+      expect(newWordInputElement).toBeInTheDocument();
+      // const exampleInputElement = screen.getByLabelText("EXAMPLE");
+      // expect(exampleInputElement).toBeInTheDocument();
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "test-new-word" },
+      });
+      // fireEvent.change(exampleInputElement, {
+      //   target: { value: "test-example" },
+      // });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "RECORD THIS EXAMPLE",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      screen.getByText(
+        "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+      );
+    }
+  );
 });
 
 describe("<SingleExample>", () => {
@@ -933,7 +980,11 @@ const requestHandlersToMock = [
   rest.get("/api/examples", (req, res, ctx) => {
     const page = parseInt(req.url.searchParams.get("page") || "1");
 
-    return res(ctx.status(200), ctx.json(paginate(page)));
+    return res(ctx.status(200), ctx.json(mockPaginationFromBackend(page)));
+  }),
+
+  rest.post("/api/examples", (req, res, ctx) => {
+    return res(ctx.status(201), ctx.json(exampleMock));
   }),
 ];
 
@@ -1671,6 +1722,220 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /*    (b) elements for controlling pagination of Example resources */
       element = screen.getByText("Current page: 1");
       expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user fills out the form on /example/new and submits it," +
+      " and the backend is _mocked_ to respond that" +
+      " the form submission was accepted as valid and processed",
+    async () => {
+      /* Arrange. */
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          token: "token-issued-by-the-backend",
+          hasValidToken: true,
+          loggedInUserProfile: profileMock,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+
+      const history = createMemoryHistory();
+      history.push("/example/new");
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const newWordInputElement = await screen.findByLabelText("NEW WORD");
+      expect(newWordInputElement).toBeInTheDocument();
+      const exampleInputElement = screen.getByLabelText("EXAMPLE");
+      expect(exampleInputElement).toBeInTheDocument();
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "test-word" },
+      });
+      fireEvent.change(exampleInputElement, {
+        target: { value: "test-example" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "RECORD THIS EXAMPLE",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "EXAMPLE CREATION SUCCESSFUL"
+      );
+      expect(element).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(history.location.pathname).toEqual("/own-vocabtreasury");
+      });
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user fills out the form on /example/new and submits it," +
+      " but the backend is _mocked_ to respond that" +
+      " the form submission was determined to be invalid",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.post("/api/examples", (req, res, ctx) => {
+          return res(
+            ctx.status(400),
+            ctx.json({
+              error: "[mocked] Bad Request",
+              message: "[mocked] Failed to create a new Example resource.",
+            })
+          );
+        })
+      );
+
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          token: "token-issued-by-the-backend",
+          hasValidToken: true,
+          loggedInUserProfile: profileMock,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+
+      const history = createMemoryHistory();
+      history.push("/example/new");
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const newWordInputElement = await screen.findByLabelText("NEW WORD");
+      expect(newWordInputElement).toBeInTheDocument();
+      const contentInputElement = screen.getByLabelText("EXAMPLE");
+      expect(contentInputElement).toBeInTheDocument();
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "test-word" },
+      });
+      fireEvent.change(contentInputElement, {
+        target: { value: "test-content" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "RECORD THIS EXAMPLE",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "[mocked] Failed to create a new Example resource."
+      );
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " the user fills out the form on /example/new and submits it," +
+      " but the backend is _mocked_ to respond that" +
+      " the user's access token has expired",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.post("/api/examples", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const initState: IState = {
+        ...initialState,
+        auth: {
+          ...initialState.auth,
+          token: "token-issued-by-the-backend",
+          hasValidToken: true,
+          loggedInUserProfile: profileMock,
+        },
+      };
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, initState, enhancer);
+
+      const history = createMemoryHistory();
+      history.push("/example/new");
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const newWordInputElement = await screen.findByLabelText("NEW WORD");
+      expect(newWordInputElement).toBeInTheDocument();
+      const contentInputElement = screen.getByLabelText("EXAMPLE");
+      expect(contentInputElement).toBeInTheDocument();
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "test-word" },
+      });
+      fireEvent.change(contentInputElement, {
+        target: { value: "test-content" },
+      });
+
+      // The remaining "Arrange" statements are not really necessary for this test case,
+      // but they increase the test suite's code coverage.
+      const sourceLanguageInputElement =
+        screen.getByLabelText("SOURCE LANGUAGE");
+      expect(sourceLanguageInputElement).toBeInTheDocument();
+      const contentTranslationInputElement =
+        screen.getByLabelText("TRANSLATION");
+      expect(contentTranslationInputElement).toBeInTheDocument();
+
+      fireEvent.change(sourceLanguageInputElement, {
+        target: { value: "test-source-language" },
+      });
+      fireEvent.change(contentTranslationInputElement, {
+        target: { value: "test-content-translation" },
+      });
+
+      /* Act. */
+      const submitButtonElement = screen.getByRole("button", {
+        name: "RECORD THIS EXAMPLE",
+      });
+      fireEvent.click(submitButtonElement);
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "TO CONTINUE, PLEASE LOG IN"
+      );
+      expect(element).toBeInTheDocument();
+
+      expect(history.location.pathname).toEqual("/login");
     }
   );
 });

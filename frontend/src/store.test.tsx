@@ -90,7 +90,7 @@ import {
 
 import { fetchExamplesPending, fetchExamplesRejected } from "./store";
 
-import { paginate } from "./dataMocks";
+import { mockPaginationFromBackend } from "./dataMocks";
 import {
   IPaginationMetaFromBackend,
   IExampleFromBackend,
@@ -111,8 +111,21 @@ import { fetchExamples } from "./store";
 import {
   ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
   IActionExamplesClearSlice,
-  examplesClearSlice,
 } from "./store";
+import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
+import { examplesClearSlice } from "./store";
+
+import {
+  createExamplePending,
+  createExampleRejected,
+  createExampleFulfilled,
+  ActionTypesCreateExample,
+  IActionCreateExamplePending,
+  IActionCreateExampleRejected,
+  IActionCreateExampleFulfilled,
+} from "./store";
+import { exampleMock } from "./dataMocks";
+import { createExample } from "./store";
 
 describe("selector functions", () => {
   let state: IState;
@@ -405,13 +418,26 @@ describe("action creators", () => {
     });
   });
 
-  test("paginate (which is a function that helps test fetchExamplesFulfilled)", () => {
+  test("mockPaginationFromBackend (which is a function that helps test fetchExamplesFulfilled)", () => {
     const page: number = 1;
-    const pagination = paginate(page);
+    const backendPaginationMock = mockPaginationFromBackend(page);
 
-    const metaFromBackend: IPaginationMetaFromBackend = pagination._meta;
-    const links: IPaginationLinks = pagination._links;
-    const examplesFromBackend: IExampleFromBackend[] = pagination.items;
+    /*
+    The two blocks of code below are equivalent,
+    but the latter one is more idiomatic.
+    */
+    // const metaFromBackend: IPaginationMetaFromBackend = backendPaginationMock._meta;
+    // const links: IPaginationLinks = backendPaginationMock._links;
+    // const examplesFromBackend: IExampleFromBackend[] = backendPaginationMock.items;
+    const {
+      _meta: metaFromBackend,
+      _links: links,
+      items: examplesFromBackend,
+    }: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = backendPaginationMock;
 
     expect(metaFromBackend).toEqual({
       total_items: 11,
@@ -447,11 +473,24 @@ describe("action creators", () => {
   test("fetchExamplesFulfilled", () => {
     /* Arrange. */
     const page: number = 1;
-    const pagination = paginate(page);
+    const backendPaginationMock = mockPaginationFromBackend(page);
 
-    const metaFromBackend: IPaginationMetaFromBackend = pagination._meta;
-    const links: IPaginationLinks = pagination._links;
-    const examplesFromBackend: IExampleFromBackend[] = pagination.items;
+    /*
+    The two blocks of code below are equivalent,
+    but the latter one is more idiomatic.
+    */
+    // const metaFromBackend: IPaginationMetaFromBackend = backendPaginationMock._meta;
+    // const links: IPaginationLinks = backendPaginationMock._links;
+    // const examplesFromBackend: IExampleFromBackend[] = backendPaginationMock.items;
+    const {
+      _meta: metaFromBackend,
+      _links: links,
+      items: examplesFromBackend,
+    }: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = backendPaginationMock;
 
     /* Act. */
     const action = fetchExamplesFulfilled(
@@ -502,6 +541,44 @@ describe("action creators", () => {
 
     expect(action).toEqual({
       type: "examples/clearSlice",
+    });
+  });
+
+  test("createExamplePending", () => {
+    const action = createExamplePending();
+
+    expect(action).toEqual({
+      type: "examples/createExample/pending",
+    });
+  });
+
+  test("createExampleRejected", () => {
+    const action = createExampleRejected("examples-createExample-rejected");
+
+    expect(action).toEqual({
+      type: "examples/createExample/rejected",
+      error: "examples-createExample-rejected",
+    });
+  });
+
+  test("createExampleFulfilled", () => {
+    const action = createExampleFulfilled(
+      17,
+      "Finnish",
+      "epätavallinen",
+      "Pohjois-Amerikassa on epätavallisen kuuma sää.",
+      "There is unusually hot weather in North America."
+    );
+
+    expect(action).toEqual({
+      type: "examples/createExample/fulfilled",
+      payload: {
+        id: 17,
+        sourceLanguage: "Finnish",
+        newWord: "epätavallinen",
+        content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
+        contentTranslation: "There is unusually hot weather in North America.",
+      },
     });
   });
 });
@@ -879,7 +956,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = paginate(page);
+      } = mockPaginationFromBackend(page);
       const action: IActionFetchExamplesFulfilled = {
         type: ActionTypesFetchExamples.FULFILLED,
         payload: {
@@ -947,46 +1024,29 @@ describe("slice reducers", () => {
     test("examples/clearSlice", () => {
       /* Arrange. */
       const page: number = 1;
-      const {
-        _meta,
-        _links,
-        items,
-      }: {
+      const paginationFromBackend: {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = paginate(page);
+      } = mockPaginationFromBackend(page);
 
-      const meta: IPaginationMeta = {
-        totalItems: _meta.total_items,
-        perPage: _meta.per_page,
-        totalPages: _meta.total_pages,
-        page: _meta.page,
-      };
-      const ids: number[] = items.map((e: IExampleFromBackend) => e.id);
-      const entities: { [exampleId: string]: IExample } = items.reduce(
-        (
-          examplesObj: { [exampleId: string]: IExample },
-          e: IExampleFromBackend
-        ) => {
-          examplesObj[e.id] = {
-            id: e.id,
-            sourceLanguage: e.source_language,
-            newWord: e.new_word,
-            content: e.content,
-            contentTranslation: e.content_translation,
-          };
-
-          return examplesObj;
-        },
-        {}
-      );
+      const {
+        meta,
+        links,
+        ids,
+        entities,
+      }: {
+        meta: IPaginationMeta;
+        links: IPaginationLinks;
+        ids: number[];
+        entities: { [exampleId: string]: IExample };
+      } = convertToPaginationInFrontend(paginationFromBackend);
 
       const initState: IStateExamples = {
         ...initialStateExamples,
         requestStatus: RequestStatus.SUCCEEDED,
         meta,
-        links: _links,
+        links,
         ids,
         entities,
       };
@@ -1017,6 +1077,145 @@ describe("slice reducers", () => {
         },
         ids: [],
         entities: {},
+      });
+    });
+
+    test("examples/createExample/pending", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "examples-createExample-rejected",
+      };
+      const action: IActionCreateExamplePending = {
+        type: ActionTypesCreateExample.PENDING,
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/createExample/rejected", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+      const action: IActionCreateExampleRejected = {
+        type: ActionTypesCreateExample.REJECTED,
+        error: "examples-createExample-rejected",
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.FAILED,
+        requestError: "examples-createExample-rejected",
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/createExample/fulfilled", () => {
+      const page: number = 2;
+      const paginationFromBackend: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = mockPaginationFromBackend(page);
+      const {
+        meta,
+        links,
+        ids,
+        entities,
+      }: {
+        meta: IPaginationMeta;
+        links: IPaginationLinks;
+        ids: number[];
+        entities: { [exampleId: string]: IExample };
+      } = convertToPaginationInFrontend(paginationFromBackend);
+
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        meta,
+        links,
+        ids,
+        entities,
+      };
+      const action: IActionCreateExampleFulfilled = {
+        type: ActionTypesCreateExample.FULFILLED,
+        payload: {
+          id: 17,
+          sourceLanguage: "Finnish",
+          newWord: "epätavallinen",
+          content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
+          contentTranslation:
+            "There is unusually hot weather in North America.",
+        },
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        meta: {
+          totalItems: 12,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [17],
+        entities: {
+          "17": {
+            id: 17,
+            sourceLanguage: "Finnish",
+            newWord: "epätavallinen",
+            content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
+            contentTranslation:
+              "There is unusually hot weather in North America.",
+          },
+        },
       });
     });
   });
@@ -1054,7 +1253,11 @@ const requestHandlersToMock = [
   }),
 
   rest.get("/api/examples", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(paginate(1)));
+    return res(ctx.status(200), ctx.json(mockPaginationFromBackend(1)));
+  }),
+
+  rest.post("/api/examples", (req, res, ctx) => {
+    return res(ctx.status(201), ctx.json(exampleMock));
   }),
 ];
 
@@ -1400,6 +1603,79 @@ describe(
           },
           {
             type: "examples/fetchExamples/rejected",
+            error: "[mocked] Expired access token.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "createExample(id, ...)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const createExamplePromise = storeMock.dispatch(
+          createExample(
+            exampleMock.source_language,
+            exampleMock.new_word,
+            exampleMock.content,
+            exampleMock.content_translation
+          )
+        );
+
+        await expect(createExamplePromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/createExample/pending",
+          },
+          {
+            type: "examples/createExample/fulfilled",
+            payload: {
+              id: 17,
+              sourceLanguage: "Finnish",
+              newWord: "varjo",
+              content: "Suomen ideaalisää on 24 astetta varjossa.",
+              contentTranslation:
+                "Finland's ideal weather is 24 degrees in the shade.",
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "createExample(id, ...)" +
+        "+ the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.post("/api/examples", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Unauthorized",
+                message: "[mocked] Expired access token.",
+              })
+            );
+          })
+        );
+
+        const createExamplePromise = storeMock.dispatch(
+          createExample(
+            exampleMock.source_language,
+            exampleMock.new_word,
+            exampleMock.content,
+            exampleMock.content_translation
+          )
+        );
+
+        await expect(createExamplePromise).rejects.toEqual(
+          new Error("Request failed with status code 401")
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/createExample/pending",
+          },
+          {
+            type: "examples/createExample/rejected",
             error: "[mocked] Expired access token.",
           },
         ]);
