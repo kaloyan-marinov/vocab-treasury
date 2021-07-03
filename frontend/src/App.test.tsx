@@ -1024,6 +1024,9 @@ const requestHandlersToMock = [
   rest.get("/api/examples", (req, res, ctx) => {
     const page = parseInt(req.url.searchParams.get("page") || "1");
 
+    console.log("inspecting page:");
+    console.log(page);
+
     return res(ctx.status(200), ctx.json(mockPaginationFromBackend(page)));
   }),
 

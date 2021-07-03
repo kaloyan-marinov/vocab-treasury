@@ -602,7 +602,8 @@ Object.assign(styleForTable, styleForBorder);
 const URL_FOR_FIRST_PAGE_OF_EXAMPLES: string = "/api/examples";
 
 interface LocationStateWithinOwnVocabTreasury {
-  fromRecordNewExample: boolean;
+  fromRecordNewExample: null | boolean;
+  fromSingleExample: null | boolean;
 }
 
 export const OwnVocabTreasury = () => {
@@ -634,10 +635,19 @@ export const OwnVocabTreasury = () => {
     location.state.fromRecordNewExample === true &&
     examplesLinks.last !== null
   ) {
-    // console.log("    from /example/new (i.e. <RecordNewExample>)");
+    console.log("    from /example/new (i.e. <RecordNewExample>)");
     initialExamplesUrl = examplesLinks.last;
+  } else if (
+    location.state &&
+    location.state.fromSingleExample &&
+    examplesLinks.self !== null
+  ) {
+    console.log("    from /examples/:id (i.e. <SingleExample>)");
+    initialExamplesUrl = examplesLinks.self;
   } else {
-    // console.log("    NOT from /example/new (i.e. <RecordNewExample>)");
+    console.log(
+      "    NOT from any of the following: /example/new, /examples/:id"
+    );
     initialExamplesUrl = URL_FOR_FIRST_PAGE_OF_EXAMPLES;
   }
 
@@ -970,6 +980,18 @@ export const SingleExample = () => {
 
   const example: IExample = examplesEntities[exampleId];
 
+  const locationDescriptor = {
+    pathname: "/own-vocabtreasury",
+    state: {
+      fromSingleExample: true,
+    },
+  };
+  const linkToOwnVocabTreasury = (
+    <Link to={locationDescriptor}>
+      Return to this example within my Own VocabTreasury
+    </Link>
+  );
+
   return (
     <React.Fragment>
       {"<SingleExample>"}
@@ -997,11 +1019,7 @@ export const SingleExample = () => {
       </table>
 
       <br />
-      <div>
-        <Link to="/own-vocabtreasury?page=1">
-          Return to this example within my Own VocabTreasury
-        </Link>
-      </div>
+      <div>{linkToOwnVocabTreasury}</div>
 
       <br />
       <div>
