@@ -644,8 +644,30 @@ export const OwnVocabTreasury = () => {
     location.state.fromSingleExample &&
     examplesLinks.self !== null
   ) {
+    /*
+    Arrange for the user to be shown
+    either the most-recently visited page of her Own VocabTreasury
+    or the last page thereof.
+    */
     console.log("    from /examples/:id (i.e. <SingleExample>)");
-    initialExamplesUrl = examplesLinks.self;
+
+    if (
+      examplesMeta.page !== null &&
+      examplesMeta.totalPages !== null &&
+      examplesMeta.page > examplesMeta.totalPages &&
+      examplesLinks.last !== null
+    ) {
+      /*
+      Handle the case, where
+      (a) the most-recently visited page of the user's Own VocabTreasury used to
+          the last page thereof;
+      (b) that page used to contain a single example;
+      and (c) the user used the frontend UI to delete that example.
+      */
+      initialExamplesUrl = examplesLinks.last;
+    } else {
+      initialExamplesUrl = examplesLinks.self;
+    }
   } else {
     console.log(
       "    NOT from any of the following: /example/new, /examples/:id"
@@ -663,8 +685,10 @@ export const OwnVocabTreasury = () => {
 
     const effectFn = async () => {
       console.log(
-        "    <OwnVocabTreasury>'s useEffect hook is dispatching fetchExamples()"
+        "    <OwnVocabTreasury>'s useEffect hook is dispatching fetchExamples(examplesUrl)"
       );
+      console.log("    with examplesUrl equal to:");
+      console.log(`    ${examplesUrl}`);
 
       try {
         await dispatch(fetchExamples(examplesUrl));
@@ -688,15 +712,13 @@ export const OwnVocabTreasury = () => {
     effectFn();
   }, [dispatch, examplesUrl]);
 
-  const styleForLinkToCurrentPage = { fontSize: 40 };
-
   const exampleTableRows = examplesIds.map((eId: number) => {
     const e: IExample = examplesEntities[eId];
 
     return (
       <tr key={e.id}>
         <th style={styleForBorder}>
-          <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
+          <Link to={`/example/${e.id}`}>{e.id}</Link>
         </th>
         <th style={styleForBorder}>{e.sourceLanguage}</th>
         <th style={styleForBorder}>{e.newWord}</th>
@@ -980,11 +1002,15 @@ export const SingleExample = () => {
 
   const examplesEntities = useSelector(selectExamplesEntities);
 
+  const examplesLinks = useSelector(selectExamplesLinks);
+
   const dispatch: ThunkDispatch<
     IState,
     unknown,
     ActionDeleteExample | IActionAlertsCreate
   > = useDispatch();
+
+  const history = useHistory();
 
   const example: IExample = examplesEntities[exampleId];
 
@@ -994,23 +1020,61 @@ export const SingleExample = () => {
       fromSingleExample: true,
     },
   };
+
+  const exampleTable =
+    example === undefined ? null : (
+      <table style={styleForTable}>
+        <tbody>
+          <tr>
+            <th style={styleForBorder}>ID</th>
+            <th style={styleForBorder}>SOURCE LANGUAGE</th>
+            <th style={styleForBorder}>NEW WORD</th>
+            <th style={styleForBorder}>EXAMPLE</th>
+            <th style={styleForBorder}>TRANSLATION</th>
+          </tr>
+          <tr>
+            <th style={styleForBorder}>{example.id}</th>
+            <th style={styleForBorder}>{example.sourceLanguage}</th>
+            <th style={styleForBorder}>{example.newWord}</th>
+            <th style={styleForBorder}>{example.content}</th>
+            <th style={styleForBorder}>{example.contentTranslation}</th>
+          </tr>
+        </tbody>
+      </table>
+    );
+
   const linkToOwnVocabTreasury = (
     <Link to={locationDescriptor}>
       Return to this example within my Own VocabTreasury
     </Link>
   );
 
+  const linkToEditExample =
+    example === undefined ? null : (
+      <div>
+        <Link to={`/example/${example.id}/edit`}>Edit this example</Link>
+      </div>
+    );
+
   const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     console.log("    submitting <SingleExample>'s form");
-    console.log(`    ${JSON.stringify(example)}`);
 
     const id: string = uuidv4();
     try {
       await dispatch(deleteExample(example.id));
 
       dispatch(alertsCreate(id, `EXAMPLE DELETION SUCCESSFUL`));
+
+      if (examplesLinks.self !== null) {
+        await dispatch(fetchExamples(examplesLinks.self));
+      } else {
+        await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+      }
+
+      console.log(`    re-directing to ${locationDescriptor.pathname}`);
+      history.push(locationDescriptor);
     } catch (err) {
       if (err.response.status === 401) {
         dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
@@ -1030,32 +1094,13 @@ export const SingleExample = () => {
         You have selected the following Example from your Own VocabTreasury:
       </div>
 
-      <table style={styleForTable}>
-        <tbody>
-          <tr>
-            <th style={styleForBorder}>ID</th>
-            <th style={styleForBorder}>SOURCE LANGUAGE</th>
-            <th style={styleForBorder}>NEW WORD</th>
-            <th style={styleForBorder}>EXAMPLE</th>
-            <th style={styleForBorder}>TRANSLATION</th>
-          </tr>
-          <tr>
-            <th style={styleForBorder}>{example.id}</th>
-            <th style={styleForBorder}>{example.sourceLanguage}</th>
-            <th style={styleForBorder}>{example.newWord}</th>
-            <th style={styleForBorder}>{example.content}</th>
-            <th style={styleForBorder}>{example.contentTranslation}</th>
-          </tr>
-        </tbody>
-      </table>
+      {exampleTable}
 
       <br />
       <div>{linkToOwnVocabTreasury}</div>
 
       <br />
-      <div>
-        <Link to={`/example/${example.id}/edit?page=1`}>Edit this example</Link>
-      </div>
+      {linkToEditExample}
 
       <br />
       <form
