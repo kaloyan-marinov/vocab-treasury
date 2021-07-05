@@ -127,6 +127,17 @@ import {
 import { exampleMock } from "./dataMocks";
 import { createExample } from "./store";
 
+import {
+  deleteExamplePending,
+  deleteExampleRejected,
+  deleteExampleFulfilled,
+  ActionTypesDeleteExample,
+  IActionDeleteExamplePending,
+  IActionDeleteExampleRejected,
+  IActionDeleteExampleFulfilled,
+} from "./store";
+import { deleteExample } from "./store";
+
 describe("selector functions", () => {
   let state: IState;
 
@@ -578,6 +589,34 @@ describe("action creators", () => {
         newWord: "epätavallinen",
         content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
         contentTranslation: "There is unusually hot weather in North America.",
+      },
+    });
+  });
+
+  test("deleteExamplePending", () => {
+    const action = deleteExamplePending();
+
+    expect(action).toEqual({
+      type: "examples/deleteExample/pending",
+    });
+  });
+
+  test("deleteExampleRejected", () => {
+    const action = deleteExampleRejected("examples-deleteExample-rejected");
+
+    expect(action).toEqual({
+      type: "examples/deleteExample/rejected",
+      error: "examples-deleteExample-rejected",
+    });
+  });
+
+  test("deleteExampleFulfilled", () => {
+    const action = deleteExampleFulfilled(17);
+
+    expect(action).toEqual({
+      type: "examples/deleteExample/fulfilled",
+      payload: {
+        id: 17,
       },
     });
   });
@@ -1218,6 +1257,131 @@ describe("slice reducers", () => {
         },
       });
     });
+
+    test("examples/deleteExample/pending", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "examples-deleteExample-rejected",
+      };
+      const action: IActionDeleteExamplePending = {
+        type: ActionTypesDeleteExample.PENDING,
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: "loading",
+        requestError: null,
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/deleteExample/rejected", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+      const action: IActionDeleteExampleRejected = {
+        type: ActionTypesDeleteExample.REJECTED,
+        error: "examples-deleteExample-rejected",
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: "failed",
+        requestError: "examples-deleteExample-rejected",
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/deleteExample/fulfilled", () => {
+      const page: number = 2;
+      const paginationFromBackend: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = mockPaginationFromBackend(page);
+      const {
+        meta,
+        links,
+        ids,
+        entities,
+      }: {
+        meta: IPaginationMeta;
+        links: IPaginationLinks;
+        ids: number[];
+        entities: { [exampleId: string]: IExample };
+      } = convertToPaginationInFrontend(paginationFromBackend);
+
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        meta,
+        links,
+        ids,
+        entities,
+      };
+      const action: IActionDeleteExampleFulfilled = {
+        type: ActionTypesDeleteExample.FULFILLED,
+        payload: {
+          id: 4,
+        },
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect({
+        requestStatus: newState.requestStatus,
+        requestError: newState.requestError,
+        ids: newState.ids,
+        entities: newState.entities,
+      }).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        ids: [3],
+        entities: {
+          "3": {
+            id: 3,
+            sourceLanguage: "Finnish",
+            newWord: "sana #3",
+            content: "lause #3",
+            contentTranslation: "käännös #3",
+          },
+        },
+      });
+    });
   });
 });
 
@@ -1258,6 +1422,10 @@ const requestHandlersToMock = [
 
   rest.post("/api/examples", (req, res, ctx) => {
     return res(ctx.status(201), ctx.json(exampleMock));
+  }),
+
+  rest.delete("/api/examples/:id", (req, res, ctx) => {
+    return res(ctx.status(204));
   }),
 ];
 
@@ -1676,6 +1844,64 @@ describe(
           },
           {
             type: "examples/createExample/rejected",
+            error: "[mocked] Expired access token.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "deleteExample(exampleId)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const deleteExamplePromise = storeMock.dispatch(
+          deleteExample(exampleMock.id)
+        );
+
+        await expect(deleteExamplePromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/deleteExample/pending",
+          },
+          {
+            type: "examples/deleteExample/fulfilled",
+            payload: {
+              id: 17,
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "deleteExample(exampleId)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.delete("/api/examples/:id", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Unauthorized",
+                message: "[mocked] Expired access token.",
+              })
+            );
+          })
+        );
+
+        const deleteExamplePromise = storeMock.dispatch(
+          deleteExample(exampleMock.id)
+        );
+
+        await expect(deleteExamplePromise).rejects.toEqual(
+          new Error("Request failed with status code 401")
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/deleteExample/pending",
+          },
+          {
+            type: "examples/deleteExample/rejected",
             error: "[mocked] Expired access token.",
           },
         ]);
