@@ -602,7 +602,6 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       /* Assert. */
       /* - items that appear above the table of Example resources */
       let element: HTMLElement;
-
       for (const expectedText of [
         "auth-jd's Own VocabTreasury",
         "Record new example",
@@ -1277,26 +1276,15 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the frontend application should continue to display" +
       " a logged-in user's navigation links",
     async () => {
-      /*
-      This test case and the next one test the same thing.
-      
-      The difference between the two is as follows:
-      this test case is longer (and perhaps more complex)
-      but more closely resembles the way
-      in which a user would use her browser to interact with the frontend.
-
-      TODO: find out which of the two test cases is better and why!
-      */
-
       /* Arrange. */
       const initState = {
         ...initialState,
       };
+
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, initState, enhancer);
-      const history = createMemoryHistory();
 
-      history.push("/login");
+      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -1306,10 +1294,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
+      /* Arrange. */
       const logInAnchor = screen.getByText("Log in");
       fireEvent.click(logInAnchor);
 
-      /* Arrange. */
       const emailInputElement = screen.getByLabelText("EMAIL");
       expect(emailInputElement).toBeInTheDocument();
       const passwordInputElement = screen.getByLabelText("PASSWORD");
@@ -1340,7 +1328,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
           ...initState,
           auth: {
             ...initState.auth,
-            token: localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
           },
         },
         enhancer
@@ -1365,7 +1352,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
     }
   );
 
-  test(
+  xtest(
     "<App> -" +
       " if a logged-in user hits her browser's Reload button," +
       " the frontend application should continue to display" +
@@ -1459,6 +1446,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
 
       /* Act. */
@@ -1528,11 +1516,30 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      let temp: HTMLElement;
+
+      temp = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
+      expect(temp).toBeInTheDocument();
+
+      expect(history.location.pathname).toEqual("/");
+
+      /* Act. */
+      /* Simulate the user's manually changing the URL in her browser's address bar. */
+      cleanup();
 
       history.push("/account");
 
-      /* Act. */
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -1544,9 +1551,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Assert. */
       expect(history.location.pathname).toEqual("/login");
 
-      const temp: HTMLElement = await screen.findByText(
-        "TO CONTINUE, PLEASE LOG IN"
-      );
+      temp = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
       expect(temp).toBeInTheDocument();
     }
   );
@@ -1558,6 +1563,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Arrange. */
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
 
       render(
@@ -1568,7 +1574,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
-      history.push("/own-vocabtreasury");
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
 
       /* Act. */
       const paginationCtrlBtnNext = await screen.findByRole("button", {
@@ -1579,7 +1588,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Assert. */
       /*    (a) [representations of] Example resources */
       let element: HTMLElement;
-
       element = await screen.findByText("3");
       expect(element).toBeInTheDocument();
 
@@ -1606,11 +1614,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
   test(
     "<App> -" +
-      " the user clicks first the navigation-controlling button for 'Last page: N'",
+      " the user clicks the navigation-controlling button for 'Last page: N'",
     async () => {
       /* Arrange. */
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
 
       render(
@@ -1621,7 +1630,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
-      history.push("/own-vocabtreasury");
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
 
       /* Act. */
       const paginationCtrlBtnNext = await screen.findByRole("button", {
@@ -1632,7 +1644,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Assert. */
       /*    (a) [representations of] Example resources */
       let element: HTMLElement;
-
       element = await screen.findByText("11");
       expect(element).toBeInTheDocument();
 
@@ -1659,6 +1670,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Arrange. */
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
 
       render(
@@ -1669,7 +1681,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
-      history.push("/own-vocabtreasury");
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
 
       /* Act. */
       const paginationCtrlBtnNext = await screen.findByRole("button", {
@@ -1679,6 +1694,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       let element: HTMLElement;
       element = await screen.findByText("Current page: 6");
+
       const paginationCtrlBtnPrev = await screen.findByRole("button", {
         name: "Previous page",
       });
@@ -1718,6 +1734,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Arrange. */
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
+
       const history = createMemoryHistory();
 
       render(
@@ -1728,7 +1745,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
-      history.push("/own-vocabtreasury");
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
 
       /* Act. */
       const paginationCtrlBtnNext = await screen.findByRole("button", {
@@ -1738,6 +1758,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       let element: HTMLElement;
       element = await screen.findByText("Current page: 2");
+
       const paginationCtrlBtnFirst = await screen.findByRole("button", {
         name: "First page: 1",
       });
@@ -1776,20 +1797,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was accepted as valid and processed",
     async () => {
       /* Arrange. */
-      const initState: IState = {
-        ...initialState,
-        auth: {
-          ...initialState.auth,
-          token: "token-issued-by-the-backend",
-          hasValidToken: true,
-          loggedInUserProfile: profileMock,
-        },
-      };
       const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, initState, enhancer);
+      const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
-      history.push("/example/new");
 
       render(
         <Provider store={realStore}>
@@ -1799,6 +1810,17 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToRecordNewExample = await screen.findByText(
+        "Record new example"
+      );
+      fireEvent.click(anchorToRecordNewExample);
+
+      /* Act. */
       const newWordInputElement = await screen.findByLabelText("NEW WORD");
       expect(newWordInputElement).toBeInTheDocument();
       const exampleInputElement = screen.getByLabelText("EXAMPLE");
@@ -1811,7 +1833,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         target: { value: "test-example" },
       });
 
-      /* Act. */
       const submitButtonElement = screen.getByRole("button", {
         name: "RECORD THIS EXAMPLE",
       });
@@ -1848,20 +1869,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         })
       );
 
-      const initState: IState = {
-        ...initialState,
-        auth: {
-          ...initialState.auth,
-          token: "token-issued-by-the-backend",
-          hasValidToken: true,
-          loggedInUserProfile: profileMock,
-        },
-      };
       const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, initState, enhancer);
+      const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
-      history.push("/example/new");
 
       render(
         <Provider store={realStore}>
@@ -1871,6 +1882,17 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToRecordNewExample = await screen.findByText(
+        "Record new example"
+      );
+      fireEvent.click(anchorToRecordNewExample);
+
+      /* Act. */
       const newWordInputElement = await screen.findByLabelText("NEW WORD");
       expect(newWordInputElement).toBeInTheDocument();
       const contentInputElement = screen.getByLabelText("EXAMPLE");
@@ -1883,7 +1905,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         target: { value: "test-content" },
       });
 
-      /* Act. */
       const submitButtonElement = screen.getByRole("button", {
         name: "RECORD THIS EXAMPLE",
       });
@@ -1916,20 +1937,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         })
       );
 
-      const initState: IState = {
-        ...initialState,
-        auth: {
-          ...initialState.auth,
-          token: "token-issued-by-the-backend",
-          hasValidToken: true,
-          loggedInUserProfile: profileMock,
-        },
-      };
       const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, initState, enhancer);
+      const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
-      history.push("/example/new");
 
       render(
         <Provider store={realStore}>
@@ -1939,6 +1950,17 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         </Provider>
       );
 
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToRecordNewExample = await screen.findByText(
+        "Record new example"
+      );
+      fireEvent.click(anchorToRecordNewExample);
+
+      /* Act. */
       const newWordInputElement = await screen.findByLabelText("NEW WORD");
       expect(newWordInputElement).toBeInTheDocument();
       const contentInputElement = screen.getByLabelText("EXAMPLE");
@@ -1951,8 +1973,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         target: { value: "test-content" },
       });
 
-      // The remaining "Arrange" statements are not really necessary for this test case,
-      // but they increase the test suite's code coverage.
+      /*
+      The remaining "Act" statements are not really necessary for this test case,
+      but they increase the test suite's code coverage.
+      */
       const sourceLanguageInputElement =
         screen.getByLabelText("SOURCE LANGUAGE");
       expect(sourceLanguageInputElement).toBeInTheDocument();
@@ -1967,7 +1991,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         target: { value: "test-content-translation" },
       });
 
-      /* Act. */
       const submitButtonElement = screen.getByRole("button", {
         name: "RECORD THIS EXAMPLE",
       });
@@ -1992,21 +2015,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should be navigated back to the same page [of examples]",
     async () => {
       /* Arrange. */
-      const initState: IState = {
-        ...initialState,
-        auth: {
-          ...initialState.auth,
-          token: "token-issued-by-the-backend",
-          hasValidToken: true,
-          loggedInUserProfile: profileMock,
-        },
-      };
       const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, initState, enhancer);
+      const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
-
-      history.push("/own-vocabtreasury");
 
       render(
         <Provider store={realStore}>
@@ -2015,6 +2027,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
           </Router>
         </Provider>
       );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
 
       /* Act. */
       const nextPageButtonElement: HTMLElement = await screen.findByRole(
