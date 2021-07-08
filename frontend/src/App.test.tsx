@@ -47,7 +47,6 @@ import thunkMiddleware from "redux-thunk";
 import { profileMock } from "./dataMocks";
 
 import { App } from "./App";
-import { initialStateAuth } from "./store";
 import { cleanup } from "@testing-library/react";
 
 // 4
@@ -63,6 +62,9 @@ import {
   IExample,
 } from "./store";
 import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
+
+// 5
+import { examplesMock } from "./dataMocks";
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -810,12 +812,14 @@ describe("<SingleExample>", () => {
       " and HTML elements that enable user interaction",
     () => {
       /* Arrange. */
+      const perPage: number = 2;
       const page: number = 1;
+
       const paginationFromBackend: {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(page);
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
       const {
         meta,
         links,
@@ -1021,9 +1025,13 @@ const requestHandlersToMock = [
   }),
 
   rest.get("/api/examples", (req, res, ctx) => {
+    const perPage: number = 2;
     const page = parseInt(req.url.searchParams.get("page") || "1");
 
-    return res(ctx.status(200), ctx.json(mockPaginationFromBackend(page)));
+    return res(
+      ctx.status(200),
+      ctx.json(mockPaginationFromBackend(examplesMock, perPage, page))
+    );
   }),
 
   rest.post("/api/examples", (req, res, ctx) => {
@@ -2001,6 +2009,231 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       await expect(p).rejects.toThrowError(
         /Timed out in waitForElementToBeRemoved/
       );
+    }
+  );
+
+  test(
+    "<App> -" +
+      " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+      " (b) navigates to the 1st page [of examples]," +
+      " and (c) clicks on one of that page's examples," +
+      " then by clicking on 'Delete this example'" +
+      " the user should be navigated back to the same page [of examples]",
+    async () => {
+      /* Arrange. */
+      console.log("starting with examplesMock");
+      console.log(examplesMock);
+      const examplesMockCopy = [...examplesMock];
+
+      quasiServer.use(
+        rest.get("/api/examples", (req, res, ctx) => {
+          const perPage: number = 2;
+          const page = parseInt(req.url.searchParams.get("page") || "1");
+
+          return res(
+            ctx.status(200),
+            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
+          );
+        }),
+
+        rest.delete("/api/examples/:id", (req, res, ctx) => {
+          const exampleId: number = parseInt(req.params.id);
+          const exampleIndex: number = examplesMockCopy.findIndex(
+            (e: IExampleFromBackend) => e.id === exampleId
+          );
+
+          examplesMockCopy.splice(exampleIndex, 1);
+
+          console.log("after deletion, examplesMockCopy:");
+          console.log(examplesMockCopy);
+
+          return res(ctx.status(204));
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      /* Act. */
+      const anchorToExample1: HTMLElement = await screen.findByText("1");
+      expect(anchorToExample1).toBeInTheDocument();
+      fireEvent.click(anchorToExample1);
+
+      const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
+        "button",
+        { name: "Delete this example" }
+      );
+      fireEvent.click(deleteThisExampleBtn);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("Current page: 1");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("lause #2");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("lause #3");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+      " (b) navigates to the last page [of examples]" +
+      " and there is only 1 example on that page," +
+      " and (c) clicks that single example," +
+      " then by clicking on 'Delete this example'" +
+      " the user should be navigated back to the last page [of examples]",
+    async () => {
+      /* Arrange. */
+      const examplesMockCopy = [...examplesMock];
+
+      quasiServer.use(
+        rest.get("/api/examples", (req, res, ctx) => {
+          const perPage: number = 2;
+          const page = parseInt(req.url.searchParams.get("page") || "1");
+
+          return res(
+            ctx.status(200),
+            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
+          );
+        }),
+
+        rest.delete("/api/examples/:id", (req, res, ctx) => {
+          const exampleId: number = parseInt(req.params.id);
+          const exampleIndex: number = examplesMockCopy.findIndex(
+            (e: IExampleFromBackend) => e.id === exampleId
+          );
+
+          examplesMockCopy.splice(exampleIndex, 1);
+
+          return res(ctx.status(204));
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const lastPageButton = await screen.findByRole("button", {
+        name: "Last page: 6",
+      });
+      fireEvent.click(lastPageButton);
+
+      /* Act. */
+      const anchorToExample11: HTMLElement = await screen.findByText("11");
+      expect(anchorToExample11).toBeInTheDocument();
+      fireEvent.click(anchorToExample11);
+
+      const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
+        "button",
+        { name: "Delete this example" }
+      );
+      fireEvent.click(deleteThisExampleBtn);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("Current page: 5");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("lause #9");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("lause #10");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " if a logged-in user (a) clicks on 'Own VocabTreasury'" +
+      " and (b) clicks on some example," +
+      " but (c) the user's access token has expired," +
+      " then by clicking on 'Delete this example' the user gets logged out",
+    async () => {
+      quasiServer.use(
+        rest.delete("/api/examples/:id", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      /* Act. */
+      const anchorToExample1: HTMLElement = await screen.findByText("1");
+      expect(anchorToExample1).toBeInTheDocument();
+      fireEvent.click(anchorToExample1);
+
+      const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
+        "button",
+        {
+          name: "Delete this example",
+        }
+      );
+      fireEvent.click(deleteThisExampleBtn);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("Log in");
+      expect(element).toBeInTheDocument();
+
+      expect(history.location.pathname).toEqual("/login");
     }
   );
 });

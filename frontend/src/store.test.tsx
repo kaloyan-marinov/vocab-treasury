@@ -138,6 +138,9 @@ import {
 } from "./store";
 import { deleteExample } from "./store";
 
+// 4
+import { examplesMock } from "./dataMocks";
+
 describe("selector functions", () => {
   let state: IState;
 
@@ -430,8 +433,14 @@ describe("action creators", () => {
   });
 
   test("mockPaginationFromBackend (which is a function that helps test fetchExamplesFulfilled)", () => {
+    const perPage: number = 2;
     const page: number = 1;
-    const backendPaginationMock = mockPaginationFromBackend(page);
+
+    const backendPaginationMock = mockPaginationFromBackend(
+      examplesMock,
+      perPage,
+      page
+    );
 
     /*
     The two blocks of code below are equivalent,
@@ -483,8 +492,14 @@ describe("action creators", () => {
 
   test("fetchExamplesFulfilled", () => {
     /* Arrange. */
+    const perPage: number = 2;
     const page: number = 1;
-    const backendPaginationMock = mockPaginationFromBackend(page);
+
+    const backendPaginationMock = mockPaginationFromBackend(
+      examplesMock,
+      perPage,
+      page
+    );
 
     /*
     The two blocks of code below are equivalent,
@@ -982,10 +997,13 @@ describe("slice reducers", () => {
     });
 
     test("examples/fetchExamples/fulfilled", () => {
+      /* Arrange. */
       const initState: IStateExamples = {
         ...initialStateExamples,
         requestStatus: RequestStatus.LOADING,
       };
+
+      const perPage: number = 2;
       const page: number = 1;
       const {
         _meta,
@@ -995,7 +1013,8 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(page);
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
+
       const action: IActionFetchExamplesFulfilled = {
         type: ActionTypesFetchExamples.FULFILLED,
         payload: {
@@ -1022,8 +1041,10 @@ describe("slice reducers", () => {
         },
       };
 
+      /* Act. */
       const newState: IStateExamples = examplesReducer(initState, action);
 
+      /* Assert. */
       expect(newState).toEqual({
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
@@ -1062,12 +1083,13 @@ describe("slice reducers", () => {
 
     test("examples/clearSlice", () => {
       /* Arrange. */
+      const perPage: number = 2;
       const page: number = 1;
       const paginationFromBackend: {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(page);
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
 
       const {
         meta,
@@ -1187,12 +1209,14 @@ describe("slice reducers", () => {
     });
 
     test("examples/createExample/fulfilled", () => {
+      /* Arrange. */
+      const perPage: number = 2;
       const page: number = 2;
       const paginationFromBackend: {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(page);
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
       const {
         meta,
         links,
@@ -1226,8 +1250,10 @@ describe("slice reducers", () => {
         },
       };
 
+      /* Act. */
       const newState: IStateExamples = examplesReducer(initState, action);
 
+      /* Assert. */
       expect(newState).toEqual({
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
@@ -1326,12 +1352,14 @@ describe("slice reducers", () => {
     });
 
     test("examples/deleteExample/fulfilled", () => {
+      /* Arrange. */
+      const perPage: number = 2;
       const page: number = 2;
       const paginationFromBackend: {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(page);
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
       const {
         meta,
         links,
@@ -1360,8 +1388,10 @@ describe("slice reducers", () => {
         },
       };
 
+      /* Act. */
       const newState: IStateExamples = examplesReducer(initState, action);
 
+      /* Assert. */
       expect({
         requestStatus: newState.requestStatus,
         requestError: newState.requestError,
@@ -1417,7 +1447,13 @@ const requestHandlersToMock = [
   }),
 
   rest.get("/api/examples", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(mockPaginationFromBackend(1)));
+    const perPage: number = 2;
+    const page: number = parseInt(req.url.searchParams.get("page") || "1");
+
+    return res(
+      ctx.status(200),
+      ctx.json(mockPaginationFromBackend(examplesMock, perPage, page))
+    );
   }),
 
   rest.post("/api/examples", (req, res, ctx) => {

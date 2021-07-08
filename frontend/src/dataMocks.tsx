@@ -20,15 +20,8 @@ export const exampleMock: IExampleFromBackend = {
 };
 
 /* Mock the pagination of Example resources. */
-
-const totalItems: number = 11;
-const perPage: number = 2;
-const totalPages: number = Math.ceil(totalItems / perPage);
-const itemsOnLastPage: number =
-  totalItems % perPage !== 0 ? totalItems % perPage : perPage;
-
-const examplesMock: IExampleFromBackend[] = Array.from({
-  length: totalItems,
+export const examplesMock: IExampleFromBackend[] = Array.from({
+  length: 11,
 }).map((_, index) => {
   return {
     id: index + 1,
@@ -40,6 +33,8 @@ const examplesMock: IExampleFromBackend[] = Array.from({
 });
 
 export const mockPaginationFromBackend = (
+  examples: IExampleFromBackend[],
+  perPage: number = 2,
   page: number = 1
 ): {
   _meta: IPaginationMetaFromBackend;
@@ -52,9 +47,10 @@ export const mockPaginationFromBackend = (
   upon receiving a GET request to /api/examples.
   */
 
-  if (page <= 0 || page > totalPages) {
-    throw new Error(`\`page\` must be >= 1 and <= ${totalPages}`);
-  }
+  const totalItems: number = examples.length;
+  const totalPages: number = Math.ceil(totalItems / perPage);
+  const itemsOnLastPage: number =
+    totalItems % perPage !== 0 ? totalItems % perPage : perPage;
 
   const _meta: IPaginationMetaFromBackend = {
     total_items: totalItems,
@@ -66,22 +62,29 @@ export const mockPaginationFromBackend = (
   const _links: IPaginationLinks = {
     self: `/api/examples?per_page=${perPage}&page=${page}`,
     next:
-      page === totalPages
+      page >= totalPages
         ? null
         : `/api/examples?per_page=${perPage}&page=${page + 1}`,
     prev:
-      page === 1 ? null : `/api/examples?per_page=${perPage}&page=${page - 1}`,
+      page <= 1 ? null : `/api/examples?per_page=${perPage}&page=${page - 1}`,
     first: `/api/examples?per_page=${perPage}&page=1`,
     last: `/api/examples?per_page=${perPage}&page=${totalPages}`,
   };
 
-  const startIndex: number = (page - 1) * perPage;
-  const length: number = page === totalPages ? itemsOnLastPage : perPage;
-  const items: IExampleFromBackend[] = Array.from({ length: length }).map(
-    (_, index) => {
-      return examplesMock[startIndex + index];
-    }
-  );
+  let items: IExampleFromBackend[];
+  if (page > totalPages) {
+    items = [];
+  } else if (page <= 0) {
+    items = Array.from({ length: perPage }).map((_, index) => {
+      return examples[index];
+    });
+  } else {
+    const startIndex: number = (page - 1) * perPage;
+    const length: number = page === totalPages ? itemsOnLastPage : perPage;
+    items = Array.from({ length: length }).map((_, index) => {
+      return examples[startIndex + index];
+    });
+  }
 
   return {
     _meta,
