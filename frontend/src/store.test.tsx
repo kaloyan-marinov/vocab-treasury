@@ -140,6 +140,16 @@ import { deleteExample } from "./store";
 
 // 4
 import { examplesMock } from "./dataMocks";
+import {
+  editExamplePending,
+  editExampleRejected,
+  editExampleFulfilled,
+  ActionTypesEditExample,
+  IActionEditExamplePending,
+  IActionEditExampleRejected,
+  IActionEditExampleFulfilled,
+  editExample,
+} from "./store";
 
 describe("selector functions", () => {
   let state: IState;
@@ -632,6 +642,45 @@ describe("action creators", () => {
       type: "examples/deleteExample/fulfilled",
       payload: {
         id: 17,
+      },
+    });
+  });
+
+  test("editExamplePending", () => {
+    const action = editExamplePending();
+
+    expect(action).toEqual({
+      type: "examples/editExample/pending",
+    });
+  });
+
+  test("editExampleRejected", () => {
+    const action = editExampleRejected("examples-editExample-rejected");
+
+    expect(action).toEqual({
+      type: "examples/editExample/rejected",
+      error: "examples-editExample-rejected",
+    });
+  });
+
+  test("editExampleFulfilled", () => {
+    const action = editExampleFulfilled(
+      17,
+      "Finnish",
+      "varjo",
+      "Suomen ideaalisää on 24 astetta varjossa.",
+      "Finland's ideal weather is 24 degrees in the shade."
+    );
+
+    expect(action).toEqual({
+      type: "examples/editExample/fulfilled",
+      payload: {
+        id: 17,
+        sourceLanguage: "Finnish",
+        newWord: "varjo",
+        content: "Suomen ideaalisää on 24 astetta varjossa.",
+        contentTranslation:
+          "Finland's ideal weather is 24 degrees in the shade.",
       },
     });
   });
@@ -1412,6 +1461,143 @@ describe("slice reducers", () => {
         },
       });
     });
+
+    test("examples/editExample/pending", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "examples-editExample-rejected",
+      };
+      const action: IActionEditExamplePending = {
+        type: ActionTypesEditExample.PENDING,
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: "loading",
+        requestError: null,
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/editExample/rejected", () => {
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+      const action: IActionEditExampleRejected = {
+        type: ActionTypesEditExample.REJECTED,
+        error: "examples-editExample-rejected",
+      };
+
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      expect(newState).toEqual({
+        requestStatus: "failed",
+        requestError: "examples-editExample-rejected",
+        meta: {
+          totalItems: null,
+          perPage: null,
+          totalPages: null,
+          page: null,
+        },
+        links: {
+          self: null,
+          next: null,
+          prev: null,
+          first: null,
+          last: null,
+        },
+        ids: [],
+        entities: {},
+      });
+    });
+
+    test("examples/editExample/fulfilled", () => {
+      /* Arrange. */
+      const perPage: number = 2;
+      const page: number = 2;
+      const paginationFromBackend: {
+        _meta: IPaginationMetaFromBackend;
+        _links: IPaginationLinks;
+        items: IExampleFromBackend[];
+      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      const {
+        meta,
+        links,
+        ids,
+        entities,
+      }: {
+        meta: IPaginationMeta;
+        links: IPaginationLinks;
+        ids: number[];
+        entities: { [exampleId: string]: IExample };
+      } = convertToPaginationInFrontend(paginationFromBackend);
+
+      const initState: IStateExamples = {
+        ...initialStateExamples,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+        meta,
+        links,
+        ids,
+        entities,
+      };
+      const action: IActionEditExampleFulfilled = {
+        type: ActionTypesEditExample.FULFILLED,
+        payload: {
+          id: 3,
+          sourceLanguage: "German",
+          newWord: "Wort #4",
+          content: "Satz #4",
+          contentTranslation: "Übersetzung #4",
+        },
+      };
+
+      /* Act. */
+      const newState: IStateExamples = examplesReducer(initState, action);
+
+      /* Assert. */
+      expect(newState).toEqual({
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+        meta,
+        links,
+        ids: [3, 4],
+        entities: {
+          "3": {
+            id: 3,
+            sourceLanguage: "German",
+            newWord: "Wort #4",
+            content: "Satz #4",
+            contentTranslation: "Übersetzung #4",
+          },
+          "4": {
+            id: 4,
+            sourceLanguage: "Finnish",
+            newWord: "sana #4",
+            content: "lause #4",
+            contentTranslation: "käännös #4",
+          },
+        },
+      });
+    });
   });
 });
 
@@ -1462,6 +1648,18 @@ const requestHandlersToMock = [
 
   rest.delete("/api/examples/:id", (req, res, ctx) => {
     return res(ctx.status(204));
+  }),
+
+  rest.put("/api/examples/:id", (req, res, ctx) => {
+    const { id: exampleId } = req.params;
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        ...exampleMock,
+        id: parseInt(exampleId),
+      })
+    );
   }),
 ];
 
@@ -1938,6 +2136,79 @@ describe(
           },
           {
             type: "examples/deleteExample/rejected",
+            error: "[mocked] Expired access token.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "editExample(exampleId, ...)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const editExamplePromise = storeMock.dispatch(
+          editExample(exampleMock.id, {
+            sourceLanguage: exampleMock.source_language,
+            newWord: exampleMock.new_word,
+            content: exampleMock.content,
+            contentTranslation: exampleMock.content_translation,
+          })
+        );
+
+        await expect(editExamplePromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/editExample/pending",
+          },
+          {
+            type: "examples/editExample/fulfilled",
+            payload: {
+              id: 17,
+              sourceLanguage: "Finnish",
+              newWord: "varjo",
+              content: "Suomen ideaalisää on 24 astetta varjossa.",
+              contentTranslation:
+                "Finland's ideal weather is 24 degrees in the shade.",
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "editExample(exampleId, ...)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.put("/api/examples/:id", (req, res, ctx) => {
+            return res(
+              ctx.status(401),
+              ctx.json({
+                error: "[mocked] Unauthorized",
+                message: "[mocked] Expired access token.",
+              })
+            );
+          })
+        );
+
+        const editExamplePromise = storeMock.dispatch(
+          editExample(exampleMock.id, {
+            sourceLanguage: exampleMock.source_language,
+            newWord: exampleMock.new_word,
+            content: exampleMock.content,
+            contentTranslation: exampleMock.content_translation,
+          })
+        );
+
+        await expect(editExamplePromise).rejects.toEqual(
+          new Error("Request failed with status code 401")
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "examples/editExample/pending",
+          },
+          {
+            type: "examples/editExample/rejected",
             error: "[mocked] Expired access token.",
           },
         ]);

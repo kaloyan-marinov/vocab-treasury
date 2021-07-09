@@ -14,12 +14,7 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router, Route } from "react-router-dom";
 
-import {
-  IState,
-  initialState,
-  rootReducer,
-  VOCAB_TREASURY_APP_TOKEN,
-} from "./store";
+import { IState, initialState, rootReducer } from "./store";
 import {
   NavigationBar,
   Alerts,
@@ -913,64 +908,6 @@ describe("<SingleExample>", () => {
       expect(buttonForDeleting).toBeInTheDocument();
     }
   );
-});
-
-describe("<EditExample>", () => {
-  test("renders the fields of a form for editing an existing Example resource", () => {
-    /* Arrange. */
-    const history = createMemoryHistory();
-    history.push("/example/4/edit");
-
-    /* Act. */
-    render(
-      <Router history={history}>
-        <Route exact path="/example/:id/edit">
-          <EditExample />
-        </Route>
-      </Router>
-    );
-
-    /* Assert. */
-    const legendElement = screen.getByText(
-      "[legend-tag: EDIT EXISTING EXAMPLE]"
-    );
-    expect(legendElement).toBeInTheDocument();
-
-    /* Labels of form fields. */
-    const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
-    expect(sourceLanguageLabelElement).toBeInTheDocument();
-
-    const newWordLabelElement = screen.getByText("NEW WORD");
-    expect(newWordLabelElement).toBeInTheDocument();
-
-    const exampleLabelElement = screen.getByText("EXAMPLE");
-    expect(exampleLabelElement).toBeInTheDocument();
-
-    const translationLabelElement = screen.getByText("TRANSLATION");
-    expect(translationLabelElement).toBeInTheDocument();
-
-    const submitInputElement = screen.getByRole("button", {
-      name: "RECORD THIS EXAMPLE",
-    });
-    expect(submitInputElement).toBeInTheDocument();
-
-    /* Values of form fields. */
-    const sourceLanguageTableCellElement2 = screen.getByDisplayValue("Finnish");
-    expect(sourceLanguageTableCellElement2).toBeInTheDocument();
-
-    const newWordTableCellElement2 = screen.getByDisplayValue("varjo");
-    expect(newWordTableCellElement2).toBeInTheDocument();
-
-    const exampleTableCellElement2 = screen.getByDisplayValue(
-      "Suomen ideaalisää on 24 astetta varjossa."
-    );
-    expect(exampleTableCellElement2).toBeInTheDocument();
-
-    const translationTableCellElement2 = screen.getByDisplayValue(
-      "Finland's ideal weather is 24 degrees in the shade."
-    );
-    expect(translationTableCellElement2).toBeInTheDocument();
-  });
 });
 
 describe("<Search>", () => {
@@ -2021,8 +1958,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should be navigated back to the same page [of examples]",
     async () => {
       /* Arrange. */
-      console.log("starting with examplesMock");
-      console.log(examplesMock);
       const examplesMockCopy = [...examplesMock];
 
       quasiServer.use(
@@ -2177,10 +2112,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
   test(
     "<App> -" +
-      " if a logged-in user (a) clicks on 'Own VocabTreasury'" +
-      " and (b) clicks on some example," +
-      " but (c) the user's access token has expired," +
-      " then by clicking on 'Delete this example' the user gets logged out",
+      " suppose that a logged-in user (a) clicks on 'Own VocabTreasury'" +
+      " and (b) clicks on some example;" +
+      " if the user's access token expires" +
+      " and then the user clicks on 'Delete this example'," +
+      " the user gets logged out",
     async () => {
       quasiServer.use(
         rest.delete("/api/examples/:id", (req, res, ctx) => {
@@ -2231,6 +2167,264 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("Log in");
+      expect(element).toBeInTheDocument();
+
+      expect(history.location.pathname).toEqual("/login");
+    }
+  );
+
+  test(
+    "<App>" +
+      " - if a logged-in user selects one of her examples and edits it successfully," +
+      " the user should be re-directed to /own-vocabtreasury" +
+      " (and, more specifically, to the page containing the selected example)" +
+      " and the edited example should be displayed there",
+    async () => {
+      /* Arrange. */
+      const examplesMockCopy = [...examplesMock];
+
+      quasiServer.use(
+        rest.get("/api/examples", (req, res, ctx) => {
+          const perPage: number = 2;
+          const page = parseInt(req.url.searchParams.get("page") || "1");
+
+          return res(
+            ctx.status(200),
+            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
+          );
+        }),
+
+        rest.put("/api/examples/:id", (req, res, ctx) => {
+          const exampleId: number = parseInt(req.params.id);
+          const exampleIndex: number = examplesMockCopy.findIndex(
+            (e: IExampleFromBackend) => e.id === exampleId
+          );
+
+          const editedExample: IExampleFromBackend = {
+            ...examplesMockCopy[exampleIndex],
+          };
+          /*
+          at present, the next statement generates the following TypeScript error/warning:
+          Property 'source_language' does not exist on type 'DefaultRequestBody'.ts(2339)
+
+          TODO: find out how to prevent that TypeScript error/warning from being generated
+          */
+          const { source_language, new_word, content, content_translation } =
+            req.body;
+          if (source_language !== null) {
+            editedExample.source_language = source_language;
+          }
+          if (new_word !== null) {
+            editedExample.new_word = new_word;
+          }
+          if (content !== null) {
+            editedExample.content = content;
+          }
+          if (content_translation !== null) {
+            editedExample.content_translation = content_translation;
+          }
+
+          examplesMockCopy[exampleIndex] = editedExample;
+
+          return res(ctx.status(200), ctx.json(editedExample));
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToExample1: HTMLElement = await screen.findByText("1");
+      expect(anchorToExample1).toBeInTheDocument();
+      fireEvent.click(anchorToExample1);
+
+      const editThisExampleAnchor: HTMLElement = await screen.findByText(
+        "Edit this example"
+      );
+      fireEvent.click(editThisExampleAnchor);
+
+      /* Act. */
+      const sourceLanguageInputElement: HTMLElement =
+        await screen.findByLabelText("SOURCE LANGUAGE");
+      const newWordInputElement: HTMLElement =
+        screen.getByLabelText("NEW WORD");
+      const exampleInputElement: HTMLElement = screen.getByLabelText("EXAMPLE");
+      const translationInputElement: HTMLElement =
+        screen.getByLabelText("TRANSLATION");
+
+      fireEvent.change(sourceLanguageInputElement, {
+        target: { value: "German" },
+      });
+      fireEvent.change(newWordInputElement, {
+        target: { value: "Wort #1" },
+      });
+      fireEvent.change(exampleInputElement, {
+        target: { value: "Satz #1" },
+      });
+      fireEvent.change(translationInputElement, {
+        target: { value: "Übersetzung #1" },
+      });
+
+      const editExampleBtn: HTMLElement = screen.getByRole("button", {
+        name: "EDIT THIS EXAMPLE",
+      });
+      fireEvent.click(editExampleBtn);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("EXAMPLE EDITING SUCCESSFUL");
+      expect(element).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(history.location.pathname).toEqual("/own-vocabtreasury");
+      });
+
+      element = await screen.findByText("Current page: 1");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("Wort #1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("Satz #1");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("Übersetzung #1");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("sana #2");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("lause #2");
+      expect(element).toBeInTheDocument();
+      element = screen.getByText("käännös #2");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App>" +
+      " - if a logged-in user selects one of her examples" +
+      " and edits it in an invalid way," +
+      " an alert about the error should be created",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToExample1: HTMLElement = await screen.findByText("1");
+      expect(anchorToExample1).toBeInTheDocument();
+      fireEvent.click(anchorToExample1);
+
+      const editThisExampleAnchor: HTMLElement = await screen.findByText(
+        "Edit this example"
+      );
+      fireEvent.click(editThisExampleAnchor);
+
+      /* Act. */
+      const newWordInputElement: HTMLElement = await screen.findByLabelText(
+        "NEW WORD"
+      );
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "" },
+      });
+
+      const editExampleBtn: HTMLElement = screen.getByRole("button", {
+        name: "EDIT THIS EXAMPLE",
+      });
+      fireEvent.click(editExampleBtn);
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+      );
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " suppose that a logged-in user (a) selects one of her examples" +
+      " and (b) clicks on the 'Edit this example' link;" +
+      " if the user's access token expires" +
+      " and then the user clicks on 'EDIT THIS EXAMPLE'," +
+      " the user should get logged out",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.put("/api/examples/:id", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToExample1: HTMLElement = await screen.findByText("1");
+      expect(anchorToExample1).toBeInTheDocument();
+      fireEvent.click(anchorToExample1);
+
+      const editThisExampleAnchor: HTMLElement = await screen.findByText(
+        "Edit this example"
+      );
+      fireEvent.click(editThisExampleAnchor);
+
+      /* Act. */
+      const editExampleBtn: HTMLElement = screen.getByRole("button", {
+        name: "EDIT THIS EXAMPLE",
+      });
+      fireEvent.click(editExampleBtn);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
       expect(element).toBeInTheDocument();
 
       expect(history.location.pathname).toEqual("/login");

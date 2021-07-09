@@ -732,6 +732,131 @@ export const deleteExample = (exampleId: number) => {
   };
 };
 
+/* "examples/editExample" action creators */
+export enum ActionTypesEditExample {
+  PENDING = "examples/editExample/pending",
+  REJECTED = "examples/editExample/rejected",
+  FULFILLED = "examples/editExample/fulfilled",
+}
+
+export interface IActionEditExamplePending {
+  type: typeof ActionTypesEditExample.PENDING;
+}
+
+export interface IActionEditExampleRejected {
+  type: typeof ActionTypesEditExample.REJECTED;
+  error: string;
+}
+
+export interface IActionEditExampleFulfilled {
+  type: typeof ActionTypesEditExample.FULFILLED;
+  payload: IExample;
+}
+
+export const editExamplePending = (): IActionEditExamplePending => ({
+  type: ActionTypesEditExample.PENDING,
+});
+
+export const editExampleRejected = (
+  error: string
+): IActionEditExampleRejected => ({
+  type: ActionTypesEditExample.REJECTED,
+  error,
+});
+
+export type ActionEditExample =
+  | IActionEditExamplePending
+  | IActionEditExampleRejected
+  | IActionEditExampleFulfilled;
+
+export const editExampleFulfilled = (
+  id: number,
+  sourceLanguage: string,
+  newWord: string,
+  content: string,
+  contentTranslation: string
+): IActionEditExampleFulfilled => ({
+  type: ActionTypesEditExample.FULFILLED,
+  payload: {
+    id,
+    sourceLanguage,
+    newWord,
+    content,
+    contentTranslation,
+  },
+});
+
+/* "examples/editExample" thunk-action creator */
+export const editExample = (
+  exampleId: number,
+  editedExample: {
+    sourceLanguage?: string;
+    newWord?: string;
+    content?: string;
+    contentTranslation?: string;
+  }
+) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for editing an existing Example resource,
+  which must be associated with a specific User.
+  */
+  return async (dispatch: Dispatch<ActionEditExample>) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization:
+          "Bearer " + localStorage.getItem(VOCAB_TREASURY_APP_TOKEN),
+      },
+    };
+
+    const body: {
+      source_language?: string;
+      new_word?: string;
+      content?: string;
+      content_translation?: string;
+    } = {};
+    if (editedExample.sourceLanguage !== null) {
+      body.source_language = editedExample.sourceLanguage;
+    }
+    if (editedExample.newWord !== null) {
+      body.new_word = editedExample.newWord;
+    }
+    if (editedExample.content !== null) {
+      body.content = editedExample.content;
+    }
+    if (editedExample.contentTranslation !== null) {
+      body.content_translation = editedExample.contentTranslation;
+    }
+
+    dispatch(editExamplePending());
+    try {
+      const response = await axios.put(
+        `/api/examples/${exampleId}`,
+        body,
+        config
+      );
+      dispatch(
+        editExampleFulfilled(
+          response.data.id,
+          response.data.source_language,
+          response.data.new_word,
+          response.data.content,
+          response.data.content_translation
+        )
+      );
+      return Promise.resolve();
+    } catch (err) {
+      const responseBodyMessage =
+        err.response.data.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(editExampleRejected(responseBodyMessage));
+      return Promise.reject(err);
+    }
+  };
+};
+
 /* "auth/clearSlice" action creator */
 export const ACTION_TYPE_AUTH_CLEAR_SLICE = "auth/clearSlice";
 
@@ -931,6 +1056,7 @@ export const examplesReducer = (
     | ActionFetchExamples
     | ActionCreateExample
     | ActionDeleteExample
+    | ActionEditExample
     | IActionExamplesClearSlice
 ): IStateExamples => {
   switch (action.type) {
@@ -1045,6 +1171,38 @@ export const examplesReducer = (
         requestStatus: RequestStatus.SUCCEEDED,
         requestError: null,
         ids: newIds,
+        entities: newEntities,
+      };
+    }
+
+    case ActionTypesEditExample.PENDING: {
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+    }
+
+    case ActionTypesEditExample.REJECTED: {
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+    }
+
+    case ActionTypesEditExample.FULFILLED: {
+      const editedExample: IExample = action.payload;
+
+      const newEntities: { [exampleId: string]: IExample } = {
+        ...state.entities,
+      };
+      newEntities[editedExample.id] = editedExample;
+
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
         entities: newEntities,
       };
     }

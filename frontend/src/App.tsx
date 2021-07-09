@@ -44,12 +44,12 @@ import {
   createExample,
   deleteExample,
   ActionDeleteExample,
+  ActionEditExample,
+  editExample,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
 import { Redirect } from "react-router-dom";
-
-import { exampleMock } from "./dataMocks";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -606,6 +606,7 @@ const URL_FOR_FIRST_PAGE_OF_EXAMPLES: string = "/api/examples";
 interface LocationStateWithinOwnVocabTreasury {
   fromRecordNewExample: null | boolean;
   fromSingleExample: null | boolean;
+  fromEditExample: null | boolean;
 }
 
 export const OwnVocabTreasury = () => {
@@ -668,9 +669,16 @@ export const OwnVocabTreasury = () => {
     } else {
       initialExamplesUrl = examplesLinks.self;
     }
+  } else if (
+    location.state &&
+    location.state.fromEditExample &&
+    examplesLinks.self !== null
+  ) {
+    console.log("    from /example/:id/edit (i.e. <EditExample>)");
+    initialExamplesUrl = examplesLinks.self;
   } else {
     console.log(
-      "    NOT from any of the following: /example/new, /examples/:id"
+      "    NOT from any of the following: /example/new, /example/:id, /example/:id/edit"
     );
     initialExamplesUrl = URL_FOR_FIRST_PAGE_OF_EXAMPLES;
   }
@@ -1132,14 +1140,12 @@ export const EditExample = () => {
   );
   console.log(params);
   const exampleId: number = parseInt(params.id);
-  // In the case of real data, the following should be computed out of `exampleId`:
-  const example: IExample = {
-    id: exampleMock.id,
-    sourceLanguage: exampleMock.source_language,
-    newWord: exampleMock.new_word,
-    content: exampleMock.content,
-    contentTranslation: exampleMock.content_translation,
-  };
+
+  const examplesEntities = useSelector(selectExamplesEntities);
+
+  const example: IExample = examplesEntities[exampleId];
+
+  const examplesLinks = useSelector(selectExamplesLinks);
 
   const [formData, setFormData] = React.useState({
     sourceLanguage: example.sourceLanguage,
@@ -1148,19 +1154,92 @@ export const EditExample = () => {
     contentTranslation: example.contentTranslation,
   });
 
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionEditExample | IActionAlertsCreate | ActionFetchExamples
+  > = useDispatch();
+
+  const history = useHistory();
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.newWord === "" || formData.content === "") {
+      dispatch(
+        alertsCreate(
+          id,
+          "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+        )
+      );
+    } else {
+      console.log("    submitting <EditExample>'s form");
+
+      try {
+        const { sourceLanguage, newWord, content, contentTranslation } =
+          formData;
+        await dispatch(
+          editExample(exampleId, {
+            sourceLanguage,
+            newWord,
+            content,
+            contentTranslation,
+          })
+        );
+
+        dispatch(alertsCreate(id, "EXAMPLE EDITING SUCCESSFUL"));
+
+        if (examplesLinks.self !== null) {
+          await dispatch(fetchExamples(examplesLinks.self));
+        } else {
+          /*
+          It _should_ be impossible for this block of code to ever be executed.
+
+          Why?
+
+          For the same reason as in the analogous block within <SingleExample>.
+          */
+          await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+        }
+
+        const locationDescriptor = {
+          pathname: "/own-vocabtreasury",
+          state: {
+            fromEditExample: true,
+          },
+        };
+
+        console.log(`    re-directing to ${locationDescriptor.pathname}`);
+        history.push(locationDescriptor);
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+        } else {
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<EditExample>"}
-      <form method="POST" action="">
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <fieldset>
           <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
           <div>
@@ -1214,7 +1293,7 @@ export const EditExample = () => {
               id="<EE>-submit"
               name="submit"
               type="submit"
-              value="RECORD THIS EXAMPLE"
+              value="EDIT THIS EXAMPLE"
             />
           </div>
         </fieldset>
