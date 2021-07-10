@@ -1801,6 +1801,72 @@ class Test_09_GetExamples(TestBaseForExampleResources):
             # Assert.
             self.assertEqual({item["id"] for item in body_2["items"]}, expected_id_set)
 
+    def test_5_pagination_of_filtered_resources(self):
+        """
+        Ensure that,
+        when a user issues a request for a filtered list of her own Example resources,
+        the response is paginated properly.
+        """
+
+        # Arrange.
+        list_of_example_data = [{"new_word": x % 2, "content": x} for x in range(11)]
+        for data_1 in list_of_example_data:
+            data_str_1 = json.dumps(data_1)
+            rv_1 = self.client.post(
+                "/api/examples",
+                data=data_str_1,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        # Act.
+        rv_2 = self.client.get(
+            "/api/examples?per_page=2&page=2&new_word=1",
+            headers={"Authorization": self._jd_user_token_auth},
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+
+        # Assert.
+        self.maxDiff = None
+        self.assertEqual(
+            {
+                "_meta": {
+                    "total_items": 5,
+                    "per_page": 2,
+                    "total_pages": 3,
+                    "page": 2,
+                },
+                "_links": {
+                    "self": "/api/examples?per_page=2&page=2&new_word=1",
+                    "next": "/api/examples?per_page=2&page=3&new_word=1",
+                    "prev": "/api/examples?per_page=2&page=1&new_word=1",
+                    "first": "/api/examples?per_page=2&page=1&new_word=1",
+                    "last": "/api/examples?per_page=2&page=3&new_word=1",
+                },
+                "items": [
+                    {
+                        "id": 6,
+                        "source_language": "Finnish",
+                        "new_word": "1",
+                        "content": "5",
+                        "content_translation": None,
+                    },
+                    {
+                        "id": 8,
+                        "source_language": "Finnish",
+                        "new_word": "1",
+                        "content": "7",
+                        "content_translation": None,
+                    },
+                ],
+            },
+            body_2,
+        )
+
 
 class Test_10_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
