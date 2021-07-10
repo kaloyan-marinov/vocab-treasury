@@ -1369,7 +1369,7 @@ export const Search = () => {
     });
   };
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.MouseEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const queryParams: string[] = [];
@@ -1383,9 +1383,7 @@ export const Search = () => {
       queryParams.push("content_translation=" + formData.contentTranslation);
     }
 
-    const url =
-      filteredExamplesUrl ||
-      URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
+    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
     console.log("    submitting form");
     console.log(`    ${url}`);
     setFilteredExamplesUrl(url);
@@ -1551,8 +1549,6 @@ export const Search = () => {
                 />
               </th>
             </tr>
-            {paginationControllingButtons}
-            {exampleTableRows}
           </tbody>
         </table>
 
@@ -1562,6 +1558,23 @@ export const Search = () => {
         </div>
         <br />
       </form>
+      {paginationControllingButtons && (
+        <React.Fragment>
+          {paginationControllingButtons}
+          <table style={styleForTable}>
+            <tbody>
+              <tr>
+                <th style={styleForBorder}>ID</th>
+                <th style={styleForBorder}>SOURCE LANGUAGE</th>
+                <th style={styleForBorder}>NEW WORD</th>
+                <th style={styleForBorder}>EXAMPLE</th>
+                <th style={styleForBorder}>TRANSLATION</th>
+              </tr>
+              {exampleTableRows}
+            </tbody>
+          </table>
+        </React.Fragment>
+      )}
     </React.Fragment>
   );
 };
