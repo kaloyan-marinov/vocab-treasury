@@ -271,12 +271,12 @@ class Test_01_CreateUser(TestBase):
 
 
 class Test_02_GetUsers(TestBase):
-    """"Test the request responsible for getting all existing User resources."""
+    """"Test the request responsible for getting a list of existing User resources."""
 
     def test_1_empty_database(self):
         """
         Ensure that, when the database doesn't contain any User resources,
-        getting all User resources doesn't return any.
+        getting a list of User resources doesn't return any.
         """
 
         # Get all User resources.
@@ -311,7 +311,7 @@ class Test_02_GetUsers(TestBase):
     def test_2_nonempty_database(self):
         """
         Ensure that, when the database contains some User resources,
-        it is possible to get all User resources.
+        it is possible to get a list of User resources.
         """
 
         # Create one User resource.
@@ -1264,7 +1264,6 @@ class Test_08_CreateExample(TestBaseForExampleResources):
         # Prepare a JSON payload, which is required for creating an Example resource
         # associated with the above-created User resource.
         self._example_data = {
-            "user_id": jd_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1545,8 +1544,8 @@ class Test_08_CreateExample(TestBaseForExampleResources):
 
 class Test_09_GetExamples(TestBaseForExampleResources):
     """
-    Test the request responsible for getting all Example resources,
-    which are associated with a given User resource.
+    Test the request responsible for getting a list of Example resources,
+    all of which are associated with a given User resource.
     """
 
     def setUp(self):
@@ -1561,7 +1560,7 @@ class Test_09_GetExamples(TestBaseForExampleResources):
     def test_1_no_examples_exist(self):
         """
         Given a user who doesn't have any Example resources of her own,
-        ensure that, when that user requests all resources,
+        ensure that, when that user requests a list of resources,
         she doesn't get any.
         """
 
@@ -1597,13 +1596,12 @@ class Test_09_GetExamples(TestBaseForExampleResources):
     def test_2_some_examples_exist(self):
         """
         Given a user who has nonzero Example resources of her own,
-        ensure that, when that user requests all resources,
-        she gets all of her own resources.
+        ensure that, when that user requests a list of resources,
+        she gets page 1 of her own resources.
         """
 
         # Create one Example resource.
         example_data = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1659,8 +1657,8 @@ class Test_09_GetExamples(TestBaseForExampleResources):
 
     def test_3_access_only_own_examples(self):
         """
-        Ensure that each user can get all of her own Example resources,
-        but cannot get any of the Example resources that belong to another user.
+        Ensure that each user can get a list of her own Example resources,
+        but cannot get a list of another user's Example resources.
         """
 
         # Create a second User resource.
@@ -1670,7 +1668,6 @@ class Test_09_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource for the first user.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1692,7 +1689,6 @@ class Test_09_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1733,6 +1729,78 @@ class Test_09_GetExamples(TestBaseForExampleResources):
             set(),
         )
 
+    def test_4_filter_own_resources(self):
+        """
+        Ensure that each user can get a filtered list of her own Example resources.
+        """
+
+        # Arrange.
+        # Create own Example resources.
+        # fmt: off
+        list_of_example_data = [
+            {"new_word": "123", "content": "456", "content_translation": "789"},
+            {"new_word": "ABC", "content": "PQR", "content_translation": "XYZ"},
+            {"new_word": "ABC", "content": "XYZ", "content_translation": "PQR"},
+            {"new_word": "PQR", "content": "ABC", "content_translation": "XYZ"},
+            {"new_word": "PQR", "content": "XYZ", "content_translation": "ABC"},
+            {"new_word": "XYZ", "content": "ABC", "content_translation": "PQR"},
+            {"new_word": "XYZ", "content": "PQR", "content_translation": "ABC"},
+        ]
+        # fmt: on
+        for data_1 in list_of_example_data:
+            data_str_1 = json.dumps(data_1)
+            rv_1 = self.client.post(
+                "/api/examples",
+                data=data_str_1,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        # fmt: off
+        query_param_dicts = (
+            {'new_word': 'ABC', 'content': 'PQR', 'content_translation': 'XYZ'},
+
+            {'new_word': 'ABC', 'content': 'PQR'},
+            {'new_word': 'ABC',                   'content_translation': 'XYZ'},
+            {                   'content': 'PQR', 'content_translation': 'XYZ'},
+
+            {'new_word': 'ABC'},
+            {                   'content': 'PQR'},
+            {                                     'content_translation': 'XYZ'}
+        )
+        expected_id_sets = (
+            {2},
+            
+            {2},
+            {2},
+            {2},
+
+            {2, 3},
+            {2, 7},
+            {2, 4}
+        )
+        # fmt: on
+
+        for query_param_dict, expected_id_set in zip(
+            query_param_dicts, expected_id_sets
+        ):
+            # Act.
+            query_param_str = "?" + "&".join(
+                [k + "=" + v for k, v in query_param_dict.items()]
+            )
+            url = "/api/examples" + query_param_str
+            rv_2 = self.client.get(
+                url, headers={"Authorization": self._jd_user_token_auth}
+            )
+
+            body_str_2 = rv_2.get_data(as_text=True)
+            body_2 = json.loads(body_str_2)
+
+            # Assert.
+            self.assertEqual({item["id"] for item in body_2["items"]}, expected_id_set)
+
 
 class Test_10_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
@@ -1753,7 +1821,6 @@ class Test_10_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1827,7 +1894,6 @@ class Test_10_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1880,7 +1946,6 @@ class Test_10_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1941,7 +2006,6 @@ class Test_11_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2008,7 +2072,6 @@ class Test_11_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2080,7 +2143,6 @@ class Test_11_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2158,7 +2220,6 @@ class Test_11_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -2244,7 +2305,6 @@ class Test_12_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2300,7 +2360,6 @@ class Test_12_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2349,7 +2408,6 @@ class Test_12_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",

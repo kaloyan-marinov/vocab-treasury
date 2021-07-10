@@ -736,13 +736,31 @@ def get_examples():
     with the reason for this restriction being
     that we do not want to task the server too much.
     """
+    examples_query = Example.query.filter_by(user_id=token_auth.current_user().id)
+    new_word = request.args.get("new_word")
+    if new_word:
+        examples_query = examples_query.filter(
+            Example.new_word.like("%" + new_word + "%")
+        )
+    content = request.args.get("content")
+    if content:
+        examples_query = examples_query.filter(
+            Example.content.like("%" + content + "%")
+        )
+    content_translation = request.args.get("content_translation")
+    if content_translation:
+        examples_query = examples_query.filter(
+            Example.content_translation.like("%" + content_translation + "%")
+        )
+
     per_page = min(
         100,
         request.args.get("per_page", default=10, type=int),
     )
     page = request.args.get("page", default=1, type=int)
+
     examples_collection = Example.to_collection_dict(
-        Example.query.filter_by(user_id=token_auth.current_user().id),
+        examples_query,
         per_page,
         page,
         "get_examples",
