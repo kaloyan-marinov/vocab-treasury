@@ -1309,17 +1309,56 @@ const styleForCenter = { display: "flex", justifyContent: "center" };
 export const Search = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Search>`);
 
+  const [filteredExamplesUrl, setFilteredExamplesUrl] = React.useState("");
+
   const [formData, setFormData] = React.useState({
     newWord: "",
     content: "",
     contentTranslation: "",
   });
 
+  const examplesIds = useSelector(selectExamplesIds);
+  const examplesEntities = useSelector(selectExamplesEntities);
+
   const dispatch: ThunkDispatch<
     IState,
     unknown,
     ActionFetchExamples | IActionAlertsCreate
   > = useDispatch();
+
+  React.useEffect(() => {
+    console.log(
+      `${new Date().toISOString()} - React is running <Search>'s useEffect hook`
+    );
+
+    const effectFn = async () => {
+      if (filteredExamplesUrl !== "") {
+        console.log(
+          "    <Search>'s useEffect hook is dispatching fetchExamples(filteredExamplesUrl)"
+        );
+        console.log("    with filteredExamplesUrl equal to:");
+        console.log(`    ${filteredExamplesUrl}`);
+
+        try {
+          await dispatch(fetchExamples(filteredExamplesUrl));
+        } catch (err) {
+          if (err.response.status === 401) {
+            dispatch(
+              logOut("[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN")
+            );
+          } else {
+            const id: string = uuidv4();
+            const message: string =
+              err.response.data.message ||
+              "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+            dispatch(alertsCreate(id, message));
+          }
+        }
+      }
+    };
+
+    effectFn();
+  }, [dispatch, filteredExamplesUrl]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -1345,19 +1384,32 @@ export const Search = () => {
     const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
     console.log("    submitting form");
     console.log(`    ${url}`);
-    try {
-      await dispatch(fetchExamples(url));
-    } catch (err) {
-      if (err.response.status === 401) {
-        dispatch(logOut("[FROM <Search>] PLEASE LOG BACK IN"));
-      } else {
-        const id: string = uuidv4();
-        const message: string =
-          err.response.data.message ||
-          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      }
-    }
+    setFilteredExamplesUrl(url);
   };
+
+  /*
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  const exampleTableRows =
+    filteredExamplesUrl === ""
+      ? null
+      : examplesIds.map((eId: number) => {
+          const e: IExample = examplesEntities[eId];
+
+          return (
+            <tr key={e.id}>
+              <th style={styleForBorder}>
+                <Link to={`/example/${e.id}`}>{e.id}</Link>
+              </th>
+              <th style={styleForBorder}>{e.sourceLanguage}</th>
+              <th style={styleForBorder}>{e.newWord}</th>
+              <th style={styleForBorder}>{e.content}</th>
+              <th style={styleForBorder}>{e.contentTranslation}</th>
+            </tr>
+          );
+        });
 
   return (
     <React.Fragment>
@@ -1411,6 +1463,7 @@ export const Search = () => {
                 />
               </th>
             </tr>
+            {exampleTableRows}
           </tbody>
         </table>
 
