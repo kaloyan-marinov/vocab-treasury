@@ -737,21 +737,25 @@ def get_examples():
     that we do not want to task the server too much.
     """
     examples_query = Example.query.filter_by(user_id=token_auth.current_user().id)
+    query_param_kwargs = {}
     new_word = request.args.get("new_word")
     if new_word:
         examples_query = examples_query.filter(
             Example.new_word.like("%" + new_word + "%")
         )
+        query_param_kwargs["new_word"] = new_word
     content = request.args.get("content")
     if content:
         examples_query = examples_query.filter(
             Example.content.like("%" + content + "%")
         )
+        query_param_kwargs["content"] = content
     content_translation = request.args.get("content_translation")
     if content_translation:
         examples_query = examples_query.filter(
             Example.content_translation.like("%" + content_translation + "%")
         )
+        query_param_kwargs["content_translation"] = content_translation
 
     per_page = min(
         100,
@@ -764,6 +768,7 @@ def get_examples():
         per_page,
         page,
         "get_examples",
+        **query_param_kwargs,
     )
     return examples_collection
 
