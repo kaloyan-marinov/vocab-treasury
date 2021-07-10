@@ -827,6 +827,7 @@ export const OwnVocabTreasury = () => {
         <Link to="/own-vocabtreasury/search">Search</Link>
       </div>
       <br />
+      {paginationControllingButtons}
       <table style={styleForTable}>
         <tbody>
           <tr>
@@ -839,7 +840,6 @@ export const OwnVocabTreasury = () => {
           {exampleTableRows}
         </tbody>
       </table>
-      {paginationControllingButtons}
     </React.Fragment>
   );
 };
@@ -1317,6 +1317,8 @@ export const Search = () => {
     contentTranslation: "",
   });
 
+  const examplesMeta = useSelector(selectExamplesMeta);
+  const examplesLinks = useSelector(selectExamplesLinks);
   const examplesIds = useSelector(selectExamplesIds);
   const examplesEntities = useSelector(selectExamplesEntities);
 
@@ -1381,7 +1383,9 @@ export const Search = () => {
       queryParams.push("content_translation=" + formData.contentTranslation);
     }
 
-    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
+    const url =
+      filteredExamplesUrl ||
+      URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
     console.log("    submitting form");
     console.log(`    ${url}`);
     setFilteredExamplesUrl(url);
@@ -1410,6 +1414,90 @@ export const Search = () => {
             </tr>
           );
         });
+
+  /*
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  let paginationControllingButtons: null | JSX.Element;
+  if (examplesMeta.page === null) {
+    paginationControllingButtons = (
+      <div>Building pagination-controlling buttons...</div>
+    );
+  } else {
+    /*
+    TODO: find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
+    const paginationCtrlBtnPrev: JSX.Element =
+      examplesLinks.prev !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setFilteredExamplesUrl(examplesLinks.prev!)
+          }
+        >
+          Previous page
+        </button>
+      ) : (
+        <button disabled>Previous page</button>
+      );
+
+    const paginationCtrlBtnNext: JSX.Element =
+      examplesLinks.next !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setFilteredExamplesUrl(examplesLinks.next!)
+          }
+        >
+          Next page
+        </button>
+      ) : (
+        <button disabled>Next page</button>
+      );
+
+    const paginationCtrlBtnFirst: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === 1}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setFilteredExamplesUrl(examplesLinks.first!)
+        }
+      >
+        First page: 1
+      </button>
+    );
+
+    const paginationCtrlBtnLast: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === examplesMeta.totalPages}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setFilteredExamplesUrl(examplesLinks.last!)
+        }
+      >
+        Last page: {examplesMeta.totalPages}
+      </button>
+    );
+
+    paginationControllingButtons = (
+      <React.Fragment>
+        <div>
+          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
+          <span style={{ color: "red" }}>
+            Current page: {examplesMeta.page}{" "}
+          </span>
+          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
+        </div>
+      </React.Fragment>
+    );
+  }
+  if (filteredExamplesUrl === "") {
+    paginationControllingButtons = null;
+  }
 
   return (
     <React.Fragment>
@@ -1463,6 +1551,7 @@ export const Search = () => {
                 />
               </th>
             </tr>
+            {paginationControllingButtons}
             {exampleTableRows}
           </tbody>
         </table>
