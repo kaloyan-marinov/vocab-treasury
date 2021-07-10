@@ -1315,6 +1315,12 @@ export const Search = () => {
     contentTranslation: "",
   });
 
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionFetchExamples | IActionAlertsCreate
+  > = useDispatch();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -1322,10 +1328,43 @@ export const Search = () => {
     });
   };
 
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const queryParams: string[] = [];
+    if (formData.newWord !== "") {
+      queryParams.push("new_word=" + formData.newWord);
+    }
+    if (formData.content !== "") {
+      queryParams.push("content=" + formData.content);
+    }
+    if (formData.contentTranslation !== "") {
+      queryParams.push("content_translation=" + formData.contentTranslation);
+    }
+
+    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
+    console.log("    submitting form");
+    console.log(`    ${url}`);
+    try {
+      await dispatch(fetchExamples(url));
+    } catch (err) {
+      if (err.response.status === 401) {
+        dispatch(logOut("[FROM <Search>] PLEASE LOG BACK IN"));
+      } else {
+        const id: string = uuidv4();
+        const message: string =
+          err.response.data.message ||
+          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       {"<Search>"}
-      <form method="POST" action="">
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <table style={styleForTable}>
           <tbody>
             <tr>
