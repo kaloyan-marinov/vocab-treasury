@@ -26,16 +26,19 @@ export const examplesMock: IExampleFromBackend[] = Array.from({
   return {
     id: index + 1,
     source_language: "Finnish",
-    new_word: "sana #" + (index + 1).toString(),
-    content: "lause #" + (index + 1).toString(),
-    content_translation: "käännös #" + (index + 1).toString(),
+    new_word: "sana numero-" + (index + 1).toString(),
+    content: "lause numero-" + (index + 1).toString(),
+    content_translation: "käännös numero-" + (index + 1).toString(),
   };
 });
 
 export const mockPaginationFromBackend = (
   examples: IExampleFromBackend[],
   perPage: number = 2,
-  page: number = 1
+  page: number = 1,
+  newWord: string | null = null,
+  content: string | null = null,
+  contentTranslation: string | null = null
 ): {
   _meta: IPaginationMetaFromBackend;
   _links: IPaginationLinks;
@@ -59,16 +62,36 @@ export const mockPaginationFromBackend = (
     page,
   };
 
+  let commonQueryParams: string[] = [];
+  if (newWord !== null) {
+    commonQueryParams.push(`new_word=${newWord}`);
+  }
+  if (content !== null) {
+    commonQueryParams.push(`content=${content}`);
+  }
+  if (contentTranslation !== null) {
+    commonQueryParams.push(`content_translation=${contentTranslation}`);
+  }
+  const commonQueryParamString =
+    commonQueryParams.length > 0 ? "&" + commonQueryParams.join("&") : "";
+
   const _links: IPaginationLinks = {
-    self: `/api/examples?per_page=${perPage}&page=${page}`,
+    self:
+      `/api/examples?per_page=${perPage}&page=${page}` + commonQueryParamString,
     next:
       page >= totalPages
         ? null
-        : `/api/examples?per_page=${perPage}&page=${page + 1}`,
+        : `/api/examples?per_page=${perPage}&page=${page + 1}` +
+          commonQueryParamString,
     prev:
-      page <= 1 ? null : `/api/examples?per_page=${perPage}&page=${page - 1}`,
-    first: `/api/examples?per_page=${perPage}&page=1`,
-    last: `/api/examples?per_page=${perPage}&page=${totalPages}`,
+      page <= 1
+        ? null
+        : `/api/examples?per_page=${perPage}&page=${page - 1}` +
+          commonQueryParamString,
+    first: `/api/examples?per_page=${perPage}&page=1` + commonQueryParamString,
+    last:
+      `/api/examples?per_page=${perPage}&page=${totalPages}` +
+      commonQueryParamString,
   };
 
   let items: IExampleFromBackend[];

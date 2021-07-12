@@ -1383,7 +1383,9 @@ export const Search = () => {
       queryParams.push("content_translation=" + formData.contentTranslation);
     }
 
-    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + "?" + queryParams.join("&");
+    const queryParamString =
+      queryParams.length > 0 ? "?" + queryParams.join("&") : "";
+    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + queryParamString;
     console.log("    submitting form");
     console.log(`    ${url}`);
     setFilteredExamplesUrl(url);
@@ -1506,15 +1508,17 @@ export const Search = () => {
         <table style={styleForTable}>
           <tbody>
             <tr>
-              <th style={styleForBorder}>ID</th>
-              <th style={styleForBorder}>SOURCE LANGUAGE</th>
-              <th style={styleForBorder}>NEW WORD</th>
-              <th style={styleForBorder}>EXAMPLE</th>
-              <th style={styleForBorder}>TRANSLATION</th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-new_word">NEW WORD</label>
+              </th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-content">EXAMPLE</label>
+              </th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-content_translation">TRANSLATION</label>
+              </th>
             </tr>
             <tr>
-              <th style={styleForBorder}></th>
-              <th style={styleForBorder}></th>
               <th style={styleForBorder}>
                 <input
                   id="<S>-new_word"

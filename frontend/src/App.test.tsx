@@ -27,11 +27,17 @@ import {
   OwnVocabTreasury,
   RecordNewExample,
   SingleExample,
-  Search,
 } from "./App";
 
 // 2
-import { rest } from "msw";
+import {
+  DefaultRequestBody,
+  RequestParams,
+  ResponseComposition,
+  rest,
+  RestContext,
+  RestRequest,
+} from "msw";
 import { setupServer } from "msw/node";
 
 import { applyMiddleware } from "redux";
@@ -630,16 +636,20 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       element = await screen.findByText("1");
       expect(element).toBeInTheDocument();
 
-      for (const textFromExample1 of ["sana #1", "lause #1", "käännös #1"]) {
+      for (const textFromExample1 of [
+        "sana numero-1",
+        "lause numero-1",
+        "käännös numero-1",
+      ]) {
         element = screen.getByText(textFromExample1);
         expect(element).toBeInTheDocument();
       }
 
       for (const textFromExample2 of [
         "2",
-        "sana #2",
-        "lause #2",
-        "käännös #2",
+        "sana numero-2",
+        "lause numero-2",
+        "käännös numero-2",
       ]) {
         element = screen.getByText(textFromExample2);
         expect(element).toBeInTheDocument();
@@ -883,13 +893,13 @@ describe("<SingleExample>", () => {
       const sourceLanguageTableCellElement2 = screen.getByText("Finnish");
       expect(sourceLanguageTableCellElement2).toBeInTheDocument();
 
-      const newWordTableCellElement2 = screen.getByText("sana #2");
+      const newWordTableCellElement2 = screen.getByText("sana numero-2");
       expect(newWordTableCellElement2).toBeInTheDocument();
 
-      const exampleTableCellElement2 = screen.getByText("lause #2");
+      const exampleTableCellElement2 = screen.getByText("lause numero-2");
       expect(exampleTableCellElement2).toBeInTheDocument();
 
-      const translationTableCellElement2 = screen.getByText("käännös #2");
+      const translationTableCellElement2 = screen.getByText("käännös numero-2");
       expect(translationTableCellElement2).toBeInTheDocument();
 
       // HTML elements that enable user interaction.
@@ -905,32 +915,6 @@ describe("<SingleExample>", () => {
         name: "Delete this example",
       });
       expect(buttonForDeleting).toBeInTheDocument();
-    }
-  );
-});
-
-describe("<Search>", () => {
-  xtest(
-    "renders the fields of a form" +
-      " for searching through the logged-in user's Example resources",
-    () => {
-      render(<Search />);
-
-      const idTableCellElement = screen.getByText("ID");
-      expect(idTableCellElement).toBeInTheDocument();
-
-      const sourceLanguageTableCellElement =
-        screen.getByText("SOURCE LANGUAGE");
-      expect(sourceLanguageTableCellElement).toBeInTheDocument();
-
-      const newWordTableCellElement = screen.getByText("NEW WORD");
-      expect(newWordTableCellElement).toBeInTheDocument();
-
-      const exampleTableCellElement = screen.getByText("EXAMPLE");
-      expect(exampleTableCellElement).toBeInTheDocument();
-
-      const translationTableCellElement = screen.getByText("TRANSLATION");
-      expect(translationTableCellElement).toBeInTheDocument();
     }
   );
 });
@@ -960,15 +944,62 @@ const requestHandlersToMock = [
     return res(ctx.status(200), ctx.json(profileMock));
   }),
 
-  rest.get("/api/examples", (req, res, ctx) => {
-    const perPage: number = 2;
-    const page = parseInt(req.url.searchParams.get("page") || "1");
+  rest.get(
+    "/api/examples",
+    (
+      req: RestRequest<DefaultRequestBody, RequestParams>,
+      res: ResponseComposition<any>,
+      ctx: RestContext
+    ) => {
+      const perPage: number = 2;
+      const page = parseInt(req.url.searchParams.get("page") || "1");
 
-    return res(
-      ctx.status(200),
-      ctx.json(mockPaginationFromBackend(examplesMock, perPage, page))
-    );
-  }),
+      const newWord = req.url.searchParams.get("new_word");
+      const content = req.url.searchParams.get("content");
+      const contentTranslation = req.url.searchParams.get(
+        "content_translation"
+      );
+
+      const possiblyFilteredExamples: IExampleFromBackend[] =
+        examplesMock.filter((e: IExampleFromBackend) => {
+          let isMatch: boolean = true;
+
+          if (newWord !== null) {
+            isMatch =
+              isMatch &&
+              e.new_word.toLowerCase().search(newWord.toLowerCase()) !== -1;
+          }
+          if (content !== null) {
+            isMatch =
+              isMatch &&
+              e.content.toLowerCase().search(content.toLowerCase()) !== -1;
+          }
+          if (contentTranslation !== null) {
+            isMatch =
+              isMatch &&
+              e.content_translation
+                .toLowerCase()
+                .search(contentTranslation.toLowerCase()) !== -1;
+          }
+
+          return isMatch;
+        });
+
+      return res(
+        ctx.status(200),
+        ctx.json(
+          mockPaginationFromBackend(
+            possiblyFilteredExamples,
+            perPage,
+            page,
+            newWord,
+            content,
+            contentTranslation
+          )
+        )
+      );
+    }
+  ),
 
   rest.post("/api/examples", (req, res, ctx) => {
     return res(ctx.status(201), ctx.json(exampleMock));
@@ -1461,16 +1492,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("3");
       expect(element).toBeInTheDocument();
 
-      for (const textFromExample3 of ["sana #3", "lause #3", "käännös #3"]) {
+      for (const textFromExample3 of [
+        "sana numero-3",
+        "lause numero-3",
+        "käännös numero-3",
+      ]) {
         element = screen.getByText(textFromExample3);
         expect(element).toBeInTheDocument();
       }
 
       for (const textFromExample4 of [
         "4",
-        "sana #4",
-        "lause #4",
-        "käännös #4",
+        "sana numero-4",
+        "lause numero-4",
+        "käännös numero-4",
       ]) {
         element = screen.getByText(textFromExample4);
         expect(element).toBeInTheDocument();
@@ -1518,9 +1553,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(element).toBeInTheDocument();
 
       for (const textFromExample11 of [
-        "sana #11",
-        "lause #11",
-        "käännös #11",
+        "sana numero-11",
+        "lause numero-11",
+        "käännös numero-11",
       ]) {
         element = screen.getByText(textFromExample11);
         expect(element).toBeInTheDocument();
@@ -1575,16 +1610,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("9");
       expect(element).toBeInTheDocument();
 
-      for (const textFromExample9 of ["sana #9", "lause #9", "käännös #9"]) {
+      for (const textFromExample9 of [
+        "sana numero-9",
+        "lause numero-9",
+        "käännös numero-9",
+      ]) {
         element = screen.getByText(textFromExample9);
         expect(element).toBeInTheDocument();
       }
 
       for (const textFromExample10 of [
         "10",
-        "sana #10",
-        "lause #10",
-        "käännös #10",
+        "sana numero-10",
+        "lause numero-10",
+        "käännös numero-10",
       ]) {
         element = screen.getByText(textFromExample10);
         expect(element).toBeInTheDocument();
@@ -1639,16 +1678,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("1");
       expect(element).toBeInTheDocument();
 
-      for (const textFromExample1 of ["sana #1", "lause #1", "käännös #1"]) {
+      for (const textFromExample1 of [
+        "sana numero-1",
+        "lause numero-1",
+        "käännös numero-1",
+      ]) {
         element = screen.getByText(textFromExample1);
         expect(element).toBeInTheDocument();
       }
 
       for (const textFromExample2 of [
         "2",
-        "sana #2",
-        "lause #2",
-        "käännös #2",
+        "sana numero-2",
+        "lause numero-2",
+        "käännös numero-2",
       ]) {
         element = screen.getByText(textFromExample2);
         expect(element).toBeInTheDocument();
@@ -1928,10 +1971,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
       expect(currentPageSpanElement).toBeInTheDocument();
 
-      const newWord3TableCellElement: HTMLElement = screen.getByText("sana #3");
+      const newWord3TableCellElement: HTMLElement =
+        screen.getByText("sana numero-3");
       expect(newWord3TableCellElement).toBeInTheDocument();
 
-      const newWord4TableCellElement: HTMLElement = screen.getByText("sana #4");
+      const newWord4TableCellElement: HTMLElement =
+        screen.getByText("sana numero-4");
       expect(newWord4TableCellElement).toBeInTheDocument();
 
       /*
@@ -2019,10 +2064,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("Current page: 1");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("lause #2");
+      element = screen.getByText("lause numero-2");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("lause #3");
+      element = screen.getByText("lause numero-3");
       expect(element).toBeInTheDocument();
     }
   );
@@ -2101,10 +2146,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("Current page: 5");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("lause #9");
+      element = screen.getByText("lause numero-9");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("lause #10");
+      element = screen.getByText("lause numero-10");
       expect(element).toBeInTheDocument();
     }
   );
@@ -2269,13 +2314,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         target: { value: "German" },
       });
       fireEvent.change(newWordInputElement, {
-        target: { value: "Wort #1" },
+        target: { value: "Wort numero-1" },
       });
       fireEvent.change(exampleInputElement, {
-        target: { value: "Satz #1" },
+        target: { value: "Satz numero-1" },
       });
       fireEvent.change(translationInputElement, {
-        target: { value: "Übersetzung #1" },
+        target: { value: "Übersetzung numero-1" },
       });
 
       const editExampleBtn: HTMLElement = screen.getByRole("button", {
@@ -2295,18 +2340,18 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       element = await screen.findByText("Current page: 1");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("Wort #1");
+      element = screen.getByText("Wort numero-1");
       expect(element).toBeInTheDocument();
-      element = screen.getByText("Satz #1");
+      element = screen.getByText("Satz numero-1");
       expect(element).toBeInTheDocument();
-      element = screen.getByText("Übersetzung #1");
+      element = screen.getByText("Übersetzung numero-1");
       expect(element).toBeInTheDocument();
 
-      element = screen.getByText("sana #2");
+      element = screen.getByText("sana numero-2");
       expect(element).toBeInTheDocument();
-      element = screen.getByText("lause #2");
+      element = screen.getByText("lause numero-2");
       expect(element).toBeInTheDocument();
-      element = screen.getByText("käännös #2");
+      element = screen.getByText("käännös numero-2");
       expect(element).toBeInTheDocument();
     }
   );
@@ -2427,6 +2472,143 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(element).toBeInTheDocument();
 
       expect(history.location.pathname).toEqual("/login");
+    }
+  );
+
+  test(
+    "<App> -" +
+      " if a logged-in user searches her Own VocabTreasury for matching examples," +
+      " a table of matching examples should be rendered," +
+      " together with pagination-controlling buttons that can be used",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToSearch = screen.getByText("Search");
+      fireEvent.click(anchorToSearch);
+
+      /* Act. */
+      const newWordInputElement: HTMLElement =
+        screen.getByLabelText("NEW WORD");
+
+      fireEvent.change(newWordInputElement, {
+        target: { value: "sana numero-1" },
+      });
+
+      const searchButton: HTMLElement = screen.getByText("SEARCH");
+      fireEvent.click(searchButton);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText("sana numero-10");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("sana numero-1");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("Current page: 1");
+      expect(element).toBeInTheDocument();
+
+      const lastPageButton: HTMLElement = screen.getByRole("button", {
+        name: "Last page: 2",
+      });
+      expect(lastPageButton).toBeInTheDocument();
+
+      /* Act. */
+      fireEvent.click(lastPageButton);
+
+      element = await screen.findByText("sana numero-11");
+      expect(element).toBeInTheDocument();
+
+      element = screen.getByText("Current page: 2");
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " suppose that a logged-in user (a) clicks on Own VocabTreasury" +
+      " and (b) clicks on the Search anchor tag;" +
+      " if the user's access token expires" +
+      " and then the user submits the 'search form' by clicking 'SEARCH'," +
+      " the user gets logged out",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/examples", (req, res, ctx) => {
+          const perPage: number = 2;
+          const page = parseInt(req.url.searchParams.get("page") || "1");
+
+          return res.once(
+            ctx.status(200),
+            ctx.json(mockPaginationFromBackend(examplesMock, perPage, page))
+          );
+        }),
+
+        rest.get("/api/examples", (req, res, ctx) => {
+          return res.once(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToOwnVocabTreasury = await screen.findByText(
+        "Own VocabTreasury"
+      );
+      fireEvent.click(anchorToOwnVocabTreasury);
+
+      const anchorToSearch = screen.getByText("Search");
+      fireEvent.click(anchorToSearch);
+
+      /* Act. */
+      const exampleInputElement: HTMLElement = screen.getByLabelText("EXAMPLE");
+
+      fireEvent.change(exampleInputElement, {
+        target: { value: "lause numero-1" },
+      });
+
+      const searchButton: HTMLElement = screen.getByText("SEARCH");
+      fireEvent.click(searchButton);
+
+      /* Assert. */
+      let element: HTMLElement;
+      element = await screen.findByText(
+        "[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN"
+      );
+      expect(element).toBeInTheDocument();
     }
   );
 });
