@@ -508,23 +508,6 @@ describe("<Login>", () => {
   );
 });
 
-describe("<RequestPasswordReset>", () => {
-  test("render the fields of a form for requesting a password reset", () => {
-    render(<RequestPasswordReset />);
-
-    const legendElement = screen.getByText("[legend-tag: RESET PASSWORD]");
-    expect(legendElement).toBeInTheDocument();
-
-    const emailLabelElement = screen.getByText("EMAIL");
-    expect(emailLabelElement).toBeInTheDocument();
-
-    const requestPaswordResetElement = screen.getByText(
-      "REQUEST PASSWORD RESET"
-    );
-    expect(requestPaswordResetElement).toBeInTheDocument();
-  });
-});
-
 describe("<Account>", () => {
   test("renders the logged-in user's profile details", () => {
     /* Arrange. */
@@ -1003,6 +986,16 @@ const requestHandlersToMock = [
 
   rest.post("/api/examples", (req, res, ctx) => {
     return res(ctx.status(201), ctx.json(exampleMock));
+  }),
+
+  rest.post("/api/request-password-reset", (req, res, ctx) => {
+    return res(
+      ctx.status(202),
+      ctx.json({
+        message:
+          "Sending an email with instructions for resetting your password...",
+      })
+    );
   }),
 ];
 
@@ -2609,6 +2602,170 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         "[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN"
       );
       expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " suppose that a user, who is not logged in," +
+      " (a) clicks on 'Log in' and (b) clicks on 'FORGOT PASSWORD?';" +
+      " if the user submits the form without filling it out," +
+      " an alert should be created",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/user-profile", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToLogIn: HTMLElement = screen.getByText("Log in");
+      fireEvent.click(anchorToLogIn);
+
+      const anchorToRequestPasswordReset: HTMLElement =
+        screen.getByText("FORGOT PASSWORD?");
+      fireEvent.click(anchorToRequestPasswordReset);
+
+      /* Act. */
+      const requestPasswordResetBtn: HTMLElement = screen.getByRole("button", {
+        name: "REQUEST PASSWORD RESET",
+      });
+      fireEvent.click(requestPasswordResetBtn);
+
+      /* Assert. */
+      const element: HTMLElement = screen.getByText(
+        "THE FORM FIELD MUST BE FILLED OUT"
+      );
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " suppose that a user, who is not logged in," +
+      " (a) clicks on 'Log in' and (b) clicks on 'FORGOT PASSWORD?';" +
+      " if the user fills out the form and submits it," +
+      " an alert should be created",
+    async () => {
+      /* Arrange. */
+      quasiServer.use(
+        rest.get("/api/user-profile", (req, res, ctx) => {
+          return res(
+            ctx.status(401),
+            ctx.json({
+              error: "[mocked] Unauthorized",
+              message: "[mocked] Expired access token.",
+            })
+          );
+        })
+      );
+
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      const anchorToLogIn: HTMLElement = screen.getByText("Log in");
+      fireEvent.click(anchorToLogIn);
+
+      const anchorToRequestPasswordReset: HTMLElement =
+        screen.getByText("FORGOT PASSWORD?");
+      fireEvent.click(anchorToRequestPasswordReset);
+
+      /* Act. */
+      const emailInputElement: HTMLElement = screen.getByLabelText("EMAIL");
+      fireEvent.change(emailInputElement, {
+        target: { value: "test-jd@protonmail.com" },
+      });
+
+      const requestPasswordResetBtn: HTMLElement = screen.getByRole("button", {
+        name: "REQUEST PASSWORD RESET",
+      });
+      fireEvent.click(requestPasswordResetBtn);
+
+      /* Assert. */
+      const element: HTMLElement = await screen.findByText(
+        "PASSWORD-RESET INSTRUCTIONS WERE SUCCESSFULLY SENT TO test-jd@protonmail.com"
+      );
+      expect(element).toBeInTheDocument();
+    }
+  );
+
+  test(
+    "<App> -" +
+      " if a logged-in user manually changes" +
+      " the URL in her browser's address bar to /request_password_reset ," +
+      " the frontend application should redirect the user to /home",
+    async () => {
+      /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      render(
+        <Provider store={realStore}>
+          <Router history={history}>
+            <App />
+          </Router>
+        </Provider>
+      );
+
+      let temp: HTMLElement;
+
+      temp = await screen.findByText("Log out");
+      expect(temp).toBeInTheDocument();
+
+      expect(history.location.pathname).toEqual("/");
+
+      /* Act. */
+      /* Simulate the user's manually changing the URL in her browser's address bar. */
+      /*
+      Note to self:
+      the commented-out parts below were copied from existing test cases
+      but appear to be unnecessary
+      */
+      // cleanup();
+
+      history.push("/request_password_reset");
+
+      // render(
+      //   <Provider store={realStore}>
+      //     <Router history={history}>
+      //       <App />
+      //     </Router>
+      //   </Provider>
+      // );
+
+      /* Assert. */
+      expect(history.location.pathname).toEqual("/home");
     }
   );
 });

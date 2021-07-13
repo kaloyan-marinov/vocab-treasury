@@ -149,6 +149,14 @@ import {
   IActionEditExampleRejected,
   IActionEditExampleFulfilled,
   editExample,
+  requestPasswordResetPending,
+  requestPasswordResetRejected,
+  requestPasswordResetFulfilled,
+  ActionTypesRequestPasswordReset,
+  IActionRequestPasswordResetPending,
+  IActionRequestPasswordResetRejected,
+  IActionRequestPasswordResetFulfilled,
+  requestPasswordReset,
 } from "./store";
 
 describe("selector functions", () => {
@@ -414,6 +422,33 @@ describe("action creators", () => {
           email: "mocked-john.doe@protonmail.com",
         },
       },
+    });
+  });
+
+  test("requestPasswordResetPending", () => {
+    const action = requestPasswordResetPending();
+
+    expect(action).toEqual({
+      type: "auth/requestPasswordReset/pending",
+    });
+  });
+
+  test("requestPasswordResetRejected", () => {
+    const action = requestPasswordResetRejected(
+      "auth-requestPasswordReset-rejected"
+    );
+
+    expect(action).toEqual({
+      type: "auth/requestPasswordReset/rejected",
+      error: "auth-requestPasswordReset-rejected",
+    });
+  });
+
+  test("requestPasswordResetFulfilled", () => {
+    const action = requestPasswordResetFulfilled();
+
+    expect(action).toEqual({
+      type: "auth/requestPasswordReset/fulfilled",
     });
   });
 
@@ -947,6 +982,61 @@ describe("slice reducers", () => {
           username: "mocked-jd",
           email: "mocked-john.doe@protonmail.com",
         },
+      });
+    });
+
+    test("auth/requestPasswordReset/pending", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-requestPasswordReset-rejected",
+      };
+      const action: IActionRequestPasswordResetPending = {
+        type: ActionTypesRequestPasswordReset.PENDING,
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        ...initState,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      });
+    });
+
+    test("auth/requestPasswordReset/rejected", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+      };
+      const action: IActionRequestPasswordResetRejected = {
+        type: ActionTypesRequestPasswordReset.REJECTED,
+        error: "auth-requestPasswordReset-rejected",
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        ...initState,
+        requestStatus: RequestStatus.FAILED,
+        requestError: "auth-requestPasswordReset-rejected",
+      });
+    });
+
+    test("auth/requestPasswordReset/fulfilled", () => {
+      const initState: IStateAuth = {
+        ...initialStateAuth,
+        requestStatus: RequestStatus.LOADING,
+      };
+      const action: IActionRequestPasswordResetFulfilled = {
+        type: ActionTypesRequestPasswordReset.FULFILLED,
+      };
+
+      const newState: IStateAuth = authReducer(initState, action);
+
+      expect(newState).toEqual({
+        ...initState,
+        requestStatus: RequestStatus.SUCCEEDED,
       });
     });
 
@@ -1661,6 +1751,16 @@ const requestHandlersToMock = [
       })
     );
   }),
+
+  rest.post("/api/request-password-reset", (req, res, ctx) => {
+    return res(
+      ctx.status(202),
+      ctx.json({
+        message:
+          "Sending an email with instructions for resetting your password...",
+      })
+    );
+  }),
 ];
 
 /* Create an MSW "request-interception layer". */
@@ -2210,6 +2310,61 @@ describe(
           {
             type: "examples/editExample/rejected",
             error: "[mocked] Expired access token.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "requestPasswordReset(email)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        const requestPasswordResetPromise = storeMock.dispatch(
+          requestPasswordReset("mocked-email@protonmail.com")
+        );
+
+        await expect(requestPasswordResetPromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/requestPasswordReset/pending",
+          },
+          {
+            type: "auth/requestPasswordReset/fulfilled",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "requestPasswordReset(email)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        quasiServer.use(
+          rest.post("/api/request-password-reset", (req, res, ctx) => {
+            return res(
+              ctx.status(400),
+              ctx.json({
+                error: "[mocked] Bad Request",
+                message: "[mocked] This is a bad request.",
+              })
+            );
+          })
+        );
+
+        const requestPasswordResetPromise = storeMock.dispatch(
+          requestPasswordReset("mocked-email@protonmail.com")
+        );
+
+        await expect(requestPasswordResetPromise).rejects.toEqual(
+          "[mocked] This is a bad request."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/requestPasswordReset/pending",
+          },
+          {
+            type: "auth/requestPasswordReset/rejected",
+            error: "[mocked] This is a bad request.",
           },
         ]);
       }

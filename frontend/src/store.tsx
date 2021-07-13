@@ -436,6 +436,87 @@ export const fetchProfile = () => {
   };
 };
 
+/* "auth/requestPasswordReset/" action creators */
+export enum ActionTypesRequestPasswordReset {
+  PENDING = "auth/requestPasswordReset/pending",
+  REJECTED = "auth/requestPasswordReset/rejected",
+  FULFILLED = "auth/requestPasswordReset/fulfilled",
+}
+
+export interface IActionRequestPasswordResetPending {
+  type: typeof ActionTypesRequestPasswordReset.PENDING;
+}
+
+export interface IActionRequestPasswordResetRejected {
+  type: typeof ActionTypesRequestPasswordReset.REJECTED;
+  error: string;
+}
+
+export interface IActionRequestPasswordResetFulfilled {
+  type: typeof ActionTypesRequestPasswordReset.FULFILLED;
+}
+
+export const requestPasswordResetPending =
+  (): IActionRequestPasswordResetPending => ({
+    type: ActionTypesRequestPasswordReset.PENDING,
+  });
+
+export const requestPasswordResetRejected = (
+  error: string
+): IActionRequestPasswordResetRejected => ({
+  type: ActionTypesRequestPasswordReset.REJECTED,
+  error,
+});
+
+export const requestPasswordResetFulfilled =
+  (): IActionRequestPasswordResetFulfilled => ({
+    type: ActionTypesRequestPasswordReset.FULFILLED,
+  });
+
+export type ActionRequestPasswordReset =
+  | IActionRequestPasswordResetPending
+  | IActionRequestPasswordResetRejected
+  | IActionRequestPasswordResetFulfilled;
+
+/* "auth/requestPasswordReset" thunk-action creator */
+export const requestPasswordReset = (email: string) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for requesting a password reset.
+  */
+
+  return async (dispatch: Dispatch<ActionRequestPasswordReset>) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    const body = {
+      email,
+    };
+
+    dispatch(requestPasswordResetPending());
+    try {
+      const response = await axios.post(
+        "/api/request-password-reset",
+        body,
+        config
+      );
+      dispatch(requestPasswordResetFulfilled());
+      return Promise.resolve();
+    } catch (err) {
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(requestPasswordResetRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
 /* "examples/fetchExamples/" action creators */
 export enum ActionTypesFetchExamples {
   PENDING = "examples/fetchExamples/pending",
@@ -960,6 +1041,7 @@ export const authReducer = (
     | ActionCreateUser
     | ActionIssueJWSToken
     | ActionFetchProfile
+    | ActionRequestPasswordReset
     | IActionAuthClearSlice
 ): IStateAuth => {
   switch (action.type) {
@@ -1036,6 +1118,27 @@ export const authReducer = (
         loggedInUserProfile: profile,
       };
     }
+
+    case ActionTypesRequestPasswordReset.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesRequestPasswordReset.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesRequestPasswordReset.FULFILLED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      };
 
     case ACTION_TYPE_AUTH_CLEAR_SLICE:
       return {
