@@ -132,6 +132,7 @@ export const NavigationBar = () => {
   );
 
   const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
 
   const dispatch = useDispatch();
 

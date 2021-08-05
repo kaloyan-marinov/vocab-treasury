@@ -22,7 +22,6 @@ import {
   About,
   Register,
   Login,
-  RequestPasswordReset,
   Account,
   OwnVocabTreasury,
   RecordNewExample,
@@ -609,6 +608,17 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       }
 
       /* - after the component's 2nd re-rendering */
+      /*
+      Very occasionally (say 1 time out of 10),
+      this test fails at the following statement;
+      the other times this test passes.
+
+      TODO: resolve the problem
+            (perhaps changing this test
+            from rendering <OwnVocabTreasury> alone
+            to rendering <App> plus triggering events like a real user would
+            would resolve the problem)
+      */
       element = await screen.findByText(
         "Building pagination-controlling buttons..."
       );
@@ -1287,15 +1297,23 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       expect(temp).toBeInTheDocument();
 
       /* Act. */
-      /* Simulate the user's hitting her browser's Reload button. */
+      /*
+      Simulate the user's hitting her browser's Reload button.
+      
+      (Note that the purpose of defining and using `realStoreAfterReload` as done below
+      is purely illustrative,
+      because the subsequent call to `render` dispatches a `fetchProfile()` thunk-action
+      whose HTTP request will be intercepted and mocked/handled by `quasiServer`.)
+      */
       cleanup();
 
       const realStoreAfterReload = createStore(
         rootReducer,
         {
-          ...initState,
+          ...initialState,
           auth: {
-            ...initState.auth,
+            ...initialState.auth,
+            token: realStore.getState().auth.token,
           },
         },
         enhancer
