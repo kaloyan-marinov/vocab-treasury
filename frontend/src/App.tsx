@@ -1,14 +1,88 @@
+import { Dispatch } from "redux";
 import React from "react";
-import { Switch, Route, Link, useParams } from "react-router-dom";
+import {
+  Switch,
+  Route,
+  Link,
+  useParams,
+  useHistory,
+  useLocation,
+} from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
+
+import {
+  IState,
+  selectAlertsIds,
+  selectAlertsEntities,
+  IActionAlertsCreate,
+  IActionAlertsRemove,
+  alertsCreate,
+  alertsRemove,
+  ActionCreateUser,
+  createUser,
+  ActionIssueJWSToken,
+  issueJWSToken,
+  ActionFetchProfile,
+  fetchProfile,
+  logOut,
+  selectHasValidToken,
+  RequestStatus,
+  selectAuthRequestStatus,
+  IProfile,
+  selectLoggedInUserProfile,
+  IExample,
+  selectExamplesIds,
+  selectExamplesEntities,
+  ActionFetchExamples,
+  fetchExamples,
+  IPaginationMeta,
+  selectExamplesMeta,
+  IPaginationLinks,
+  selectExamplesLinks,
+  ActionCreateExample,
+  createExample,
+  deleteExample,
+  ActionDeleteExample,
+  ActionEditExample,
+  editExample,
+  ActionRequestPasswordReset,
+  requestPasswordReset,
+} from "./store";
+import { ThunkDispatch } from "redux-thunk";
+
+import { Redirect } from "react-router-dom";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
+
+  const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    console.log(
+      `${new Date().toISOString()} - React is running <App>'s useEffect hook`
+    );
+
+    const effectFn = async () => {
+      console.log("    <App>'s useEffect hook is dispatching fetchProfile()");
+
+      try {
+        await dispatch(fetchProfile());
+      } catch (err) {
+        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      }
+    };
+
+    effectFn();
+  }, [dispatch]);
 
   return (
     <React.Fragment>
       {"<App>"}
       <hr />
       <NavigationBar />
+      <hr />
+      <Alerts />
       <hr />
       <Switch>
         <Route exact path="/">
@@ -26,27 +100,27 @@ export const App = () => {
         <Route exact path="/login">
           <Login />
         </Route>
-        <Route exact path="/reset_password">
+        <Route exact path="/request_password_reset">
           <RequestPasswordReset />
         </Route>
-        <Route exact path="/account">
+        <PrivateRoute exact path="/account">
           <Account />
-        </Route>
-        <Route exact path="/own-vocabtreasury">
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury">
           <OwnVocabTreasury />
-        </Route>
-        <Route exact path="/example/new">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/new">
           <RecordNewExample />
-        </Route>
-        <Route exact path="/example/:id">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id">
           <SingleExample />
-        </Route>
-        <Route exact path="/example/:id/edit">
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id/edit">
           <EditExample />
-        </Route>
-        <Route exact path="/own-vocabtreasury/search">
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury/search">
           <Search />
-        </Route>
+        </PrivateRoute>
       </Switch>
     </React.Fragment>
   );
@@ -56,6 +130,11 @@ export const NavigationBar = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <NavigationBar>`
   );
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  const dispatch = useDispatch();
 
   const alwaysVisibleLinks = (
     <React.Fragment>
@@ -77,7 +156,10 @@ export const NavigationBar = () => {
   const loggedInUserLinks = (
     <div>
       <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
-      <Link to="/account">Account</Link> <Link to="/logout">Log out</Link>
+      <Link to="/account">Account</Link>{" "}
+      <a href="#!" onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}>
+        Log out
+      </a>
     </div>
   );
 
@@ -85,8 +167,43 @@ export const NavigationBar = () => {
     <React.Fragment>
       {"<NavigationBar>"}
       {alwaysVisibleLinks}
-      {guestUserLinks}
-      {loggedInUserLinks}
+      {!hasValidToken ? guestUserLinks : loggedInUserLinks}
+    </React.Fragment>
+  );
+};
+
+export const Alerts = () => {
+  console.log(`${new Date().toISOString()} - React is rendering <Alerts>`);
+
+  const alertsIds = useSelector(selectAlertsIds);
+  const alertsEntities = useSelector(selectAlertsEntities);
+
+  const dispatch: Dispatch<IActionAlertsRemove> = useDispatch();
+
+  const handleClick = (
+    alertId: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    dispatch(alertsRemove(alertId));
+  };
+
+  const alertsDivs = alertsIds.map((aId: string) => (
+    <div key={aId} style={{ color: "red" }}>
+      <button
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          handleClick(aId, e)
+        }
+      >
+        Clear alert
+      </button>
+      {alertsEntities[aId].message}
+    </div>
+  ));
+
+  return (
+    <React.Fragment>
+      {"<Alerts>"}
+      {alertsDivs}
     </React.Fragment>
   );
 };
@@ -118,37 +235,78 @@ export const About = () => {
 export const Register = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Register>`);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [formData, setFormData] = React.useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    IActionAlertsCreate | ActionCreateUser
+  > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
     console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
     );
+    return <Redirect to={nextURL} />;
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (
+      formData.username === "" ||
+      formData.email === "" ||
+      formData.password === "" ||
+      formData.confirmPassword === ""
+    ) {
+      dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));
+    } else if (formData.password !== formData.confirmPassword) {
+      dispatch(alertsCreate(id, "THE PROVIDED PASSWORDS DON'T MATCH"));
+    } else {
+      try {
+        await dispatch(
+          createUser(formData.username, formData.email, formData.password)
+        );
+        dispatch(alertsCreate(id, "REGISTRATION SUCCESSFUL"));
+      } catch (thunkActionError) {
+        dispatch(alertsCreate(id, thunkActionError));
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<Register>"}
       <div>
-        <form method="POST" action="">
-          {/* <input
-            id="csrf_token"
-            name="csrf_token"
-            type="hidden"
-            value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBIog.Sx3_eThYVwEW83gYvO9LMaNY3VU"
-          /> */}
+        <form
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
             <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
               <label htmlFor="<R>-username">USERNAME</label>
-
               <input
                 id="<R>-username"
                 name="username"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-2"
+                value={formData.username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -156,15 +314,11 @@ export const Register = () => {
             </div>
             <div>
               <label htmlFor="<R>-email">EMAIL</label>
-
               <input
                 id="<R>-email"
                 name="email"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-3"
+                value={formData.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -172,31 +326,23 @@ export const Register = () => {
             </div>
             <div>
               <label htmlFor="<R>-password">PASSWORD</label>
-
               <input
                 id="<R>-password"
                 name="password"
-                // required
                 type="password"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-0"
+                value={formData.password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
               />
             </div>
             <div>
-              <label htmlFor="<R>-confirm_password">CONFIRM PASSWORD</label>
-
+              <label htmlFor="<R>-confirmPassword">CONFIRM PASSWORD</label>
               <input
-                id="<R>-confirm_password"
-                name="confirm_password"
-                // required
+                id="<R>-confirmPassword"
+                name="confirmPassword"
                 type="password"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623214242467-1"
+                value={formData.confirmPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -205,7 +351,7 @@ export const Register = () => {
           </fieldset>
           <div>
             <input
-              // id="submit"
+              id="<R>-submit"
               name="submit"
               type="submit"
               value="CREATE MY ACCOUNT"
@@ -225,55 +371,80 @@ export const Register = () => {
 export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [formData, setFormData] = React.useState({
+    email: "",
+    password: "",
+  });
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    IActionAlertsCreate | ActionIssueJWSToken | ActionFetchProfile
+  > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
     console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
     );
+    return <Redirect to={nextURL} />;
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.email === "" || formData.password === "") {
+      dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));
+    } else {
+      try {
+        await dispatch(issueJWSToken(formData.email, formData.password));
+        dispatch(alertsCreate(id, "LOGIN SUCCESSFUL"));
+        await dispatch(fetchProfile());
+      } catch (thunkActionError) {
+        dispatch(alertsCreate(id, thunkActionError));
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<Login>"}
       <div>
-        <form method="POST" action="">
-          {/* <input
-            id="csrf_token"
-            name="csrf_token"
-            type="hidden"
-            value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMBBGQ.-pGpwZNqzdLEsExWq3e70nZNJec"
-          /> */}
+        <form
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
-            <legend>LOG IN</legend>
-
+            <legend>[legend-tag: LOG IN]</legend>
             <div>
               <label htmlFor="<L>-email">EMAIL</label>
-
               <input
                 id="<L>-email"
                 name="email"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623212313076-1"
+                value={formData.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
               />
             </div>
-
             <div>
               <label htmlFor="<L>-password">PASSWORD</label>
-
               <input
                 id="<L>-password"
                 name="password"
-                // required
                 type="password"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623212313076-0"
+                value={formData.password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -282,13 +453,13 @@ export const Login = () => {
           </fieldset>
           <div>
             <input
-              // id="submit"
+              id="<L>-submit"
               name="submit"
               type="submit"
               value="LOG INTO MY ACCOUNT"
             />
             <small>
-              <Link to="/reset_password">FORGOT PASSWORD?</Link>
+              <Link to="/request_password_reset">FORGOT PASSWORD?</Link>
             </small>
           </div>
         </form>
@@ -302,38 +473,114 @@ export const Login = () => {
   );
 };
 
+export const PrivateRoute = (props: any) => {
+  console.log(
+    `${new Date().toISOString()} - React is rendering <PrivateRoute>`
+  );
+
+  console.log("    its children are as follows:");
+  const childrenCount: number = React.Children.count(props.children);
+  React.Children.forEach(props.children, (child, ind) => {
+    console.log(
+      `    child #${ind + 1} (out of ${childrenCount}): <${child.type.name}>`
+    );
+  });
+
+  const { children, ...rest } = props;
+
+  const authRequestStatus: RequestStatus = useSelector(selectAuthRequestStatus);
+  console.log(`    authRequestStatus: ${authRequestStatus}`);
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  if (authRequestStatus === RequestStatus.LOADING) {
+    console.log(`    authRequestStatus: ${RequestStatus.LOADING}`);
+    return React.Children.map(props.children, (child) => (
+      <div>{`<${child.type.name}>`} - Loading...</div>
+    ));
+  } else if (!hasValidToken) {
+    const nextURL: string = "/login";
+    console.log(
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
+    );
+    return <Redirect to={nextURL} />;
+  } else {
+    console.log(
+      `    hasValidToken: ${hasValidToken} > rendering the above-listed children`
+    );
+    return <Route {...rest}>{children}</Route>;
+  }
+};
+
 export const RequestPasswordReset = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <RequestPasswordReset>`
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [email, setEmail] = React.useState("");
+
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionRequestPasswordReset | IActionAlertsCreate
+  > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
     console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
     );
+    return <Redirect to={nextURL} />;
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("    submitting form");
+
+    const id: string = uuidv4();
+    if (email === "") {
+      dispatch(alertsCreate(id, "THE FORM FIELD MUST BE FILLED OUT"));
+    } else {
+      try {
+        await dispatch(requestPasswordReset(email));
+        dispatch(
+          alertsCreate(
+            id,
+            `PASSWORD-RESET INSTRUCTIONS WERE SUCCESSFULLY SENT TO ${email}`
+          )
+        );
+        setEmail("");
+      } catch (thunkActionError) {
+        dispatch(alertsCreate(id, thunkActionError));
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<RequestPasswordReset>"}
-
       <div>
-        <form method="POST" action="">
-          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMXboQ.CdFDKfaFrkgfbpYdhkamWmwJ0cA"> */}
+        <form
+          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
-            <legend>RESET PASSWORD</legend>
+            <legend>[legend-tag: RESET PASSWORD]</legend>
             <div>
               <label htmlFor="<RPR>-email">EMAIL</label>
-
               <input
                 id="<RPR>-email"
                 name="email"
-                // required
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623579553224-0"
+                value={email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -342,7 +589,7 @@ export const RequestPasswordReset = () => {
           </fieldset>
           <div>
             <input
-              id="submit"
+              id="<RPR>-submit"
               name="submit"
               type="submit"
               value="REQUEST PASSWORD RESET"
@@ -357,12 +604,40 @@ export const RequestPasswordReset = () => {
 export const Account = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Account>`);
 
-  const usernameOfLoggedInUser = "jd";
+  const loggedInUserProfile: IProfile | null = useSelector(
+    selectLoggedInUserProfile
+  );
+
+  const accountDetails: null | JSX.Element =
+    loggedInUserProfile === null ? null : (
+      <table style={styleForTable}>
+        <thead>
+          <tr>
+            <th style={styleForBorder}>KEY</th>
+            <th style={styleForBorder}>VALUE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={styleForBorder}>ID</td>
+            <td style={styleForBorder}>{loggedInUserProfile.id}</td>
+          </tr>
+          <tr>
+            <td style={styleForBorder}>USERNAME</td>
+            <td style={styleForBorder}>{loggedInUserProfile.username}</td>
+          </tr>
+          <tr>
+            <td style={styleForBorder}>EMAIL</td>
+            <td style={styleForBorder}>{loggedInUserProfile.email}</td>
+          </tr>
+        </tbody>
+      </table>
+    );
 
   return (
     <React.Fragment>
       {"<Account>"}
-      <h1>{usernameOfLoggedInUser}</h1>
+      {accountDetails}
     </React.Fragment>
   );
 };
@@ -372,128 +647,225 @@ const styleForBorder = { border: "1px solid black" };
 const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
 
-interface IExample {
-  id: number;
-  source_language: string;
-  new_word: string;
-  content: string;
-  content_translation: string;
+const URL_FOR_FIRST_PAGE_OF_EXAMPLES: string = "/api/examples";
+
+interface LocationStateWithinOwnVocabTreasury {
+  fromRecordNewExample: null | boolean;
+  fromSingleExample: null | boolean;
+  fromEditExample: null | boolean;
 }
-
-const examplesMock: IExample[] = [
-  {
-    id: 1,
-    source_language: "Finnish",
-    new_word: "vihata + P",
-    content: "Älä vihaa ketään!",
-    content_translation: "Don't hate anyone!",
-  },
-  {
-    id: 2,
-    source_language: "Finnish",
-    new_word: "tulinen",
-    content: `"tulinen" ja "tulivuori" ovat samanlaisia sanoja.`,
-    content_translation: `"spicy" and "volcano" are similar words.`,
-  },
-  {
-    id: 3,
-    source_language: "German",
-    new_word: "der Termin",
-    content: "Man muss erstens den Termin festsetzen und dann ihn einhalten.",
-    content_translation:
-      "One must firstly fix the deadline and then meet/observe it.",
-  },
-  {
-    id: 4,
-    source_language: "Finnish",
-    new_word: "sama",
-    content: "Olemme samaa mieltä.",
-    content_translation: "I agree.",
-  },
-  {
-    id: 5,
-    source_language: "Finnish",
-    new_word: "pitää",
-    content: "Pidätkö koirista?",
-    content_translation: "Do you like dogs?",
-  },
-  {
-    id: 6,
-    source_language: "Finnish",
-    new_word: "tykätä",
-    content: "Tykkäätkö koirista?",
-    content_translation: "Do you like dogs?",
-  },
-  {
-    id: 7,
-    source_language: "Finnish",
-    new_word: "kannettava tietokone",
-    content: "Ota sinun kannettava tietokone kotiin!",
-    content_translation: "Ota sinun kannettava tietokone kotiin!",
-  },
-  {
-    id: 10,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
-    content: "Älä teeskentele, että olet sairas!",
-    content_translation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 11,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
-    content: "Älä teeskentele olevasi sairas!",
-    content_translation: "Don't pretend that you're sick!",
-  },
-  {
-    id: 12,
-    source_language: "Finnish",
-    new_word: "teeskennellä",
-    content: "Miksi teeskentelimme pitävänsä hänen vitsistään?",
-    content_translation: "Why did we pretend to like his jokes?",
-  },
-];
-
-const examplesMockEntities: { [exampleId: string]: IExample } =
-  examplesMock.reduce(
-    (examplesObj: { [exampleId: string]: IExample }, e: IExample) => {
-      examplesObj[e.id] = e;
-      return examplesObj;
-    },
-    {}
-  );
 
 export const OwnVocabTreasury = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <OwnVocabTreasury>`
   );
 
-  const emailOfLoggedInUser = "john.doe@protonmail.com";
-
-  const styleForLinkToCurrentPage = { fontSize: 40 };
-
-  const exampleTableRows = Object.keys(examplesMockEntities).map(
-    (exampleIdStr: string) => {
-      const e: IExample = examplesMockEntities[exampleIdStr];
-
-      return (
-        <tr key={e.id}>
-          <th style={styleForBorder}>
-            <Link to={`/example/${e.id}?page=1`}>{e.id}</Link>
-          </th>
-          <th style={styleForBorder}>{e.source_language}</th>
-          <th style={styleForBorder}>{e.new_word}</th>
-          <th style={styleForBorder}>{e.content}</th>
-          <th style={styleForBorder}>{e.content_translation}</th>
-        </tr>
-      );
-    }
+  const loggedInUserProfile: IProfile | null = useSelector(
+    selectLoggedInUserProfile
   );
+
+  const examplesMeta: IPaginationMeta = useSelector(selectExamplesMeta);
+  const examplesLinks: IPaginationLinks = useSelector(selectExamplesLinks);
+  const examplesIds: number[] = useSelector(selectExamplesIds);
+  const examplesEntities: {
+    [exampleId: string]: IExample;
+  } = useSelector(selectExamplesEntities);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionFetchExamples | IActionAlertsCreate
+  > = useDispatch();
+
+  let location = useLocation<LocationStateWithinOwnVocabTreasury>();
+  let initialExamplesUrl: string;
+  if (
+    location.state &&
+    location.state.fromRecordNewExample === true &&
+    examplesLinks.last !== null
+  ) {
+    console.log("    from /example/new (i.e. <RecordNewExample>)");
+    initialExamplesUrl = examplesLinks.last;
+  } else if (
+    location.state &&
+    location.state.fromSingleExample &&
+    examplesLinks.self !== null
+  ) {
+    /*
+    Arrange for the user to be shown
+    either the most-recently visited page of her Own VocabTreasury
+    or the last page thereof.
+    */
+    console.log("    from /examples/:id (i.e. <SingleExample>)");
+
+    if (
+      examplesMeta.page !== null &&
+      examplesMeta.totalPages !== null &&
+      examplesMeta.page > examplesMeta.totalPages &&
+      examplesLinks.last !== null
+    ) {
+      /*
+      Handle the case, where
+      (a) the most-recently visited page of the user's Own VocabTreasury used to
+          the last page thereof;
+      (b) that page used to contain a single example;
+      and (c) the user used the frontend UI to delete that example.
+      */
+      initialExamplesUrl = examplesLinks.last;
+    } else {
+      initialExamplesUrl = examplesLinks.self;
+    }
+  } else if (
+    location.state &&
+    location.state.fromEditExample &&
+    examplesLinks.self !== null
+  ) {
+    console.log("    from /example/:id/edit (i.e. <EditExample>)");
+    initialExamplesUrl = examplesLinks.self;
+  } else {
+    console.log(
+      "    NOT from any of the following: /example/new, /example/:id, /example/:id/edit"
+    );
+    initialExamplesUrl = URL_FOR_FIRST_PAGE_OF_EXAMPLES;
+  }
+
+  const [examplesUrl, setExamplesUrl] =
+    React.useState<string>(initialExamplesUrl);
+
+  React.useEffect(() => {
+    console.log(
+      `${new Date().toISOString()} - React is running <OwnVocabTreasury>'s useEffect hook`
+    );
+
+    const effectFn = async () => {
+      console.log(
+        "    <OwnVocabTreasury>'s useEffect hook is dispatching fetchExamples(examplesUrl)"
+      );
+      console.log("    with examplesUrl equal to:");
+      console.log(`    ${examplesUrl}`);
+
+      try {
+        await dispatch(fetchExamples(examplesUrl));
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(
+            logOut(
+              "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
+            )
+          );
+        } else {
+          const id: string = uuidv4();
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    };
+
+    effectFn();
+  }, [dispatch, examplesUrl]);
+
+  const exampleTableRows = examplesIds.map((eId: number) => {
+    const e: IExample = examplesEntities[eId];
+
+    return (
+      <tr key={e.id}>
+        <th style={styleForBorder}>
+          <Link to={`/example/${e.id}`}>{e.id}</Link>
+        </th>
+        <th style={styleForBorder}>{e.sourceLanguage}</th>
+        <th style={styleForBorder}>{e.newWord}</th>
+        <th style={styleForBorder}>{e.content}</th>
+        <th style={styleForBorder}>{e.contentTranslation}</th>
+      </tr>
+    );
+  });
+
+  let paginationControllingButtons: JSX.Element;
+  if (examplesMeta.page === null) {
+    paginationControllingButtons = (
+      <div>Building pagination-controlling buttons...</div>
+    );
+  } else {
+    /*
+    TODO: find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
+    const paginationCtrlBtnPrev: JSX.Element =
+      examplesLinks.prev !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setExamplesUrl(examplesLinks.prev!)
+          }
+        >
+          Previous page
+        </button>
+      ) : (
+        <button disabled>Previous page</button>
+      );
+
+    const paginationCtrlBtnNext: JSX.Element =
+      examplesLinks.next !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setExamplesUrl(examplesLinks.next!)
+          }
+        >
+          Next page
+        </button>
+      ) : (
+        <button disabled>Next page</button>
+      );
+
+    const paginationCtrlBtnFirst: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === 1}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setExamplesUrl(examplesLinks.first!)
+        }
+      >
+        First page: 1
+      </button>
+    );
+
+    const paginationCtrlBtnLast: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === examplesMeta.totalPages}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setExamplesUrl(examplesLinks.last!)
+        }
+      >
+        Last page: {examplesMeta.totalPages}
+      </button>
+    );
+
+    paginationControllingButtons = (
+      <React.Fragment>
+        <div>
+          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
+          <span style={{ color: "red" }}>
+            Current page: {examplesMeta.page}{" "}
+          </span>
+          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
+        </div>
+      </React.Fragment>
+    );
+  }
 
   return (
     <React.Fragment>
       {"<OwnVocabTreasury>"}
-      <h1>Own VocabTreasury for {emailOfLoggedInUser}</h1>
+      <h1>
+        {loggedInUserProfile === null
+          ? "Something went wrong..."
+          : `${loggedInUserProfile.username}'s Own VocabTreasury`}
+      </h1>
       <div>
         <Link to="/example/new">Record new example</Link>
       </div>
@@ -501,6 +873,7 @@ export const OwnVocabTreasury = () => {
         <Link to="/own-vocabtreasury/search">Search</Link>
       </div>
       <br />
+      {paginationControllingButtons}
       <table style={styleForTable}>
         <tbody>
           <tr>
@@ -513,20 +886,6 @@ export const OwnVocabTreasury = () => {
           {exampleTableRows}
         </tbody>
       </table>
-      {/* <font size="14"> */}
-      {/* 
-                https://stackoverflow.com/questions/61002821/font-with-typescript-property-font-does-not-exist-on-type-jsx-intrinsicele
-                
-                `<font>`` is a deprecated tag in HTML,
-                so TS will not include it in its type definitions.
-                This, as well as many other tags, have been deprecated
-                in favor of using CSS to style elements. */}
-      <Link style={styleForLinkToCurrentPage} to="/own-vocabtreasury?page=1">
-        1
-      </Link>{" "}
-      {/* </font> */}
-      <Link to="/own-vocabtreasury?page=2">2</Link> ...{" "}
-      <Link to="/own-vocabtreasury?page=281">281</Link>
     </React.Fragment>
   );
 };
@@ -536,49 +895,111 @@ export const RecordNewExample = () => {
     `${new Date().toISOString()} - React is rendering <RecordNewExample>`
   );
 
+  const [formData, setFormData] = React.useState({
+    sourceLanguage: "",
+    newWord: "",
+    content: "",
+    contentTranslation: "",
+  });
+
+  const history = useHistory();
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionCreateExample | IActionAlertsCreate | ActionFetchExamples
+  > = useDispatch();
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.newWord === "" || formData.content === "") {
+      dispatch(
+        alertsCreate(
+          id,
+          "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+        )
+      );
+    } else {
+      try {
+        await dispatch(
+          createExample(
+            formData.sourceLanguage !== "" ? formData.sourceLanguage : null,
+            formData.newWord,
+            formData.content,
+            formData.contentTranslation !== ""
+              ? formData.contentTranslation
+              : null
+          )
+        );
+        dispatch(alertsCreate(id, "EXAMPLE CREATION SUCCESSFUL"));
+
+        /*
+        Force
+        the contents within the "meta" and "links" sub-slices
+        of the app-level state's "examples" slice
+        to be updated.
+        */
+        await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+
+        const locationDescriptor = {
+          pathname: "/own-vocabtreasury",
+          state: {
+            fromRecordNewExample: true,
+          },
+        };
+        history.push(locationDescriptor);
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+        } else {
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<RecordNewExample>"}
-
       <div>
-        <form method="POST" action="">
-          {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGUkA.375Xt02E9Mh-V4Gq7C7jOA7_LKc"> */}
+        <form
+          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
           <fieldset>
-            <legend>[legend-tag]: CREATE NEW EXAMPLE</legend>
+            <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
             <div>
               <label htmlFor="<RNE>-source_language">SOURCE LANGUAGE</label>
-
               <input
                 id="<RNE>-source_language"
-                name="source_language"
+                name="sourceLanguage"
                 type="text"
-                value=""
-                // data-kwimpalastatus="alive"
-                // data-kwimpalaid="1623299217012-0"
+                value={formData.sourceLanguage}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
               />
             </div>
-
             <div>
               <label htmlFor="<RNE>-new_word">NEW WORD</label>
-
               <input
                 id="<RNE>-new_word"
-                name="new_word"
-                // required
+                name="newWord"
                 type="text"
-                value=""
+                value={formData.newWord}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
@@ -586,11 +1007,10 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <label htmlFor="<RNE>-content">EXAMPLE</label>
-
               <textarea
                 id="<RNE>-content"
                 name="content"
-                // required
+                value={formData.content}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
@@ -598,10 +1018,10 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <label htmlFor="<RNE>-content_translation">TRANSLATION</label>
-
               <textarea
                 id="<RNE>-content_translation"
-                name="content_translation"
+                name="contentTranslation"
+                value={formData.contentTranslation}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
@@ -609,7 +1029,7 @@ export const RecordNewExample = () => {
             </div>
             <div>
               <input
-                // id="submit"
+                id="<RNE>-submit"
                 name="submit"
                 type="submit"
                 value="RECORD THIS EXAMPLE"
@@ -631,18 +1051,32 @@ export const SingleExample = () => {
   console.log(
     `${new Date().toISOString()} - inspecting the \`params\` passed in to <SingleExample>`
   );
-  console.log(params);
+  console.log(`    ${JSON.stringify(params)}`);
   const exampleId: number = parseInt(params.id);
 
-  const example: IExample = examplesMockEntities[exampleId];
+  const examplesEntities = useSelector(selectExamplesEntities);
 
-  return (
-    <React.Fragment>
-      {"<SingleExample>"}
-      <div>
-        You have selected the following Example from your Own VocabTreasury:
-      </div>
+  const examplesLinks = useSelector(selectExamplesLinks);
 
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionDeleteExample | IActionAlertsCreate
+  > = useDispatch();
+
+  const history = useHistory();
+
+  const example: IExample = examplesEntities[exampleId];
+
+  const locationDescriptor = {
+    pathname: "/own-vocabtreasury",
+    state: {
+      fromSingleExample: true,
+    },
+  };
+
+  const exampleTable =
+    example === undefined ? null : (
       <table style={styleForTable}>
         <tbody>
           <tr>
@@ -654,28 +1088,89 @@ export const SingleExample = () => {
           </tr>
           <tr>
             <th style={styleForBorder}>{example.id}</th>
-            <th style={styleForBorder}>{example.source_language}</th>
-            <th style={styleForBorder}>{example.new_word}</th>
+            <th style={styleForBorder}>{example.sourceLanguage}</th>
+            <th style={styleForBorder}>{example.newWord}</th>
             <th style={styleForBorder}>{example.content}</th>
-            <th style={styleForBorder}>{example.content_translation}</th>
+            <th style={styleForBorder}>{example.contentTranslation}</th>
           </tr>
         </tbody>
       </table>
+    );
 
-      <br />
+  const linkToOwnVocabTreasury = (
+    <Link to={locationDescriptor}>
+      Return to this example within my Own VocabTreasury
+    </Link>
+  );
+
+  const linkToEditExample =
+    example === undefined ? null : (
       <div>
-        <Link to="/own-vocabtreasury?page=1">
-          Return to this example within my Own VocabTreasury
-        </Link>
+        <Link to={`/example/${example.id}/edit`}>Edit this example</Link>
+      </div>
+    );
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("    submitting <SingleExample>'s form");
+
+    const id: string = uuidv4();
+    try {
+      await dispatch(deleteExample(example.id));
+
+      dispatch(alertsCreate(id, `EXAMPLE DELETION SUCCESSFUL`));
+
+      if (examplesLinks.self !== null) {
+        await dispatch(fetchExamples(examplesLinks.self));
+      } else {
+        /*
+        It _should_ be impossible for this block of code to ever be executed.
+
+        Why?
+
+        Because this component may only be rendered
+        after the user's browser has loaded the /own-vocabtreasury URL,
+        which causes React
+        to first render <OwnVocabTreasury>
+        and to then run its effect function.
+        */
+        await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+      }
+
+      console.log(`    re-directing to ${locationDescriptor.pathname}`);
+      history.push(locationDescriptor);
+    } catch (err) {
+      if (err.response.status === 401) {
+        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      } else {
+        const message: string =
+          err.response.data.message ||
+          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+        dispatch(alertsCreate(id, message));
+      }
+    }
+  };
+
+  return (
+    <React.Fragment>
+      {"<SingleExample>"}
+      <div>
+        You have selected the following Example from your Own VocabTreasury:
       </div>
 
-      <br />
-      <div>
-        <Link to={`/example/${example.id}/edit?page=1`}>Edit this example</Link>
-      </div>
+      {exampleTable}
 
       <br />
-      <form action="/example/4/delete?page=1" method="POST">
+      <div>{linkToOwnVocabTreasury}</div>
+
+      <br />
+      {linkToEditExample}
+
+      <br />
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <input type="submit" value="Delete this example" />
       </form>
     </React.Fragment>
@@ -691,35 +1186,115 @@ export const EditExample = () => {
   );
   console.log(params);
   const exampleId: number = parseInt(params.id);
-  const example: IExample = examplesMockEntities[exampleId];
+
+  const examplesEntities = useSelector(selectExamplesEntities);
+
+  const example: IExample = examplesEntities[exampleId];
+
+  const examplesLinks = useSelector(selectExamplesLinks);
+
+  const [formData, setFormData] = React.useState({
+    sourceLanguage: example.sourceLanguage,
+    newWord: example.newWord,
+    content: example.content,
+    contentTranslation: example.contentTranslation,
+  });
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionEditExample | IActionAlertsCreate | ActionFetchExamples
+  > = useDispatch();
+
+  const history = useHistory();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
-    );
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const id: string = uuidv4();
+    if (formData.newWord === "" || formData.content === "") {
+      dispatch(
+        alertsCreate(
+          id,
+          "YOU MUST FILL OUT THE FOLLOWING FORM FIELDS: NEW WORD, EXAMPLE"
+        )
+      );
+    } else {
+      console.log("    submitting <EditExample>'s form");
+
+      try {
+        const { sourceLanguage, newWord, content, contentTranslation } =
+          formData;
+        await dispatch(
+          editExample(exampleId, {
+            sourceLanguage,
+            newWord,
+            content,
+            contentTranslation,
+          })
+        );
+
+        dispatch(alertsCreate(id, "EXAMPLE EDITING SUCCESSFUL"));
+
+        if (examplesLinks.self !== null) {
+          await dispatch(fetchExamples(examplesLinks.self));
+        } else {
+          /*
+          It _should_ be impossible for this block of code to ever be executed.
+
+          Why?
+
+          For the same reason as in the analogous block within <SingleExample>.
+          */
+          await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
+        }
+
+        const locationDescriptor = {
+          pathname: "/own-vocabtreasury",
+          state: {
+            fromEditExample: true,
+          },
+        };
+
+        console.log(`    re-directing to ${locationDescriptor.pathname}`);
+        history.push(locationDescriptor);
+      } catch (err) {
+        if (err.response.status === 401) {
+          dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+        } else {
+          const message: string =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(alertsCreate(id, message));
+        }
+      }
+    }
   };
 
   return (
     <React.Fragment>
       {"<EditExample>"}
-
-      <form method="POST" action="">
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjkzMTI1NzVmMjA2Y2Q1M2Q0ZDI3M2ZkZTE1NGZmNmMzYTlmOGVhMzEi.YMW4YA.0bfe9pIF_AacUmo92b_dQpHUMVQ"> */}
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <fieldset>
-          <legend>[legend-tag]: EDIT EXISTING EXAMPLE</legend>
+          <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
           <div>
             <label htmlFor="<EE>-source_language">SOURCE LANGUAGE</label>
-
             <input
               id="<EE>-source_language"
-              name="source_language"
+              name="sourceLanguage"
               type="text"
-              value={example.source_language}
-              // data-kwimpalastatus="alive"
-              // data-kwimpalaid="1623570528862-0"
+              value={formData.sourceLanguage}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -727,13 +1302,11 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-new_word">NEW WORD</label>
-
             <input
               id="<EE>-new_word"
-              name="new_word"
-              // required
+              name="newWord"
               type="text"
-              value={example.new_word}
+              value={formData.newWord}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
@@ -741,12 +1314,10 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-content">EXAMPLE</label>
-
             <textarea
               id="<EE>-content"
               name="content"
-              // required
-              value={example.content}
+              value={formData.content}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -754,11 +1325,10 @@ export const EditExample = () => {
           </div>
           <div>
             <label htmlFor="<EE>-content_translation">TRANSLATION</label>
-
             <textarea
               id="<EE>-content_translation"
-              name="content_translation"
-              value={example.content_translation}
+              name="contentTranslation"
+              value={formData.contentTranslation}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
@@ -769,7 +1339,7 @@ export const EditExample = () => {
               id="<EE>-submit"
               name="submit"
               type="submit"
-              value="RECORD THIS EXAMPLE"
+              value="EDIT THIS EXAMPLE"
             />
           </div>
         </fieldset>
@@ -785,37 +1355,222 @@ const styleForCenter = { display: "flex", justifyContent: "center" };
 export const Search = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Search>`);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [filteredExamplesUrl, setFilteredExamplesUrl] = React.useState("");
+
+  const [formData, setFormData] = React.useState({
+    newWord: "",
+    content: "",
+    contentTranslation: "",
+  });
+
+  const examplesMeta = useSelector(selectExamplesMeta);
+  const examplesLinks = useSelector(selectExamplesLinks);
+  const examplesIds = useSelector(selectExamplesIds);
+  const examplesEntities = useSelector(selectExamplesEntities);
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    ActionFetchExamples | IActionAlertsCreate
+  > = useDispatch();
+
+  React.useEffect(() => {
     console.log(
-      `running the function,` +
-        ` which handles the 'onchange' event for \`${e.target.outerHTML}\``
+      `${new Date().toISOString()} - React is running <Search>'s useEffect hook`
     );
+
+    const effectFn = async () => {
+      if (filteredExamplesUrl !== "") {
+        console.log(
+          "    <Search>'s useEffect hook is dispatching fetchExamples(filteredExamplesUrl)"
+        );
+        console.log("    with filteredExamplesUrl equal to:");
+        console.log(`    ${filteredExamplesUrl}`);
+
+        try {
+          await dispatch(fetchExamples(filteredExamplesUrl));
+        } catch (err) {
+          if (err.response.status === 401) {
+            dispatch(
+              logOut("[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN")
+            );
+          } else {
+            const id: string = uuidv4();
+            const message: string =
+              err.response.data.message ||
+              "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+            dispatch(alertsCreate(id, message));
+          }
+        }
+      }
+    };
+
+    effectFn();
+  }, [dispatch, filteredExamplesUrl]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
+
+  const handleSubmit = (e: React.MouseEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const queryParams: string[] = [];
+    if (formData.newWord !== "") {
+      queryParams.push("new_word=" + formData.newWord);
+    }
+    if (formData.content !== "") {
+      queryParams.push("content=" + formData.content);
+    }
+    if (formData.contentTranslation !== "") {
+      queryParams.push("content_translation=" + formData.contentTranslation);
+    }
+
+    const queryParamString =
+      queryParams.length > 0 ? "?" + queryParams.join("&") : "";
+    const url = URL_FOR_FIRST_PAGE_OF_EXAMPLES + queryParamString;
+    console.log("    submitting form");
+    console.log(`    ${url}`);
+    setFilteredExamplesUrl(url);
+  };
+
+  /*
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  const exampleTableRows =
+    filteredExamplesUrl === ""
+      ? null
+      : examplesIds.map((eId: number) => {
+          const e: IExample = examplesEntities[eId];
+
+          return (
+            <tr key={e.id}>
+              <th style={styleForBorder}>
+                <Link to={`/example/${e.id}`}>{e.id}</Link>
+              </th>
+              <th style={styleForBorder}>{e.sourceLanguage}</th>
+              <th style={styleForBorder}>{e.newWord}</th>
+              <th style={styleForBorder}>{e.content}</th>
+              <th style={styleForBorder}>{e.contentTranslation}</th>
+            </tr>
+          );
+        });
+
+  /*
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  let paginationControllingButtons: null | JSX.Element;
+  if (examplesMeta.page === null) {
+    paginationControllingButtons = (
+      <div>Building pagination-controlling buttons...</div>
+    );
+  } else {
+    /*
+    TODO: find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
+    const paginationCtrlBtnPrev: JSX.Element =
+      examplesLinks.prev !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setFilteredExamplesUrl(examplesLinks.prev!)
+          }
+        >
+          Previous page
+        </button>
+      ) : (
+        <button disabled>Previous page</button>
+      );
+
+    const paginationCtrlBtnNext: JSX.Element =
+      examplesLinks.next !== null ? (
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setFilteredExamplesUrl(examplesLinks.next!)
+          }
+        >
+          Next page
+        </button>
+      ) : (
+        <button disabled>Next page</button>
+      );
+
+    const paginationCtrlBtnFirst: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === 1}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setFilteredExamplesUrl(examplesLinks.first!)
+        }
+      >
+        First page: 1
+      </button>
+    );
+
+    const paginationCtrlBtnLast: JSX.Element = (
+      <button
+        disabled={examplesMeta.page === examplesMeta.totalPages}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setFilteredExamplesUrl(examplesLinks.last!)
+        }
+      >
+        Last page: {examplesMeta.totalPages}
+      </button>
+    );
+
+    paginationControllingButtons = (
+      <React.Fragment>
+        <div>
+          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
+          <span style={{ color: "red" }}>
+            Current page: {examplesMeta.page}{" "}
+          </span>
+          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
+        </div>
+      </React.Fragment>
+    );
+  }
+  if (filteredExamplesUrl === "") {
+    paginationControllingButtons = null;
+  }
 
   return (
     <React.Fragment>
       {"<Search>"}
-
-      <form method="POST" action="">
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
         <table style={styleForTable}>
           <tbody>
             <tr>
-              <th style={styleForBorder}>ID</th>
-              <th style={styleForBorder}>SOURCE LANGUAGE</th>
-              <th style={styleForBorder}>NEW WORD</th>
-              <th style={styleForBorder}>EXAMPLE</th>
-              <th style={styleForBorder}>TRANSLATION</th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-new_word">NEW WORD</label>
+              </th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-content">EXAMPLE</label>
+              </th>
+              <th style={styleForBorder}>
+                <label htmlFor="<S>-content_translation">TRANSLATION</label>
+              </th>
             </tr>
             <tr>
-              {/* <input id="csrf_token" name="csrf_token" type="hidden" value="IjIxMjA5YjJiMDc4NTJmMGE4Y2NmYTg5MTRiZjQyZWMzMTllNTk5MGEi.YMGeIw.YoZgSG4uYKnMwx7EtMnwkEeNoD0"> */}
-              <th style={styleForBorder}></th>
-              <th style={styleForBorder}></th>
               <th style={styleForBorder}>
                 <input
                   id="<S>-new_word"
-                  name="new_word"
+                  name="newWord"
                   type="text"
-                  value=""
+                  value={formData.newWord}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -826,7 +1581,7 @@ export const Search = () => {
                   id="<S>-content"
                   name="content"
                   type="text"
-                  value=""
+                  value={formData.content}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -835,9 +1590,9 @@ export const Search = () => {
               <th style={styleForBorder}>
                 <input
                   id="<S>-content_translation"
-                  name="content_translation"
+                  name="contentTranslation"
                   type="text"
-                  value=""
+                  value={formData.contentTranslation}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
@@ -849,15 +1604,27 @@ export const Search = () => {
 
         <br />
         <div style={styleForCenter}>
-          <input
-            // id="submit"
-            name="submit"
-            type="submit"
-            value="SEARCH"
-          />
+          <input id="<S>-submit" name="submit" type="submit" value="SEARCH" />
         </div>
         <br />
       </form>
+      {paginationControllingButtons && (
+        <React.Fragment>
+          {paginationControllingButtons}
+          <table style={styleForTable}>
+            <tbody>
+              <tr>
+                <th style={styleForBorder}>ID</th>
+                <th style={styleForBorder}>SOURCE LANGUAGE</th>
+                <th style={styleForBorder}>NEW WORD</th>
+                <th style={styleForBorder}>EXAMPLE</th>
+                <th style={styleForBorder}>TRANSLATION</th>
+              </tr>
+              {exampleTableRows}
+            </tbody>
+          </table>
+        </React.Fragment>
+      )}
     </React.Fragment>
   );
 };

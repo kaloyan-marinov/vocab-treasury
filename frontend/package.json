@@ -10,11 +10,17 @@
     "@types/node": "^12.20.15",
     "@types/react": "^17.0.9",
     "@types/react-dom": "^17.0.6",
+    "axios": "^0.21.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
+    "redux": "^4.1.0",
+    "redux-devtools-extension": "^2.13.9",
+    "redux-thunk": "^2.3.0",
     "typescript": "^4.3.2",
+    "uuid": "^8.3.2",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
@@ -41,7 +47,12 @@
       "last 1 safari version"
     ]
   },
+  "proxy": "http://localhost:5000",
   "devDependencies": {
-    "@types/react-router-dom": "^5.1.7"
+    "@types/react-router-dom": "^5.1.7",
+    "@types/redux-mock-store": "^1.0.2",
+    "@types/uuid": "^8.3.0",
+    "msw": "^0.29.0",
+    "redux-mock-store": "^1.5.4"
   }
 }

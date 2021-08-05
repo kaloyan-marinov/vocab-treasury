@@ -82,6 +82,12 @@ class PaginatedAPIMixin(object):
             if pagination_obj.has_prev
             else None
         )
+        link_to_first = url_for(endpoint, per_page=per_page, page=1, **kwargs)
+        link_to_last = (
+            url_for(endpoint, per_page=per_page, page=pagination_obj.pages, **kwargs)
+            if pagination_obj.pages > 0
+            else None
+        )
 
         resource_representations = {
             "items": [resource.to_dict() for resource in pagination_obj.items],
@@ -95,6 +101,8 @@ class PaginatedAPIMixin(object):
                 "self": link_to_self,
                 "next": link_to_next,
                 "prev": link_to_prev,
+                "first": link_to_first,
+                "last": link_to_last,
             },
         }
         return resource_representations
@@ -378,6 +386,15 @@ def get_user(user_id):
         return r
 
     return u.to_dict()
+
+
+@app.route("/api/user-profile", methods=["GET"])
+@token_auth.login_required
+def get_user_profile():
+    u = User.query.get(token_auth.current_user().id)
+    r = u.to_dict()
+    r["email"] = u.email
+    return r
 
 
 @app.route("/api/users/<int:user_id>", methods=["PUT"])
@@ -675,7 +692,7 @@ def create_example():
         ("new_word", new_word),
         ("content", content),
     ):
-        if value is None:
+        if value is None or value == "":
             r = jsonify(
                 {
                     "error": "Bad Request",
@@ -719,16 +736,39 @@ def get_examples():
     with the reason for this restriction being
     that we do not want to task the server too much.
     """
+    examples_query = Example.query.filter_by(user_id=token_auth.current_user().id)
+    query_param_kwargs = {}
+    new_word = request.args.get("new_word")
+    if new_word:
+        examples_query = examples_query.filter(
+            Example.new_word.like("%" + new_word + "%")
+        )
+        query_param_kwargs["new_word"] = new_word
+    content = request.args.get("content")
+    if content:
+        examples_query = examples_query.filter(
+            Example.content.like("%" + content + "%")
+        )
+        query_param_kwargs["content"] = content
+    content_translation = request.args.get("content_translation")
+    if content_translation:
+        examples_query = examples_query.filter(
+            Example.content_translation.like("%" + content_translation + "%")
+        )
+        query_param_kwargs["content_translation"] = content_translation
+
     per_page = min(
         100,
         request.args.get("per_page", default=10, type=int),
     )
     page = request.args.get("page", default=1, type=int)
+
     examples_collection = Example.to_collection_dict(
-        Example.query.filter_by(user_id=token_auth.current_user().id),
+        examples_query,
         per_page,
         page,
         "get_examples",
+        **query_param_kwargs,
     )
     return examples_collection
 

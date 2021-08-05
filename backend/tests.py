@@ -271,12 +271,12 @@ class Test_01_CreateUser(TestBase):
 
 
 class Test_02_GetUsers(TestBase):
-    """"Test the request responsible for getting all existing User resources."""
+    """"Test the request responsible for getting a list of existing User resources."""
 
     def test_1_empty_database(self):
         """
         Ensure that, when the database doesn't contain any User resources,
-        getting all User resources doesn't return any.
+        getting a list of User resources doesn't return any.
         """
 
         # Get all User resources.
@@ -287,6 +287,7 @@ class Test_02_GetUsers(TestBase):
         self.assertEqual(rv.status_code, 200)
         with app.test_request_context():
             _links_self = url_for("get_users", per_page=10, page=1)
+            _links_first = _links_self
         self.assertEqual(
             body,
             {
@@ -298,9 +299,11 @@ class Test_02_GetUsers(TestBase):
                     "page": 1,
                 },
                 "_links": {
+                    "self": _links_self,
                     "next": None,
                     "prev": None,
-                    "self": _links_self,
+                    "first": _links_first,
+                    "last": None,
                 },
             },
         )
@@ -308,7 +311,7 @@ class Test_02_GetUsers(TestBase):
     def test_2_nonempty_database(self):
         """
         Ensure that, when the database contains some User resources,
-        it is possible to get all User resources.
+        it is possible to get a list of User resources.
         """
 
         # Create one User resource.
@@ -351,6 +354,8 @@ class Test_02_GetUsers(TestBase):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": _links_self,
                 },
             },
         )
@@ -1141,6 +1146,76 @@ class Test_06_IssueToken(TestBase):
         )
 
 
+class Test_07_GetUserProfile(TestBase):
+    """
+    Test the request responsible for getting the User Profile resource,
+    which is associated with a given User resource.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        data = {"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}
+        data_str = json.dumps(data)
+        rv = self.client.post(
+            "/api/users", data=data_str, headers={"Content-Type": "application/json"}
+        )
+
+    def test_1_missing_basic_auth(self):
+        """
+        Ensure that it is impossible for a user to get her own User Profile resource
+        without providing a Bearer-Token Auth credential.
+        """
+
+        rv = self.client.get("/api/user-profile")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "Authentication in the Bearer-Token Auth format is required."
+                ),
+            },
+        )
+
+    def test_2_get_user_profile(self):
+        """
+        Ensure that the user, who is authenticated by the issued request's header,
+        is able to fetch her own User Profile resource.
+        """
+
+        # Issue an access token for the user.
+        basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        rv_1 = self.client.post(
+            "/api/tokens",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Basic " + b_a_c,
+            },
+        )
+
+        body_str_1 = rv_1.get_data(as_text=True)
+        body_1 = json.loads(body_str_1)
+        token = body_1["token"]
+
+        # Fetch the user's own User Profile resource.
+        rv_2 = self.client.get(
+            "/api/user-profile", headers={"Authorization": "Bearer " + token}
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+        self.assertEqual(rv_2.status_code, 200)
+        self.assertEqual(
+            body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}
+        )
+
+
 class TestBaseForExampleResources(TestBase):
     def create_user(self, username, email, password):
         # Create one User resource.
@@ -1175,7 +1250,7 @@ class TestBaseForExampleResources(TestBase):
         return body_1, token_auth
 
 
-class Test_07_CreateExample(TestBaseForExampleResources):
+class Test_08_CreateExample(TestBaseForExampleResources):
     """Test the request responsible for creating a new Example resource."""
 
     def setUp(self):
@@ -1189,7 +1264,6 @@ class Test_07_CreateExample(TestBaseForExampleResources):
         # Prepare a JSON payload, which is required for creating an Example resource
         # associated with the above-created User resource.
         self._example_data = {
-            "user_id": jd_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1468,10 +1542,10 @@ class Test_07_CreateExample(TestBaseForExampleResources):
         self.assertEqual(len(examples), 0)
 
 
-class Test_08_GetExamples(TestBaseForExampleResources):
+class Test_09_GetExamples(TestBaseForExampleResources):
     """
-    Test the request responsible for getting all Example resources,
-    which are associated with a given User resource.
+    Test the request responsible for getting a list of Example resources,
+    all of which are associated with a given User resource.
     """
 
     def setUp(self):
@@ -1486,7 +1560,7 @@ class Test_08_GetExamples(TestBaseForExampleResources):
     def test_1_no_examples_exist(self):
         """
         Given a user who doesn't have any Example resources of her own,
-        ensure that, when that user requests all resources,
+        ensure that, when that user requests a list of resources,
         she doesn't get any.
         """
 
@@ -1513,6 +1587,8 @@ class Test_08_GetExamples(TestBaseForExampleResources):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": None,
                 },
             },
         )
@@ -1520,13 +1596,12 @@ class Test_08_GetExamples(TestBaseForExampleResources):
     def test_2_some_examples_exist(self):
         """
         Given a user who has nonzero Example resources of her own,
-        ensure that, when that user requests all resources,
-        she gets all of her own resources.
+        ensure that, when that user requests a list of resources,
+        she gets page 1 of her own resources.
         """
 
         # Create one Example resource.
         example_data = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1574,14 +1649,16 @@ class Test_08_GetExamples(TestBaseForExampleResources):
                     "self": _links_self,
                     "next": None,
                     "prev": None,
+                    "first": _links_self,
+                    "last": _links_self,
                 },
             },
         )
 
     def test_3_access_only_own_examples(self):
         """
-        Ensure that each user can get all of her own Example resources,
-        but cannot get any of the Example resources that belong to another user.
+        Ensure that each user can get a list of her own Example resources,
+        but cannot get a list of another user's Example resources.
         """
 
         # Create a second User resource.
@@ -1591,7 +1668,6 @@ class Test_08_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource for the first user.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1613,7 +1689,6 @@ class Test_08_GetExamples(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1654,8 +1729,146 @@ class Test_08_GetExamples(TestBaseForExampleResources):
             set(),
         )
 
+    def test_4_filter_own_resources(self):
+        """
+        Ensure that each user can get a filtered list of her own Example resources.
+        """
 
-class Test_09_GetExample(TestBaseForExampleResources):
+        # Arrange.
+        # Create own Example resources.
+        # fmt: off
+        list_of_example_data = [
+            {"new_word": "123", "content": "456", "content_translation": "789"},
+            {"new_word": "ABC", "content": "PQR", "content_translation": "XYZ"},
+            {"new_word": "ABC", "content": "XYZ", "content_translation": "PQR"},
+            {"new_word": "PQR", "content": "ABC", "content_translation": "XYZ"},
+            {"new_word": "PQR", "content": "XYZ", "content_translation": "ABC"},
+            {"new_word": "XYZ", "content": "ABC", "content_translation": "PQR"},
+            {"new_word": "XYZ", "content": "PQR", "content_translation": "ABC"},
+        ]
+        # fmt: on
+        for data_1 in list_of_example_data:
+            data_str_1 = json.dumps(data_1)
+            rv_1 = self.client.post(
+                "/api/examples",
+                data=data_str_1,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        # fmt: off
+        query_param_dicts = (
+            {'new_word': 'ABC', 'content': 'PQR', 'content_translation': 'XYZ'},
+
+            {'new_word': 'ABC', 'content': 'PQR'},
+            {'new_word': 'ABC',                   'content_translation': 'XYZ'},
+            {                   'content': 'PQR', 'content_translation': 'XYZ'},
+
+            {'new_word': 'ABC'},
+            {                   'content': 'PQR'},
+            {                                     'content_translation': 'XYZ'}
+        )
+        expected_id_sets = (
+            {2},
+            
+            {2},
+            {2},
+            {2},
+
+            {2, 3},
+            {2, 7},
+            {2, 4}
+        )
+        # fmt: on
+
+        for query_param_dict, expected_id_set in zip(
+            query_param_dicts, expected_id_sets
+        ):
+            # Act.
+            query_param_str = "?" + "&".join(
+                [k + "=" + v for k, v in query_param_dict.items()]
+            )
+            url = "/api/examples" + query_param_str
+            rv_2 = self.client.get(
+                url, headers={"Authorization": self._jd_user_token_auth}
+            )
+
+            body_str_2 = rv_2.get_data(as_text=True)
+            body_2 = json.loads(body_str_2)
+
+            # Assert.
+            self.assertEqual({item["id"] for item in body_2["items"]}, expected_id_set)
+
+    def test_5_pagination_of_filtered_resources(self):
+        """
+        Ensure that,
+        when a user issues a request for a filtered list of her own Example resources,
+        the response is paginated properly.
+        """
+
+        # Arrange.
+        list_of_example_data = [{"new_word": x % 2, "content": x} for x in range(11)]
+        for data_1 in list_of_example_data:
+            data_str_1 = json.dumps(data_1)
+            rv_1 = self.client.post(
+                "/api/examples",
+                data=data_str_1,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": self._jd_user_token_auth,
+                },
+            )
+
+        # Act.
+        rv_2 = self.client.get(
+            "/api/examples?per_page=2&page=2&new_word=1",
+            headers={"Authorization": self._jd_user_token_auth},
+        )
+
+        body_str_2 = rv_2.get_data(as_text=True)
+        body_2 = json.loads(body_str_2)
+
+        # Assert.
+        self.maxDiff = None
+        self.assertEqual(
+            {
+                "_meta": {
+                    "total_items": 5,
+                    "per_page": 2,
+                    "total_pages": 3,
+                    "page": 2,
+                },
+                "_links": {
+                    "self": "/api/examples?per_page=2&page=2&new_word=1",
+                    "next": "/api/examples?per_page=2&page=3&new_word=1",
+                    "prev": "/api/examples?per_page=2&page=1&new_word=1",
+                    "first": "/api/examples?per_page=2&page=1&new_word=1",
+                    "last": "/api/examples?per_page=2&page=3&new_word=1",
+                },
+                "items": [
+                    {
+                        "id": 6,
+                        "source_language": "Finnish",
+                        "new_word": "1",
+                        "content": "5",
+                        "content_translation": None,
+                    },
+                    {
+                        "id": 8,
+                        "source_language": "Finnish",
+                        "new_word": "1",
+                        "content": "7",
+                        "content_translation": None,
+                    },
+                ],
+            },
+            body_2,
+        )
+
+
+class Test_10_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
 
     def setUp(self):
@@ -1674,7 +1887,6 @@ class Test_09_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1748,7 +1960,6 @@ class Test_09_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1801,7 +2012,6 @@ class Test_09_GetExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -1843,7 +2053,7 @@ class Test_09_GetExample(TestBaseForExampleResources):
         )
 
 
-class Test_10_EditExample(TestBaseForExampleResources):
+class Test_11_EditExample(TestBaseForExampleResources):
     """Test the request responsible for editing a specific Example resource."""
 
     def setUp(self):
@@ -1862,7 +2072,6 @@ class Test_10_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -1929,7 +2138,6 @@ class Test_10_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2001,7 +2209,6 @@ class Test_10_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2079,7 +2286,6 @@ class Test_10_EditExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
@@ -2146,7 +2352,7 @@ class Test_10_EditExample(TestBaseForExampleResources):
         )
 
 
-class Test_11_DeleteExample(TestBaseForExampleResources):
+class Test_12_DeleteExample(TestBaseForExampleResources):
     """Test the request responsible for deleting a specific Example resource."""
 
     def setUp(self):
@@ -2165,7 +2371,6 @@ class Test_11_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2221,7 +2426,6 @@ class Test_11_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource.
         data_1 = {
-            "user_id": self._jd_user_id,
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
@@ -2270,7 +2474,6 @@ class Test_11_DeleteExample(TestBaseForExampleResources):
 
         # Create one Example resource for the second user.
         data_2 = {
-            "user_id": ms_user_dict["id"],
             "source_language": "Finnish",
             "new_word": "kieli",
             "content": "Mitä kieltä sinä puhut?",
