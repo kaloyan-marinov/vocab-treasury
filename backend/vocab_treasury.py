@@ -654,7 +654,11 @@ def reset_password(token):
     db.session.add(user)
     db.session.commit()
 
-    r = jsonify({"message": "You have reset your password successfully."})
+    r = jsonify(
+        {
+            "message": "You have reset your password successfully.",
+        }
+    )
     r.status_code = 200
     return r
 

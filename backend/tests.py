@@ -1007,7 +1007,7 @@ class Test_05_DeleteUser(TestBase):
         )
 
 
-class Test_07_RequestPasswordReset(TestBase):
+class Test_06_RequestPasswordReset(TestBase):
     """
     Test the request responsible for requesting a password reset for a user,
     who wishes or needs to reset her password.
@@ -1117,7 +1117,155 @@ class Test_07_RequestPasswordReset(TestBase):
             )
 
 
-class Test_06_IssueToken(TestBase):
+class Test_07_ResetPassword(TestBase):
+    """
+    Test the request responsible for resetting a user's password.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        # Create one user.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        _ = self.client.post(
+            "/api/users",
+            data=json.dumps(user_data),
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+    def test_1_expired_token(self):
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+        ) as serializer_loads_mock:
+            serializer_loads_mock.side_effect = SignatureExpired(
+                "forced via mocking/patching"
+            )
+
+            payload = {"new_password": "456"}
+            rv = self.client.post(
+                "/api/reset-password/token-for-resetting-password",
+                data=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                },
+            )
+
+            self.assertEqual(rv.status_code, 401)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "error": "Unauthorized",
+                    "message": "Your password-reset token is invalid.",
+                },
+            )
+
+    def test_2_bad_signature(self):
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+        ) as serializer_loads_mock:
+            serializer_loads_mock.side_effect = BadSignature(
+                "forced via mocking/patching"
+            )
+
+            payload = {"new_password": "456"}
+            rv = self.client.post(
+                "/api/reset-password/token-for-resetting-password",
+                data=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                },
+            )
+
+            self.assertEqual(rv.status_code, 401)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "error": "Unauthorized",
+                    "message": "Your password-reset token is invalid.",
+                },
+            )
+
+    def test_3_missing_content_type(self):
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+        ) as serializer_loads_mock:
+            serializer_loads_mock.return_value = {"user_id": 1}
+
+            payload = {"new_password": "456"}
+            rv = self.client.post(
+                "/api/reset-password/token-for-resetting-password",
+                data=json.dumps(payload),
+            )
+
+            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        'Your request did not include a "Content-Type: application/json"'
+                        " header."
+                    ),
+                },
+            )
+
+    def test_4_incomplete_request_body(self):
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+        ) as serializer_loads_mock:
+            serializer_loads_mock.return_value = {"user_id": 1}
+
+            payload = {"not new_password": "456"}
+            rv = self.client.post(
+                "/api/reset-password/token-for-resetting-password",
+                data=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                },
+            )
+
+            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        "Your request's body didn't specify a value for a 'new_password'."
+                    ),
+                },
+            )
+
+    def test_5_reset_password(self):
+        with patch(
+            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+        ) as serializer_loads_mock:
+            serializer_loads_mock.return_value = {"user_id": 1}
+
+            payload = {"new_password": "456"}
+            rv = self.client.post(
+                "/api/reset-password/token-for-resetting-password",
+                data=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                },
+            )
+
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "message": "You have reset your password successfully.",
+                },
+            )
+
+
+class Test_08_IssueToken(TestBase):
     """
     Test the request responsible for issuing a JSON Web Signature token for a user,
     who has authenticated herself successfully as part of that same request.
@@ -1256,7 +1404,7 @@ class Test_06_IssueToken(TestBase):
         )
 
 
-class Test_07_GetUserProfile(TestBase):
+class Test_09_GetUserProfile(TestBase):
     """
     Test the request responsible for getting the User Profile resource,
     which is associated with a given User resource.
@@ -1360,7 +1508,7 @@ class TestBaseForExampleResources(TestBase):
         return body_1, token_auth
 
 
-class Test_08_CreateExample(TestBaseForExampleResources):
+class Test_10_CreateExample(TestBaseForExampleResources):
     """Test the request responsible for creating a new Example resource."""
 
     def setUp(self):
@@ -1652,7 +1800,7 @@ class Test_08_CreateExample(TestBaseForExampleResources):
         self.assertEqual(len(examples), 0)
 
 
-class Test_09_GetExamples(TestBaseForExampleResources):
+class Test_11_GetExamples(TestBaseForExampleResources):
     """
     Test the request responsible for getting a list of Example resources,
     all of which are associated with a given User resource.
@@ -1978,7 +2126,7 @@ class Test_09_GetExamples(TestBaseForExampleResources):
         )
 
 
-class Test_10_GetExample(TestBaseForExampleResources):
+class Test_12_GetExample(TestBaseForExampleResources):
     """Test the request responsible for getting a specific Example resource."""
 
     def setUp(self):
@@ -2163,7 +2311,7 @@ class Test_10_GetExample(TestBaseForExampleResources):
         )
 
 
-class Test_11_EditExample(TestBaseForExampleResources):
+class Test_13_EditExample(TestBaseForExampleResources):
     """Test the request responsible for editing a specific Example resource."""
 
     def setUp(self):
@@ -2462,7 +2610,7 @@ class Test_11_EditExample(TestBaseForExampleResources):
         )
 
 
-class Test_12_DeleteExample(TestBaseForExampleResources):
+class Test_14_DeleteExample(TestBaseForExampleResources):
     """Test the request responsible for deleting a specific Example resource."""
 
     def setUp(self):
