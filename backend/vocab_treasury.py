@@ -515,7 +515,7 @@ def request_password_reset():
         r = jsonify(
             {
                 "error": "Bad Request",
-                "message": "Your request's body din't specify a value for 'email'.",
+                "message": "Your request's body didn't specify a value for 'email'.",
             }
         )
         r.status_code = 400

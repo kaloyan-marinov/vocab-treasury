@@ -1007,6 +1007,116 @@ class Test_05_DeleteUser(TestBase):
         )
 
 
+class Test_07_RequestPasswordReset(TestBase):
+    """
+    Test the request responsible for requesting a password reset for a user,
+    who wishes or needs to reset her password.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        # Create one User.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        user_data_str = json.dumps(user_data)
+        _ = self.client.post(
+            "/api/users",
+            data=user_data_str,
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+    def test_1_missing_content_type(self):
+        payload = {
+            "email": "john.doe@protonmail.com",
+        }
+        rv = self.client.post(
+            "/api/request-password-reset",
+            data=json.dumps(payload),
+        )
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            json.loads(rv.get_data(as_text=True)),
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            },
+        )
+
+    def test_2_incomplete_request_body(self):
+        payload = {
+            "not email": "john.doe@protonmail.com",
+        }
+        rv = self.client.post(
+            "/api/request-password-reset",
+            data=json.dumps(payload),
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            json.loads(rv.get_data(as_text=True)),
+            {
+                "error": "Bad Request",
+                "message": "Your request's body didn't specify a value for 'email'.",
+            },
+        )
+
+    def test_3_nonexistent_user(self):
+        payload = {
+            "email": "mary.smith@protonmail.com",
+        }
+        rv = self.client.post(
+            "/api/request-password-reset",
+            data=json.dumps(payload),
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            json.loads(rv.get_data(as_text=True)),
+            {
+                "error": "Bad Request",
+                "message": "The email you provided is invalid.",
+            },
+        )
+
+    def test_4_request_password_reset(self):
+        with patch("vocab_treasury.send_email", return_value=None) as send_email_mock:
+            payload = {
+                "email": "john.doe@protonmail.com",
+            }
+            rv = self.client.post(
+                "/api/request-password-reset",
+                data=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                },
+            )
+
+            self.assertEqual(send_email_mock.call_count, 1)
+            self.assertEqual(rv.status_code, 202)
+            self.assertEqual(
+                json.loads(rv.get_data(as_text=True)),
+                {
+                    "message": "Sending an email with instructions for resetting your password..."
+                },
+            )
+
+
 class Test_06_IssueToken(TestBase):
     """
     Test the request responsible for issuing a JSON Web Signature token for a user,
