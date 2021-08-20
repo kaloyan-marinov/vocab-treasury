@@ -515,7 +515,7 @@ def request_password_reset():
         r = jsonify(
             {
                 "error": "Bad Request",
-                "message": "Your request's body din't specify a value for 'email'.",
+                "message": "Your request's body didn't specify a value for 'email'.",
             }
         )
         r.status_code = 400
@@ -654,7 +654,11 @@ def reset_password(token):
     db.session.add(user)
     db.session.commit()
 
-    r = jsonify({"message": "You have reset your password successfully."})
+    r = jsonify(
+        {
+            "message": "You have reset your password successfully.",
+        }
+    )
     r.status_code = 200
     return r
 
