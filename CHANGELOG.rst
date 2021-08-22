@@ -3,7 +3,7 @@ v1.0.0 (2020/04/27)
 
 `VocabTreasury` is a web application that supports the process of learning a foreign language.
 
-It was developed using the following technologies:
+It is developed using the following technologies:
 
 - Python
   
@@ -46,7 +46,7 @@ v1.2.2 (2021/03/31)
 v2.0.0 (2021/08/20)
 -------------------
 
-This is a comprehensive rewrite of `VocabTreasury`. It is split up into a backend sub-project and a frontend sub-project.
+This is a comprehensive rewrite of the `VocabTreasury` project. It is split up into a backend sub-project and a frontend sub-project.
 
 The backend sub-project uses the following technologies:
 
@@ -70,3 +70,10 @@ The frontend sub-project uses the following technologies:
 - Axios
 - Redux-Thunk
 - Jest
+
+v2.0.1 (2021/08/22)
+-------------------
+
+- add `CHANGELOG.rst`
+
+- update `frontend/public/index.html` by replacing “React App” with “VocabTreasury”
