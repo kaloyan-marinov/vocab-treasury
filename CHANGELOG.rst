@@ -1,7 +1,7 @@
 v1.0.0 (2020/04/27)
 -------------------
 
-`VocabTreasury` is a web application that supports the process of learning a foreign language.
+``VocabTreasury`` is a web application that supports the process of learning a foreign language.
 
 It is developed using the following technologies:
 
@@ -23,11 +23,11 @@ v1.1.0 (2020/05/03)
 v1.2.0 (2021/03/22)
 -------------------
 
-- add `README.md`
+- add ``README.md``
 
-- prepare for switching from using `conda` to using the Python Standard Library's `venv` module (by adding `requirements.txt`)
+- prepare for switching from using ``conda`` to using the Python Standard Library's ``venv`` module (by adding ``requirements.txt``)
 
-- add a utility `create_and_populate_db.py` script
+- add a utility ``create_and_populate_db.py`` script
 
 - add configuration files, which make it easier to develop and debug the project in VS Code
 
@@ -36,7 +36,7 @@ v1.2.1 (2021/03/22)
 
 - update the website that the web application is deployed at
 
-- bump up the version of the `jinja2` package (for security reasons)
+- bump up the version of the ``jinja2`` package (for security reasons)
 
 v1.2.2 (2021/03/31)
 -------------------
@@ -46,7 +46,7 @@ v1.2.2 (2021/03/31)
 v2.0.0 (2021/08/20)
 -------------------
 
-This is a comprehensive rewrite of the `VocabTreasury` project. It is split up into a backend sub-project and a frontend sub-project.
+This is a comprehensive rewrite of the ``VocabTreasury`` project. It is split up into a backend sub-project and a frontend sub-project.
 
 The backend sub-project uses the following technologies:
 
@@ -54,7 +54,7 @@ The backend sub-project uses the following technologies:
 
 - Flask, Flask-Migrate, Flask-HTTPAuth, Flask-Bcrypt, Flask-Mail
 
-- the Python Standard Library's `unittest` module, the `coverage` package
+- the Python Standard Library's ``unittest`` module, the ``coverage`` package
 
 - SQLite
 
@@ -74,6 +74,6 @@ The frontend sub-project uses the following technologies:
 v2.0.1 (2021/08/22)
 -------------------
 
-- add `CHANGELOG.rst`
+- add ``CHANGELOG.rst``
 
-- update `frontend/public/index.html` by replacing “React App” with “VocabTreasury”
+- update ``frontend/public/index.html`` by replacing “React App” with “VocabTreasury”
