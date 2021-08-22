@@ -11,6 +11,7 @@ The rest of this repository's documentation is organized as follows.
 2. [How to set up the project locally](#how-to-set-up-the-project-locally)
 
 3. [Future plans](#future-plans)
+
 # Introduction
 
 `VocabTreasury` is a web application that supports the process of learning a foreign language.
@@ -362,3 +363,9 @@ Another aspect of the reality of purposeful language learning is that it takes a
         ```
     
     - launch a web browser, and enter `localhost:3000` into its address bar
+
+# Future plans
+
+- require every newly-created user to confirm their email address
+
+- make it possible for users to upload audio files
