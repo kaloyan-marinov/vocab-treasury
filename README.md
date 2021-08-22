@@ -368,4 +368,6 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 - require every newly-created user to confirm their email address
 
+- allow each user to export their personal data in JSON format
+
 - make it possible for users to upload audio files
