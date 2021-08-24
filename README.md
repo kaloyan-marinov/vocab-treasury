@@ -366,6 +366,10 @@ Another aspect of the reality of purposeful language learning is that it takes a
 
 # Future plans
 
+- modularize the backend
+
+- modularize the frontend
+
 - require every newly-created user to confirm their email address
 
 - allow each user to export their personal data in JSON format
