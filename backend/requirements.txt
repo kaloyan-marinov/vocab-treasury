@@ -18,7 +18,7 @@ greenlet==1.0.0
 identify==2.2.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
-Mako==1.1.4
+Mako==1.2.2
 MarkupSafe==1.1.1
 nodeenv==1.5.0
 pre-commit==2.11.1
