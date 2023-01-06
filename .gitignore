@@ -11,3 +11,4 @@ htmlcov/
 
 frontend/node_modules
 frontend/coverage
+frontend/build
