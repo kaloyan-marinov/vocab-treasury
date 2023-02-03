@@ -20,13 +20,9 @@ from threading import Thread
 dotenv_file = find_dotenv()
 load_dotenv(dotenv_file)
 
-print(
-    "os.environ.get('SQLALCHEMY_DATABASE_URI') - "
-    + os.environ.get("SQLALCHEMY_DATABASE_URI")
-)
-
 
 app = Flask(__name__)
+
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 if app.config["SECRET_KEY"] is None:
@@ -35,7 +31,24 @@ if app.config["SECRET_KEY"] is None:
         + " - An environment variable called SECRET_KEY must be specified: crashing..."
     )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+for env_var_name in (
+    "MYSQL_HOST",
+    "MYSQL_PORT",
+    "MYSQL_USER",
+    "MYSQL_PASSWORD",
+    "MYSQL_DATABASE",
+):
+    env_var_value = os.environ.get(env_var_name)
+    if env_var_value is None:
+        raise KeyError(f"failed to find an environment variable called {env_var_name}")
+    print(env_var_name)
+SQLALCHEMY_DATABASE_URI = (
+    f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
+    f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
+    f"/{os.environ.get('MYSQL_DATABASE')}"
+)
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 

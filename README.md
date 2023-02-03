@@ -14,35 +14,50 @@ The rest of this repository's documentation is organized as follows.
 
 # Introduction
 
-`VocabTreasury` is a web application that supports the process of learning a foreign language.
+`VocabTreasury` is a web application
+that supports the process of learning a foreign language.
 
-Writing down new words is part and parcel of that process. Traditionally, new words have been written down in a physical notebook; nowadays, new words can alternatively be recorded on a tablet using a stylus. Such written records are a reliable means for language learners to achieving fluency in their respective target languages.
+Writing down new words is part and parcel of that process.
+Traditionally, new words have been written down in a physical notebook;
+nowadays, new words can alternatively be recorded on a tablet using a stylus.
+Such written records are a reliable means for language learners
+to achieving fluency in their respective target languages.
 
-Another aspect of the reality of purposeful language learning is that it takes a long time. One consequence of that is the continuous accumulation of written records though time; another consequence is that it becomes increasingly more difficult to look up specific information, which is imprinted in only one or two particular written records. Maintaining an organized approach can become cumbersome even for diligent learners.
+Another aspect of the reality of purposeful language learning is that
+it takes a long time.
+One consequence of that is the continuous accumulation of written records though time;
+another consequence is that
+it becomes increasingly more difficult to look up specific information,
+which is imprinted in only one or two particular written records.
+Maintaining an organized approach can become cumbersome even for diligent learners.
 
 `VocabTreasury` has the following twofold objective:
     
-- firstly, to serve as a single place that you can store all of your written records in, and
+- firstly, to serve as a single place that you can store all of your written records in,
+  and
     
- - secondly, to enable you to efficiently scan all your records for specific information, thus helping you pinpoint the one or two relevant records that you actually need to inspect.
+- secondly, to enable you to efficiently scan all your records for specific information,
+  thus helping you pinpoint the one or two relevant records
+  that you actually need to inspect.
 
 # How to set up the project locally
 
+In a nutshell, this section will explain how to
+use Docker to serve a persistence layer;
+use `localhost` (= the local network interface) to serve a backend application;
+and use `localhost` to serve a frontend application.
+
 1. clone this repository, and navigate into your local repository
 
-2. in the `backend` subfolder of your local repository, create a `.env` file with the following structure:
+2. create `.env` file within the `backend` subfolder of your local repository
+   by taking the following steps:
     ```
-    SECRET_KEY=<specify-a-good-secret-key-here>
-
-    SQLALCHEMY_DATABASE_URI=sqlite:///<absolute-path-starting-with-a-leading-slash-and-pointing-to-an-SQLite-file>
-
-    MAIL_SERVER=
-    MAIL_PORT=
-    #MAIL_USE_TLS =  True
-    MAIL_USERNAME=
-    MAIL_PASSWORD=
+    $ cp \
+        backend/.env.template \
+        backend/.env
+    
+    # Edit the content of `backend/.env` as per the comments/instructions therein.
     ```
-    (For deployment, you should generate a "good secret key" and store that value in SECRET_KEY within the `.env` file; to achieve that, take a look at the "How to generate good secret keys" section on https://flask.palletsprojects.com/en/1.1.x/quickstart/ . For local development, something like `keep-this-value-known-only-to-the-deployment-machine` should suffice.)
 
 3. set up the backend:
 
@@ -63,7 +78,8 @@ Another aspect of the reality of purposeful language learning is that it takes a
         (venv) backend $ pip install -r requirements.txt
         ```
 
-    - ensure that running the tests results in a PASS by issuing one of the following - either:
+    - ensure that running the tests results in a PASS by issuing one of the following -
+      either:
         ```
         (venv) backend $ python -m unittest tests.py
 
@@ -87,40 +103,105 @@ Another aspect of the reality of purposeful language learning is that it takes a
         (venv) backend $ coverage html
         ```
 
-    - create an empty SQLite database and apply all database migrations:
+    - create an empty database:
+
+        ```
+        $ docker run \
+            --name container-v-t-mysql \
+            --add-host host.docker.internal:host-gateway \
+            --mount source=volume-v-t-mysql,destination=/var/lib/mysql \
+            --env-file backend/.env \
+            --publish 3306:3306 \
+            mysql:8.0.26 \
+            --default-authentication-plugin=mysql_native_password \
+            --character-set-server=utf8mb4 \
+            --collation-server=utf8mb4_bin \
+            --skip-character-set-client-handshake
+        ```
+
+        ```
+        # Verify that the new database does not contain any tables.
+        
+        $ docker container exec -it container-v-t-mysql /bin/bash
+
+        root@<container_id>:/# mysql \
+            -u <enter-the-value-of-MYSQL_USER-specified-within-backend/.env> \
+            -p \
+            <enter-the-value-of-MYSQL_DATABASE-specified-within-backend/.env>
+        Enter password:
+
+        mysql> SHOW DATABASES;
+        +--------------------+
+        | Database           |
+        +--------------------+
+        | <the-value-of-MYSQL_DATABASE-specified-within-backend/.env> |
+        | information_schema |
+        +--------------------+
+        2 rows in set (0.01 sec)
+
+        mysql> USE <the-value-of-MYSQL_DATABASE-specified-within-backend/.env>;
+        Database changed
+
+        mysql> SHOW TABLES;
+        Empty set (0.00 sec)
+        ```
+
+    - apply all database migrations:
         ```
         (venv) backend $ FLASK_APP=vocab_treasury.py flask db upgrade
         ```
 
-    - verify that the previous step was successful by issuing `$ sqlite3 <the-value-of-SQLALCHEMY_DATABASE_URI-in-your.env-file>` and then issuing:
         ```
-        SQLite version 3.32.3 2020-06-18 14:16:19
-        Enter ".help" for usage hints.
-        sqlite> .tables
-        alembic_version  user           
-        sqlite> .schema user
-        CREATE TABLE user (
-                id INTEGER NOT NULL, 
-                username VARCHAR(20) NOT NULL, 
-                email VARCHAR(120) NOT NULL, 
-                password_hash VARCHAR(60) NOT NULL, 
-                PRIMARY KEY (id), 
-                UNIQUE (email), 
-                UNIQUE (username)
-        );
-        sqlite> .schema example
-        CREATE TABLE example (
-                id INTEGER NOT NULL, 
-                created DATETIME NOT NULL, 
-                user_id INTEGER NOT NULL, 
-                source_language VARCHAR(30), 
-                new_word VARCHAR(30) NOT NULL, 
-                content TEXT NOT NULL, 
-                content_translation TEXT, 
-                PRIMARY KEY (id), 
-                FOREIGN KEY(user_id) REFERENCES user (id)
-        );
-        sqlite> .quit
+        # Verify that repeating the previous step now returns the following:
+
+        mysql> SHOW TABLES;
+        +--------------------+
+        | Tables_in_db-4-v-t |
+        +--------------------+
+        | alembic_version    |
+        | example            |
+        | user               |
+        +--------------------+
+        3 rows in set (0.00 sec)
+
+        
+
+        # Also, verify that the following commands generate the indicated outputs:
+        
+        mysql> SHOW CREATE TABLE user;
+        +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | Table | Create Table                                                                                                                                                                                                                                                                                                                                                                             |
+        +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | user  | CREATE TABLE `user` (
+          `id` int NOT NULL AUTO_INCREMENT,
+          `username` varchar(20) COLLATE utf8mb4_bin NOT NULL,
+          `email` varchar(120) COLLATE utf8mb4_bin NOT NULL,
+          `password_hash` varchar(60) COLLATE utf8mb4_bin NOT NULL,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `email` (`email`),
+          UNIQUE KEY `username` (`username`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin |
+        +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        1 row in set (0.01 sec)
+
+        mysql> SHOW CREATE TABLE example;
+        +---------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | Table   | Create Table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+        +---------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | example | CREATE TABLE `example` (
+          `id` int NOT NULL AUTO_INCREMENT,
+          `created` datetime NOT NULL,
+          `user_id` int NOT NULL,
+          `source_language` varchar(30) COLLATE utf8mb4_bin DEFAULT NULL,
+          `new_word` varchar(30) COLLATE utf8mb4_bin NOT NULL,
+          `content` text COLLATE utf8mb4_bin NOT NULL,
+          `content_translation` text COLLATE utf8mb4_bin,
+          PRIMARY KEY (`id`),
+          KEY `user_id` (`user_id`),
+          CONSTRAINT `example_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin |
+        +---------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        1 row in set (0.01 sec)
         ```
 
     - create a pre-commit Git hook that runs the `black` formatter for Python code:
@@ -130,14 +211,17 @@ Another aspect of the reality of purposeful language learning is that it takes a
         (venv) $
         ```
 
-    - launch a terminal window and, in it, start a process responsible for serving the application instance by issuing either one of the following commands:
+    - launch a terminal window and, in it, start a process
+      responsible for serving the application instance
+      by issuing either one of the following commands:
         ```
         (venv) backend $ python vocab_treasury.py
 
         (venv) backend $ FLASK_APP=vocab_treasury.py flask run
         ```
 
-    - launch another terminal window and, in it, issue the following request and make sure you get the indicated status code in the response:
+    - launch another terminal window and, in it, issue each of the following requests
+      and make sure you get the indicated status code in the response:
         ```
         $ curl -v \
             -X GET \
@@ -357,7 +441,8 @@ Another aspect of the reality of purposeful language learning is that it takes a
             --verbose
         ```
     
-    - launch a terminal window and, in it, start a process responsible for serving the application instance:
+    - launch a terminal window and, in it, start a process
+      responsible for serving the application instance:
         ```
         frontend $ npm start
         ```
