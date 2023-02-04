@@ -128,9 +128,9 @@ class PaginatedAPIMixin(object):
 
 class User(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(60), nullable=False)
+    username = db.Column(db.String(32), unique=True, nullable=False)
+    email = db.Column(db.String(128), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
 
     def to_dict(self):
         """Export `self` to a dict, which omits any and all sensitive information."""
@@ -150,8 +150,8 @@ class Example(PaginatedAPIMixin, db.Model):
         db.Integer, db.ForeignKey("user.id"), nullable=False
     )  # note the lower-case 'u'
 
-    source_language = db.Column(db.String(30), default="Finnish")
-    new_word = db.Column(db.String(30), nullable=False)
+    source_language = db.Column(db.String(32), default="Finnish")
+    new_word = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     content_translation = db.Column(db.Text)
 
