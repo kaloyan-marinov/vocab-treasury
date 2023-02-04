@@ -9,6 +9,9 @@ from flask import url_for
 
 TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
+# This is a working but also hacky way of configuring the application instance
+# for the situation when
+# one wishes to run the tests for the backend sub-project.
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 

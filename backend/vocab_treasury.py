@@ -42,12 +42,17 @@ for env_var_name in (
     if env_var_value is None:
         raise KeyError(f"failed to find an environment variable called {env_var_name}")
     print(env_var_name)
-SQLALCHEMY_DATABASE_URI = (
-    f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
-    f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
-    f"/{os.environ.get('MYSQL_DATABASE')}"
-)
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+
+# This is a working but also hacky way of configuring the application instance
+# for the situation when
+# one wishes to start a process responsible for serving the application instance.
+if not os.environ.get("SQLALCHEMY_DATABASE_URI"):
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
+        f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
+        f"/{os.environ.get('MYSQL_DATABASE')}"
+    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
