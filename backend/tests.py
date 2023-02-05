@@ -7,7 +7,13 @@ from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadS
 from flask import url_for
 
 
+# This is a working but also hacky way of configuring the application instance
+# both for the situation when
+# one wishes to start a process responsible for serving the application instance,
+# and for the situation when
+# one wishes to run the application's test suite.
 os.environ["TESTING"] = "True"
+
 TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 # This is a working but also hacky way of configuring the application instance
@@ -63,7 +69,7 @@ class Test_01_CreateUser(TestBase):
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 17)
+        self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
             {
