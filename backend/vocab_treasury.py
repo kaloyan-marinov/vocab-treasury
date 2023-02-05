@@ -39,7 +39,7 @@ for env_var_name in (
     "MYSQL_DATABASE",
 ):
     env_var_value = os.environ.get(env_var_name)
-    if env_var_value is None:
+    if env_var_value is None and app.config["TESTING"] is not True:
         raise KeyError(f"failed to find an environment variable called {env_var_name}")
     print(env_var_name)
 
