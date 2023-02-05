@@ -15,6 +15,8 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
+app.config["TESTING"] = True
+
 from vocab_treasury import app, db, flask_bcrypt, User, Example
 
 
