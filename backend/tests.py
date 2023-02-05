@@ -64,7 +64,7 @@ class Test_01_CreateUser(TestBase):
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 17)
         self.assertEqual(
             body,
             {
