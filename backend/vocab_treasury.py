@@ -24,6 +24,15 @@ load_dotenv(dotenv_file)
 app = Flask(__name__)
 
 
+# This is a working but also hacky way of configuring the application instance
+# both for the situation when
+# one wishes to start a process responsible for serving the application instance,
+# and for the situation when
+# one wishes to run the application's test suite.
+app.config["TESTING"] = bool(
+    os.environ.get("TESTING"),
+)
+
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 if app.config["SECRET_KEY"] is None:
     sys.exit(
@@ -39,7 +48,7 @@ for env_var_name in (
     "MYSQL_DATABASE",
 ):
     env_var_value = os.environ.get(env_var_name)
-    if env_var_value is None and app.config["TESTING"] is not True:
+    if env_var_value is None and app.config["TESTING"] is False:
         raise KeyError(f"failed to find an environment variable called {env_var_name}")
     print(env_var_name)
 

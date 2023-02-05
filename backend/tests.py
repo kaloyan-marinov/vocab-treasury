@@ -7,6 +7,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadS
 from flask import url_for
 
 
+os.environ["TESTING"] = "True"
 TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 # This is a working but also hacky way of configuring the application instance
@@ -15,12 +16,8 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
-app.config["TESTING"] = True
-
 from vocab_treasury import app, db, flask_bcrypt, User, Example
 
-
-app.config["TESTING"] = True
 
 # fmt: off
 '''
