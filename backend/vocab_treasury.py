@@ -20,13 +20,9 @@ from threading import Thread
 dotenv_file = find_dotenv()
 load_dotenv(dotenv_file)
 
-print(
-    "os.environ.get('SQLALCHEMY_DATABASE_URI') - "
-    + os.environ.get("SQLALCHEMY_DATABASE_URI")
-)
-
 
 app = Flask(__name__)
+
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 if app.config["SECRET_KEY"] is None:
@@ -35,7 +31,29 @@ if app.config["SECRET_KEY"] is None:
         + " - An environment variable called SECRET_KEY must be specified: crashing..."
     )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+for env_var_name in (
+    "MYSQL_HOST",
+    "MYSQL_PORT",
+    "MYSQL_USER",
+    "MYSQL_PASSWORD",
+    "MYSQL_DATABASE",
+):
+    env_var_value = os.environ.get(env_var_name)
+    if env_var_value is None:
+        raise KeyError(f"failed to find an environment variable called {env_var_name}")
+    print(env_var_name)
+
+# This is a working but also hacky way of configuring the application instance
+# for the situation when
+# one wishes to start a process responsible for serving the application instance.
+if not os.environ.get("SQLALCHEMY_DATABASE_URI"):
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
+        f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
+        f"/{os.environ.get('MYSQL_DATABASE')}"
+    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -110,9 +128,9 @@ class PaginatedAPIMixin(object):
 
 class User(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(60), nullable=False)
+    username = db.Column(db.String(32), unique=True, nullable=False)
+    email = db.Column(db.String(128), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
 
     def to_dict(self):
         """Export `self` to a dict, which omits any and all sensitive information."""
@@ -132,8 +150,8 @@ class Example(PaginatedAPIMixin, db.Model):
         db.Integer, db.ForeignKey("user.id"), nullable=False
     )  # note the lower-case 'u'
 
-    source_language = db.Column(db.String(30), default="Finnish")
-    new_word = db.Column(db.String(30), nullable=False)
+    source_language = db.Column(db.String(32), default="Finnish")
+    new_word = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     content_translation = db.Column(db.Text)
 

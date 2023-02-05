@@ -1,7 +1,8 @@
 v1.0.0 (2020/04/27)
 -------------------
 
-``VocabTreasury`` is a web application that supports the process of learning a foreign language.
+``VocabTreasury`` is a web application
+that supports the process of learning a foreign language.
 
 It is developed using the following technologies:
 
@@ -16,7 +17,8 @@ It is developed using the following technologies:
 v1.1.0 (2020/05/03)
 -------------------
 
-- allow searching for Example resources not only by "TRANSLATION" but also by "NEW WORD" and "EXAMPLE"
+- allow searching for Example resources
+  not only by "TRANSLATION" but also by "NEW WORD" and "EXAMPLE"
 
 - make page redirection more user-friendly
 
@@ -25,11 +27,14 @@ v1.2.0 (2021/03/22)
 
 - add ``README.md``
 
-- prepare for switching from using ``conda`` to using the Python Standard Library's ``venv`` module (by adding ``requirements.txt``)
+- prepare for switching from using ``conda``
+  to using the Python Standard Library's ``venv`` module
+  (by adding ``requirements.txt``)
 
 - add a utility ``create_and_populate_db.py`` script
 
-- add configuration files, which make it easier to develop and debug the project in VS Code
+- add configuration files,
+  which make it easier to develop and debug the project in VS Code
 
 v1.2.1 (2021/03/22)
 -------------------
@@ -46,7 +51,9 @@ v1.2.2 (2021/03/31)
 v2.0.0 (2021/08/20)
 -------------------
 
-This is a comprehensive rewrite of the ``VocabTreasury`` project. It is split up into a backend sub-project and a frontend sub-project.
+This is a comprehensive rewrite of the ``VocabTreasury`` project.
+This rewrite splits up the project into
+a backend sub-project and a frontend sub-project.
 
 The backend sub-project uses the following technologies:
 
@@ -77,3 +84,8 @@ v2.0.1 (2021/08/22)
 - add ``CHANGELOG.rst``
 
 - update ``frontend/public/index.html`` by replacing “React App” with “VocabTreasury”
+
+v2.1.0 (2023/02/05)
+-------------------
+
+- switch the relational database management system from SQLite to MySQL
