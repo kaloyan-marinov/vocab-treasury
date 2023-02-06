@@ -46,7 +46,7 @@ class TestBase(unittest.TestCase):
 
 
 class Test_01_CreateUser(TestBase):
-    """"Test the request responsible for creating a new User resource."""
+    """Test the request responsible for creating a new User resource."""
 
     def setUp(self):
         self.data_dict = {
@@ -279,7 +279,7 @@ class Test_01_CreateUser(TestBase):
 
 
 class Test_02_GetUsers(TestBase):
-    """"Test the request responsible for getting a list of existing User resources."""
+    """Test the request responsible for getting a list of existing User resources."""
 
     def test_1_empty_database(self):
         """
