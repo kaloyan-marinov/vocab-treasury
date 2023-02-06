@@ -1,3 +1,5 @@
+![run-test-suite](https://github.com/kaloyan-marinov/vocab-treasury/actions/workflows/run-test-suite.yml/badge.svg)
+
 # Table of Contents
 
 This is the first web application that I have developed on my own.
