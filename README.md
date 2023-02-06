@@ -453,8 +453,6 @@ and use `localhost` to serve a frontend application.
 
 # Future plans
 
-- modularize the backend
-
 - modularize the frontend
 
 - require every newly-created user to confirm their email address
