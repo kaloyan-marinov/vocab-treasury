@@ -11,28 +11,14 @@ from flask import url_for
 # both for the situation when
 # one wishes to start a process responsible for serving the application instance,
 # and for the situation when
-# one wishes to run the application's test suite.
+# one wishes to run the tests for the backend sub-project.
 os.environ["TESTING"] = "True"
 
 TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
-# This is a working but also hacky way of configuring the application instance
-# for the situation when
-# one wishes to run the tests for the backend sub-project.
-os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
 from vocab_treasury import app, db, flask_bcrypt, User, Example
-
-
-# fmt: off
-'''
-print(
-    "os.environ.get('SECRET_KEY') - "
-    + os.environ.get("SECRET_KEY")
-)
-'''
-# fmt: on
 
 
 class TestBase(unittest.TestCase):

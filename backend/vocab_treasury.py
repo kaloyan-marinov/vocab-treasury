@@ -24,21 +24,22 @@ load_dotenv(dotenv_file)
 app = Flask(__name__)
 
 
-# This is a working but also hacky way of configuring the application instance
-# both for the situation when
-# one wishes to start a process responsible for serving the application instance,
-# and for the situation when
-# one wishes to run the application's test suite.
-app.config["TESTING"] = bool(
-    os.environ.get("TESTING"),
-)
-
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 if app.config["SECRET_KEY"] is None:
     sys.exit(
         datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
         + " - An environment variable called SECRET_KEY must be specified: crashing..."
     )
+
+
+# This is a working but also hacky way of configuring the application instance
+# both for the situation when
+# one wishes to start a process responsible for serving the application instance,
+# and for the situation when
+# one wishes to run the tests for the backend sub-project.
+app.config["TESTING"] = bool(
+    os.environ.get("TESTING"),
+)
 
 for env_var_name in (
     "MYSQL_HOST",
@@ -52,18 +53,15 @@ for env_var_name in (
         raise KeyError(f"failed to find an environment variable called {env_var_name}")
     print(env_var_name)
 
-# This is a working but also hacky way of configuring the application instance
-# for the situation when
-# one wishes to start a process responsible for serving the application instance.
-SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
-if SQLALCHEMY_DATABASE_URI:
-    app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-else:
+if app.config["TESTING"] is False:
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
         f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
         f"/{os.environ.get('MYSQL_DATABASE')}"
     )
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
+
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
