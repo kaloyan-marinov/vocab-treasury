@@ -88,7 +88,7 @@ mail = Mail(app)
 flask_bcrypt = Bcrypt(app)
 
 
-from models import User, Example
+from src.models import User, Example
 
 
 basic_auth = HTTPBasicAuth()

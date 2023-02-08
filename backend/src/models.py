@@ -2,10 +2,7 @@ import datetime
 
 from flask import url_for
 
-try:
-    from vocab_treasury import db
-except ImportError:
-    from __main__ import db
+from src.vocab_treasury import db
 
 
 class PaginatedAPIMixin(object):

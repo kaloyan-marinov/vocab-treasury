@@ -18,7 +18,9 @@ TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 
 
-from vocab_treasury import app, db, flask_bcrypt, User, Example
+from src.vocab_treasury import app, db, flask_bcrypt, User, Example
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
 
 class TestBase(unittest.TestCase):
@@ -48,6 +50,10 @@ class Test_01_CreateUser(TestBase):
         Ensure that it is impossible to create a User resource
         without providing a 'Content-Type: application/json' header.
         """
+
+        # import sys
+
+        # print(sys.path)
 
         # Attempt to create a User resource
         # without providing a 'Content-Type: application/json' header.
@@ -1089,7 +1095,9 @@ class Test_06_RequestPasswordReset(TestBase):
         )
 
     def test_4_request_password_reset(self):
-        with patch("vocab_treasury.send_email", return_value=None) as send_email_mock:
+        with patch(
+            "src.vocab_treasury.send_email", return_value=None
+        ) as send_email_mock:
             payload = {
                 "email": "john.doe@protonmail.com",
             }
@@ -1135,7 +1143,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_1_expired_token(self):
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.side_effect = SignatureExpired(
                 "forced via mocking/patching"
@@ -1161,7 +1169,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_2_bad_signature(self):
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.side_effect = BadSignature(
                 "forced via mocking/patching"
@@ -1187,7 +1195,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_3_missing_content_type(self):
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1211,7 +1219,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_4_incomplete_request_body(self):
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1237,7 +1245,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_5_reset_password(self):
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1686,7 +1694,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
 
         # Simulate a request, in which a client provides an expired Bearer Token.
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
             side_effect=SignatureExpired("forced via mocking/patching"),
         ):
             rv = self.client.post(
@@ -1724,7 +1732,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
         # Simulate a request, in which a client provides a Bearer Token,
         # whose cryptographic signature has been tampered with.
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
             side_effect=BadSignature("forced via mocking/patching"),
         ):
             rv = self.client.post(
@@ -1763,7 +1771,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
         # whose payload specifies a non-existent user ID.
         nonexistent_user_id = 17
         with patch(
-            "vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
             return_value={"user_id": nonexistent_user_id},
         ):
             rv = self.client.post(

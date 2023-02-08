@@ -92,7 +92,7 @@ and use `localhost` to serve a frontend application.
         or, even better:
         ```
         (venv) backend $ coverage run \
-            --source=./ \
+            --source=src/ \
             --omit=venv/*,tests.py \
             -m unittest \
             discover -v
@@ -147,7 +147,7 @@ and use `localhost` to serve a frontend application.
 
     - apply all database migrations:
         ```
-        (venv) backend $ FLASK_APP=vocab_treasury.py flask db upgrade
+        (venv) backend $ FLASK_APP=src flask db upgrade
         ```
 
         ```
@@ -214,9 +214,9 @@ and use `localhost` to serve a frontend application.
       responsible for serving the application instance
       by issuing either one of the following commands:
         ```
-        (venv) backend $ python vocab_treasury.py
+        (venv) backend $ python run_dev_server.py
 
-        (venv) backend $ FLASK_APP=vocab_treasury.py flask run
+        (venv) backend $ FLASK_APP=src flask run
         ```
 
     - launch another terminal window and, in it, issue each of the following requests
