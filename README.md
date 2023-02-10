@@ -83,10 +83,9 @@ and use `localhost` to serve a frontend application.
     - ensure that running the tests results in a PASS by issuing one of the following -
       either:
         ```
-        (venv) backend $ python -m unittest tests.py
-
         (venv) backend $ python -m unittest \
-            discover -v
+            -v \
+            tests.py
         ```
 
         or, even better:
@@ -95,7 +94,8 @@ and use `localhost` to serve a frontend application.
             --source=src/ \
             --omit=venv/*,tests.py \
             -m unittest \
-            discover -v
+            -v \
+            tests.py
 
         (venv) backend $ coverage report
 
