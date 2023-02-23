@@ -44,10 +44,10 @@ jobs:
           cd backend
           coverage run \
               --source=src/ \
-              --omit=venv/*,tests.py \
+              --omit=venv/*,tests/* \
               -m unittest \
               -v \
-              tests.py
+              tests/tests.py
           coverage report > line-with-the-TOTAL.txt
           read -r -a arr <<< $(grep TOTAL line-with-the-TOTAL.txt)
           echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
