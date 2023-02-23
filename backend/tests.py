@@ -18,7 +18,7 @@ TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 
 
-from src.vocab_treasury import app, db, flask_bcrypt, User, Example
+from src.vocab_treasury import app, db, flsk_bcrpt, User, Example
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
 
@@ -150,7 +150,7 @@ class Test_01_CreateUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
         self.assertEqual(repr(user), "User(1, jd)")
@@ -208,7 +208,7 @@ class Test_01_CreateUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
     def test_5_prevent_duplication_of_usernames(self):
@@ -266,7 +266,7 @@ class Test_01_CreateUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
 
@@ -481,7 +481,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
     def test_2_missing_content_type(self):
@@ -529,7 +529,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
     def test_3_prevent_editing_of_another_user(self):
@@ -587,7 +587,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "456"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "456"),
         )
 
     def test_4_edit_the_authenticated_user(self):
@@ -639,7 +639,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(edited_u.password_hash, "!@#"),
+            flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
     def test_5_prevent_duplication_of_emails(self):
@@ -700,7 +700,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
     def test_6_incorrect_basic_auth(self):
@@ -753,7 +753,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
     def test_7_prevent_duplication_of_usernames(self):
@@ -814,7 +814,7 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
 
@@ -874,7 +874,7 @@ class Test_05_DeleteUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
     def test_2_prevent_deleting_of_another_user(self):
@@ -927,7 +927,7 @@ class Test_05_DeleteUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(targeted_u.password_hash, "456"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "456"),
         )
 
     def test_3_delete_the_authenticated_user(self):
@@ -1003,7 +1003,7 @@ class Test_05_DeleteUser(TestBase):
             },
         )
         self.assertTrue(
-            flask_bcrypt.check_password_hash(targeted_u.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
 
