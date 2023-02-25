@@ -25,16 +25,12 @@ load_dotenv(dotenv_file)
 app = Flask(__name__)
 
 CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND", "development")
-# fmt: off
-'''
 if CONFIGURATION_4_BACKEND is None:
     sys.exit(
         datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
         + " - An environment variable called CONFIGURATION_4_BACKEND must be specified:"
         + " crashing..."
     )
-'''
-# fmt: on
 app.config.from_object(name_2_configuration[CONFIGURATION_4_BACKEND])
 
 

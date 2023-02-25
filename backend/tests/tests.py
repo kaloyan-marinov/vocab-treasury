@@ -15,9 +15,24 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 
 from src.vocab_treasury import app, db, flsk_bcrpt, User, Example
 
+# This is a working but also hacky way of configuring the application instance
+# when one wishes to run the tests for the backend sub-project
+# both by issuing a command from the command line,
+# and by using the UI of VS Code.
+# (
+# Without this,
+# the second method would not configure the `app` instance
+# based on (the desired) `name_2_configuration["testing"]`,
+# because (a) VS Code's "test discovery" feature begins by parsing all Python modules,
+# and (b) the invoked Python interpreter parses
+# `src/vocab_treasury.py` _before_ the current file,
+# which means that
+# the `app` instance gets configured based on `name_2_configuration["development"]`.
+# )
+# fmt: off
 from configuration import name_2_configuration
-
 app.config.from_object(name_2_configuration[os.environ["CONFIGURATION_4_BACKEND"]])
+# fmt: on
 
 
 class TestBase(unittest.TestCase):

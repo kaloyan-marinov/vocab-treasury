@@ -1,6 +1,4 @@
-import datetime
 import os
-import sys
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -9,30 +7,6 @@ dotenv_path = find_dotenv()
 load_dotenv(dotenv_path=dotenv_path)
 
 
-# fmt: off
-'''
-if os.environ.get("CONFIGURATION_4_BACKEND") is None:
-    sys.exit(
-        datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
-        + " - An environment variable called CONFIGURATION_4_BACKEND must be specified: crashing..."
-    )
-else:
-    print(os.environ.get("CONFIGURATION_4_BACKEND"))
-
-
-for env_var_name in (
-    "MYSQL_HOST",
-    "MYSQL_PORT",
-    "MYSQL_USER",
-    "MYSQL_PASSWORD",
-    "MYSQL_DATABASE",
-):
-    env_var_value = os.environ.get(env_var_name)
-    if env_var_value is None and bool(os.environ.get("TESTING")) is False:
-        raise KeyError(f"failed to find an environment variable called {env_var_name}")
-    print(env_var_name)
-'''
-# fmt: on
 CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND")
 print("CONFIGURATION_4_BACKEND:", CONFIGURATION_4_BACKEND)
 if CONFIGURATION_4_BACKEND in {"development", "production"}:
