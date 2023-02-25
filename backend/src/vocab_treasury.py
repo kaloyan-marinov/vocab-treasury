@@ -15,6 +15,8 @@ import sys
 from flask_mail import Mail, Message
 from threading import Thread
 
+from configuration import name_2_configuration
+
 
 dotenv_file = find_dotenv()
 load_dotenv(dotenv_file)
@@ -22,60 +24,24 @@ load_dotenv(dotenv_file)
 
 app = Flask(__name__)
 
-
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
-if app.config["SECRET_KEY"] is None:
+CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND", "development")
+# fmt: off
+'''
+if CONFIGURATION_4_BACKEND is None:
     sys.exit(
         datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
-        + " - An environment variable called SECRET_KEY must be specified: crashing..."
+        + " - An environment variable called CONFIGURATION_4_BACKEND must be specified:"
+        + " crashing..."
     )
-
-
-# This is a working but also hacky way of configuring the application instance
-# both for the situation when
-# one wishes to start a process responsible for serving the application instance,
-# and for the situation when
-# one wishes to run the tests for the backend sub-project.
-app.config["TESTING"] = bool(
-    os.environ.get("TESTING"),
-)
-
-for env_var_name in (
-    "MYSQL_HOST",
-    "MYSQL_PORT",
-    "MYSQL_USER",
-    "MYSQL_PASSWORD",
-    "MYSQL_DATABASE",
-):
-    env_var_value = os.environ.get(env_var_name)
-    if env_var_value is None and app.config["TESTING"] is False:
-        raise KeyError(f"failed to find an environment variable called {env_var_name}")
-    print(env_var_name)
-
-if app.config["TESTING"] is False:
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql+pymysql://{os.environ.get('MYSQL_USER')}:{os.environ.get('MYSQL_PASSWORD')}"
-        f"@{os.environ.get('MYSQL_HOST')}:{os.environ.get('MYSQL_PORT')}"
-        f"/{os.environ.get('MYSQL_DATABASE')}"
-    )
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
-
-
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+'''
+# fmt: on
+app.config.from_object(name_2_configuration[CONFIGURATION_4_BACKEND])
 
 
 db = SQLAlchemy(app)
 
 
 migrate = Migrate(app, db)
-
-
-app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
-app.config["MAIL_PORT"] = os.environ.get("MAIL_PORT")
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 
 
 mail = Mail(app)

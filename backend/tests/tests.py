@@ -7,12 +7,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadS
 from flask import url_for
 
 
-# This is a working but also hacky way of configuring the application instance
-# both for the situation when
-# one wishes to start a process responsible for serving the application instance,
-# and for the situation when
-# one wishes to run the tests for the backend sub-project.
-os.environ["TESTING"] = "True"
+os.environ["CONFIGURATION_4_BACKEND"] = "testing"
 
 TESTING_SECRET_KEY = "testing-secret-key"
 os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
@@ -20,7 +15,9 @@ os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
 
 from src.vocab_treasury import app, db, flsk_bcrpt, User, Example
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
+from configuration import name_2_configuration
+
+app.config.from_object(name_2_configuration[os.environ["CONFIGURATION_4_BACKEND"]])
 
 
 class TestBase(unittest.TestCase):
