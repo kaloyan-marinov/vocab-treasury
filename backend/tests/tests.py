@@ -298,7 +298,7 @@ class Test_02_GetUsers(TestBase):
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
         with app.test_request_context():
-            _links_self = url_for("get_users", per_page=10, page=1)
+            _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
             _links_first = _links_self
         self.assertEqual(
             body,
@@ -346,7 +346,7 @@ class Test_02_GetUsers(TestBase):
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
         with app.test_request_context():
-            _links_self = url_for("get_users", per_page=10, page=1)
+            _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
         self.assertEqual(
             body,
             {
@@ -1108,7 +1108,8 @@ class Test_06_RequestPasswordReset(TestBase):
 
     def test_4_request_password_reset(self):
         with patch(
-            "src.vocab_treasury.send_email", return_value=None
+            "src.api.send_email",
+            return_value=None,
         ) as send_email_mock:
             payload = {
                 "email": "john.doe@protonmail.com",
@@ -1844,7 +1845,7 @@ class Test_11_GetExamples(TestBaseForExampleResources):
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
         with app.test_request_context():
-            _links_self = url_for("get_examples", per_page=10, page=1)
+            _links_self = url_for("api_blueprint.get_examples", per_page=10, page=1)
         self.assertEqual(
             body,
             {
@@ -1898,7 +1899,7 @@ class Test_11_GetExamples(TestBaseForExampleResources):
         body_2 = json.loads(body_2_str)
         self.assertEqual(rv_2.status_code, 200)
         with app.test_request_context():
-            _links_self = url_for("get_examples", per_page=10, page=1)
+            _links_self = url_for("api_blueprint.get_examples", per_page=10, page=1)
         self.assertEqual(
             body_2,
             {
