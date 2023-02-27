@@ -2,10 +2,9 @@ import unittest
 import json
 from unittest.mock import patch
 import base64
-import os
+
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 from flask import url_for, current_app
-
 
 from src import db, flsk_bcrpt, User, Example, create_app
 
@@ -1091,7 +1090,7 @@ class Test_06_RequestPasswordReset(TestBase):
 
     def test_4_request_password_reset(self):
         with patch(
-            "src.api.send_email",
+            "src.api.users.send_email",
             return_value=None,
         ) as send_email_mock:
             payload = {
