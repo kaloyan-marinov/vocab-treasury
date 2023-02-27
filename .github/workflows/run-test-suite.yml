@@ -48,8 +48,8 @@ jobs:
               --source=src/ \
               --omit=venv/*,tests/* \
               -m unittest \
-              -v \
-              tests/tests.py
+              discover -v \
+              tests/
           coverage report > line-with-the-TOTAL.txt
           read -r -a arr <<< $(grep TOTAL line-with-the-TOTAL.txt)
           echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT

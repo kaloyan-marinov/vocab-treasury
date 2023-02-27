@@ -84,8 +84,8 @@ and use `localhost` to serve a frontend application.
       either:
         ```
         (venv) backend $ python -m unittest \
-            -v \
-            tests/tests.py
+            discover -v \
+            tests/
         ```
 
         or, even better:
@@ -94,8 +94,8 @@ and use `localhost` to serve a frontend application.
             --source=src/ \
             --omit=venv/*,tests/* \
             -m unittest \
-            -v \
-            tests/tests.py
+            discover -v \
+            tests/
 
         (venv) backend $ coverage report
 
