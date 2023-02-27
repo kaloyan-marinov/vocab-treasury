@@ -1,18 +1,15 @@
-from flask import Blueprint, request, jsonify, url_for
+from flask import Blueprint, request, jsonify, url_for, current_app
 
 from itsdangerous import BadSignature, SignatureExpired
 
 from flask_mail import Message
 from threading import Thread
 
-from src.vocab_treasury import (
-    app,
+from src import (
     db,
     mail,
     flsk_bcrpt,
-    token_serializer_for_password_resets,
     MINUTES_FOR_PASSWORD_RESET,
-    token_serializer,
 )
 from src.auth import (
     basic_auth,
@@ -303,7 +300,7 @@ def request_password_reset():
 
 
 def send_password_reset_email(user):
-    password_reset_token = token_serializer_for_password_resets.dumps(
+    password_reset_token = current_app.token_serializer_for_password_resets.dumps(
         {"user_id": user.id}
     ).decode("utf-8")
 
@@ -350,7 +347,7 @@ def send_email(subject, sender, recipients, body):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = body
 
-    t = Thread(target=send_async_email, args=(app, msg))
+    t = Thread(target=send_async_email, args=(current_app, msg))
     t.start()
 
 
@@ -363,7 +360,7 @@ def send_async_email(app, msg):
 def reset_password(token):
     reject_token = False
     try:
-        token_payload = token_serializer_for_password_resets.loads(token)
+        token_payload = current_app.token_serializer_for_password_resets.loads(token)
     except SignatureExpired as e:
         reject_token = True  # valid token, but expired
     except BadSignature as e:
@@ -424,7 +421,7 @@ def reset_password(token):
 @basic_auth.login_required
 def issue_token():
     token_payload = {"user_id": basic_auth.current_user().id}
-    token = token_serializer.dumps(token_payload).decode("utf-8")
+    token = current_app.token_serializer.dumps(token_payload).decode("utf-8")
     return {"token": token}
 
 

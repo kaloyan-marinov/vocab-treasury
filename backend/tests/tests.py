@@ -4,45 +4,28 @@ from unittest.mock import patch
 import base64
 import os
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
-from flask import url_for
+from flask import url_for, current_app
 
 
-os.environ["CONFIGURATION_4_BACKEND"] = "testing"
-
-TESTING_SECRET_KEY = "testing-secret-key"
-os.environ["SECRET_KEY"] = TESTING_SECRET_KEY
-
-
-from src.vocab_treasury import app, db, flsk_bcrpt, User, Example
-
-# This is a working but also hacky way of configuring the application instance
-# when one wishes to run the tests for the backend sub-project
-# both by issuing a command from the command line,
-# and by using the UI of VS Code.
-# (
-# Without this,
-# the second method would not configure the `app` instance
-# based on (the desired) `name_2_configuration["testing"]`,
-# because (a) VS Code's "test discovery" feature begins by parsing all Python modules,
-# and (b) the invoked Python interpreter parses
-# `src/vocab_treasury.py` _before_ the current file,
-# which means that
-# the `app` instance gets configured based on `name_2_configuration["development"]`.
-# )
-# fmt: off
-from configuration import name_2_configuration
-app.config.from_object(name_2_configuration[os.environ["CONFIGURATION_4_BACKEND"]])
-# fmt: on
+from src import db, flsk_bcrpt, User, Example, create_app
 
 
 class TestBase(unittest.TestCase):
     def setUp(self):
+        self.app = create_app(name_of_configuration="testing")
+
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+
         db.drop_all()  # just in case
         db.create_all()
-        self.client = app.test_client()
+
+        self.client = self.app.test_client()
 
     def tearDown(self):
         db.drop_all()
+
+        self.app_context.pop()
 
 
 class Test_01_CreateUser(TestBase):
@@ -297,7 +280,7 @@ class Test_02_GetUsers(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        with app.test_request_context():
+        with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
             _links_first = _links_self
         self.assertEqual(
@@ -345,7 +328,7 @@ class Test_02_GetUsers(TestBase):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        with app.test_request_context():
+        with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
         self.assertEqual(
             body,
@@ -1156,7 +1139,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_1_expired_token(self):
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.side_effect = SignatureExpired(
                 "forced via mocking/patching"
@@ -1182,7 +1165,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_2_bad_signature(self):
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.side_effect = BadSignature(
                 "forced via mocking/patching"
@@ -1208,7 +1191,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_3_missing_content_type(self):
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1232,7 +1215,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_4_incomplete_request_body(self):
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1258,7 +1241,7 @@ class Test_07_ResetPassword(TestBase):
 
     def test_5_reset_password(self):
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads"
+            "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
             serializer_loads_mock.return_value = {"user_id": 1}
 
@@ -1310,7 +1293,7 @@ class Test_08_IssueToken(TestBase):
         user_id = body["id"]
 
         token_serializer = TimedJSONWebSignatureSerializer(
-            TESTING_SECRET_KEY, expires_in=3600
+            current_app.config["SECRET_KEY"], expires_in=3600
         )
         token = token_serializer.dumps({"user_id": user_id}).decode("utf-8")
         self._expected_body = {"token": token}
@@ -1707,7 +1690,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
 
         # Simulate a request, in which a client provides an expired Bearer Token.
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.TimedJSONWebSignatureSerializer.loads",
             side_effect=SignatureExpired("forced via mocking/patching"),
         ):
             rv = self.client.post(
@@ -1745,7 +1728,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
         # Simulate a request, in which a client provides a Bearer Token,
         # whose cryptographic signature has been tampered with.
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.TimedJSONWebSignatureSerializer.loads",
             side_effect=BadSignature("forced via mocking/patching"),
         ):
             rv = self.client.post(
@@ -1784,7 +1767,7 @@ class Test_10_CreateExample(TestBaseForExampleResources):
         # whose payload specifies a non-existent user ID.
         nonexistent_user_id = 17
         with patch(
-            "src.vocab_treasury.TimedJSONWebSignatureSerializer.loads",
+            "src.TimedJSONWebSignatureSerializer.loads",
             return_value={"user_id": nonexistent_user_id},
         ):
             rv = self.client.post(
@@ -1844,7 +1827,7 @@ class Test_11_GetExamples(TestBaseForExampleResources):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
-        with app.test_request_context():
+        with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_examples", per_page=10, page=1)
         self.assertEqual(
             body,
@@ -1898,7 +1881,7 @@ class Test_11_GetExamples(TestBaseForExampleResources):
         body_2_str = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_2_str)
         self.assertEqual(rv_2.status_code, 200)
-        with app.test_request_context():
+        with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_examples", per_page=10, page=1)
         self.assertEqual(
             body_2,

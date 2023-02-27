@@ -1,32 +1,8 @@
-from flask import jsonify
+from flask import jsonify, current_app
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from itsdangerous import BadSignature, SignatureExpired
 
-# fmt: off
-'''
-NB:
-If the next statement is replaced with
-```
-from src import token_serializer, flsk_bcrpt
-```
-then issuing `FLASK_APP=src flask db upgrade` fails with
-```
-Error: While importing "src", an ImportError was raised:
-
-Traceback (most recent call last):
-  File "<path-to>/vocab-treasury/backend/venv/lib/python3.8/site-packages/flask/cli.py", line 240, in locate_app
-    __import__(module_name)
-  File "<path-to>/vocab-treasury/backend/src/__init__.py", line 1, in <module>
-    from src.vocab_treasury import app, db, flsk_bcrpt, token_serializer
-  File "<path-to>/vocab-treasury/backend/src/vocab_treasury.py", line 108, in <module>
-    from src.auth import (
-  File "<path-to>/vocab-treasury/backend/src/auth.py", line 5, in <module>
-    from src import token_serializer, flsk_bcrpt
-ImportError: cannot import name 'token_serializer' from partially initialized module 'src' (most likely due to a circular import) (<path-to>/vocab-treasury/backend/src/__init__.py)
-```
-'''
-# fmt: on
-from src.vocab_treasury import token_serializer, flsk_bcrpt
+from src import flsk_bcrpt
 from src.models import User
 
 
@@ -113,7 +89,7 @@ token_auth = HTTPTokenAuth()
 @token_auth.verify_token
 def verify_token(token):
     try:
-        token_payload = token_serializer.loads(token)
+        token_payload = current_app.token_serializer.loads(token)
     except SignatureExpired:
         return None  # valid token, but expired
     except BadSignature:

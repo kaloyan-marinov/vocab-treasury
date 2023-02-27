@@ -54,6 +54,8 @@ class ProductionConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    SECRET_KEY = "testing-secret-key"
+
     SQLALCHEMY_DATABASE_URI = "sqlite://"
 
 

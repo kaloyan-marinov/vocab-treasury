@@ -2,7 +2,7 @@ import datetime
 
 from flask import url_for
 
-from src.vocab_treasury import db
+from src import db
 
 
 class PaginatedAPIMixin(object):
