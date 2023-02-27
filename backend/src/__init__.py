@@ -27,9 +27,6 @@ flsk_bcrpt = Bcrypt()
 from src.models import User, Example  # noqa
 
 
-MINUTES_FOR_PASSWORD_RESET = 15
-
-
 def create_app(name_of_configuration=None):
     if name_of_configuration is None:
         CONFIGURATION_4_BACKEND = os.environ.get(
@@ -74,12 +71,12 @@ def create_app(name_of_configuration=None):
     # fmt: on
     app.token_serializer = TimedJSONWebSignatureSerializer(
         app.config["SECRET_KEY"],
-        expires_in=3600,
+        expires_in=60 * app.config["MINUTES_FOR_TOKEN_VALIDITY"],
     )
 
     app.token_serializer_for_password_resets = TimedJSONWebSignatureSerializer(
         app.config["SECRET_KEY"],
-        expires_in=60 * MINUTES_FOR_PASSWORD_RESET,
+        expires_in=60 * app.config["MINUTES_FOR_PASSWORD_RESET"],
     )
 
     # Register `Blueprint`(s) with the application instance.

@@ -1,7 +1,7 @@
 from src import create_app
 
 
-app = create_app()
+app = create_app(name_of_configuration="development")
 
 
 db_engine = app.config["SQLALCHEMY_DATABASE_URI"].split("://")[0]

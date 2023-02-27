@@ -43,6 +43,9 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 
+    MINUTES_FOR_TOKEN_VALIDITY = int(os.environ.get("MINUTES_FOR_TOKEN_VALIDITY"))
+    MINUTES_FOR_PASSWORD_RESET = int(os.environ.get("MINUTES_FOR_PASSWORD_RESET"))
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

@@ -9,7 +9,6 @@ from src import (
     db,
     mail,
     flsk_bcrpt,
-    MINUTES_FOR_PASSWORD_RESET,
 )
 from src.auth import (
     basic_auth,
@@ -304,9 +303,11 @@ def send_password_reset_email(user):
         {"user_id": user.id}
     ).decode("utf-8")
 
+    minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
+
     msg_body = f"""Dear {user.username},
 
-You may reset your password within {MINUTES_FOR_PASSWORD_RESET} minutes of receiving
+You may reset your password within {minutes_for_password_reset} minutes of receiving
 this email message.
 
 To reset your password, launch a terminal instance and issue the following request:
@@ -323,7 +324,7 @@ When issuing that request, please remember
 (b) to surround your desired new password with double quotation marks.
 
 If you want to reset your password
-but fail to do that within {MINUTES_FOR_PASSWORD_RESET} minutes of receiving this message,
+but fail to do that within {minutes_for_password_reset} minutes of receiving this message,
 you will have to submit a brand-new request for a password reset.
 (To submit a brand-new request for a password reset, issue a POST request to the
 {url_for('api_blueprint.request_password_reset', _external=True)} endpoint.)
