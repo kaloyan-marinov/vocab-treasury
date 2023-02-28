@@ -14,7 +14,12 @@
     "python.testing.unittestEnabled": true,
     "python.pythonPath": "backend/venv/bin/python",
 
-    "editor.formatOnSave": false,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "backend/venv/bin/black",
+  
+    "[python]": {
+      "editor.formatOnSave": true
+    },
 
     // Controls if suggestions should be accepted 'Enter' - in addition to 'Tab'.
     // Helps to avoid ambiguity between inserting new lines or accepting suggestions.

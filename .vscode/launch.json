@@ -8,9 +8,10 @@
       "name": "[new way] Python: Flask",
       "type": "python",
       "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
       "module": "flask",
       "env": {
-        "FLASK_APP": "backend/vocab_treasury.py",
+        "FLASK_APP": "src",
         "FLASK_ENV": "development"
       },
       "args": ["run", "--no-debugger"],
@@ -20,7 +21,8 @@
       "name": "[old way] Python: Flask",
       "type": "python",
       "request": "launch",
-      "module": "backend.vocab_treasury",
+      "cwd": "${workspaceFolder}/backend",
+      "module": "run_dev_server",
       "env": {
         "FLASK_ENV": "development"
       },

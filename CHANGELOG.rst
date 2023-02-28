@@ -89,3 +89,8 @@ v2.1.0 (2023/02/05)
 -------------------
 
 - switch the relational database management system from SQLite to MySQL
+
+v2.2.0 (2023/02/28)
+-------------------
+
+- refactor the backend sub-project into a modular structure
