@@ -338,7 +338,10 @@ def send_email(subject, sender, recipients, body):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = body
 
-    t = threading.Thread(target=send_async_email, args=(current_app, msg))
+    t = threading.Thread(
+        target=send_async_email,
+        args=(current_app._get_current_object(), msg),
+    )
     t.start()
 
 
