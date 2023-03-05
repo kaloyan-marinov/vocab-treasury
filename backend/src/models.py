@@ -53,8 +53,6 @@ class PaginatedAPIMixin(object):
 
 
 class User(PaginatedAPIMixin, db.Model):
-    __tablename__ = "users"
-
     id = db.Column(db.Integer, primary_key=True)
 
     username = db.Column(db.String(32), unique=True, nullable=False)
@@ -71,8 +69,6 @@ class User(PaginatedAPIMixin, db.Model):
 
 
 class Example(PaginatedAPIMixin, db.Model):
-    __tablename__ = "examples"
-
     id = db.Column(db.Integer, primary_key=True)
 
     # Note that the next statement passes a function - not its invocation! -
@@ -81,7 +77,7 @@ class Example(PaginatedAPIMixin, db.Model):
     # when saving date+time to a DB (so they're consistent).
     created = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     # Note that the string within the next statement uses a lower-case "u".
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     source_language = db.Column(db.String(32), default="Finnish")
     new_word = db.Column(db.String(128), nullable=False)
