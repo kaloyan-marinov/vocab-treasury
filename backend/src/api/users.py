@@ -73,14 +73,56 @@ def create_user():
         username=username,
         email=email,
         password_hash=flsk_bcrpt.generate_password_hash(password).decode("utf-8"),
+        is_confirmed=False,
     )
     db.session.add(user)
     db.session.commit()
+
+    send_email_requesting_that_account_should_be_confirmed(user)
 
     payload = user.to_dict()
     r = jsonify(payload)
     r.status_code = 201
     r.headers["Location"] = url_for("api_blueprint.get_user", user_id=user.id)
+    return r
+
+
+@api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
+def confirm_newly_created_account(token):
+    # TODO: (2023/03/05, 15:15)
+    #       eliminate the code duplication between this function and `reset_password`
+    reject_token = False
+    try:
+        token_payload = current_app.token_serializer_for_password_resets.loads(token)
+    except SignatureExpired as e:
+        reject_token = True  # valid token, but expired
+    except BadSignature as e:
+        reject_token = True  # invalid token
+
+    if reject_token:
+        r = jsonify(
+            {
+                "error": "Unauthorized",
+                "message": "Your account-confirmation token is invalid.",
+            }
+        )
+        r.status_code = 401
+        return r
+    user_id = token_payload["user_id"]
+    user = User.query.get(user_id)
+
+    user.is_confirmed = True
+    db.session.add(user)
+    db.session.commit()
+
+    r = jsonify(
+        {
+            "message": (
+                "You have confirmed your account successfully. You may now log in."
+            )
+        }
+    )
+    r.status_code = 200
     return r
 
 
@@ -98,13 +140,19 @@ def get_users():
     with the reason for this restriction being
     that we do not want to task the server too much.
     """
+    for k in request.environ:
+        v = request.environ[k]
+        print()
+        print(k)
+        print(v)
+
     per_page = min(
         request.args.get("per_page", 10, type=int),
         100,
     )
     page = request.args.get("page", 1, type=int)
     users_collection = User.to_collection_dict(
-        User.query,
+        User.query.filter_by(is_confirmed=True),
         per_page,
         page,
         "api_blueprint.get_users",
@@ -116,7 +164,7 @@ def get_users():
 def get_user(user_id):
     u = User.query.get(user_id)
 
-    if u is None:
+    if u is None or u.is_confirmed is False:
         r = jsonify(
             {
                 "error": "Not Found",
@@ -286,6 +334,51 @@ def request_password_reset():
     )
     r.status_code = 202
     return r
+
+
+def send_email_requesting_that_account_should_be_confirmed(user):
+    account_confirmation_token = current_app.token_serializer_for_password_resets.dumps(
+        {"user_id": user.id}
+    ).decode("utf-8")
+
+    msg_body = f"""Dear {user.username},
+
+Thank you for creating a VocabTreasury account.
+
+Please confirm your account
+in order to be able to log in and start using VocabTreasury.
+
+To confirm your account, launch a terminal instance and issue the following request:
+```
+$ curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_newly_created_account',
+        token=account_confirmation_token,
+        _external=True,
+    )}
+
+Sincerely,
+The VocabTreasury Team
+```
+    """
+    # fmt: off
+    '''
+PS: If you do not confirm your account within 14 days of receiving this email,
+your account will be deleted.
+If your account is deleted but you do want to use VocabTreasury,
+you can still do so by simply creating a new VocabTreasury account.
+    '''
+    # fmt: on
+
+    send_email(
+        subject="[VocabTreasury] Please confirm your newly-created account",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+        body=msg_body,
+    )
 
 
 def send_password_reset_email(user):

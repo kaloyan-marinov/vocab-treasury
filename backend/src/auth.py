@@ -1,4 +1,4 @@
-from flask import jsonify, current_app
+from flask import jsonify, current_app, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from itsdangerous import BadSignature, SignatureExpired
 
@@ -14,6 +14,26 @@ def verify_password(email, password):
     user = User.query.filter_by(email=email).first()
     if user is None:
         return None
+    if not user.is_confirmed:
+        print({"problem": "your account has not been confirmed"})
+        # fmt: off
+        '''
+        return {"problem": "your account has not been confirmed"}
+        '''
+        # fmt: on
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            }
+        )
+        r.status_code = 400
+        # return r
+        g.response = r
+        return None
 
     if flsk_bcrpt.check_password_hash(user.password_hash, password) is False:
         return None
@@ -23,7 +43,10 @@ def verify_password(email, password):
 
 @basic_auth.error_handler
 def basic_auth_error():
-    """Return a 401 error to the client."""
+    """Return an appropriate error to the client."""
+    if hasattr(g, "response"):
+        return g.response
+
     r = jsonify(
         {
             "error": "Unauthorized",
