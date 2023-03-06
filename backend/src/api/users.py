@@ -140,11 +140,6 @@ def get_users():
     with the reason for this restriction being
     that we do not want to task the server too much.
     """
-    for k in request.environ:
-        v = request.environ[k]
-        print()
-        print(k)
-        print(v)
 
     per_page = min(
         request.args.get("per_page", 10, type=int),

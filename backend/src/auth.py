@@ -15,6 +15,8 @@ def verify_password(email, password):
     if user is None:
         return None
     if not user.is_confirmed:
+        # TODO: (2023/03/06, 07:06)
+        #       clean up this code-block
         print({"problem": "your account has not been confirmed"})
         # fmt: off
         '''
