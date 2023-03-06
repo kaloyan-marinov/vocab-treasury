@@ -169,7 +169,7 @@ def get_user(user_id):
             {
                 "error": "Not Found",
                 "message": (
-                    f"There doesn't exist a User resource with an id of {user_id}"
+                    f"There doesn't exist a User resource with an id of {user_id}."
                 ),
             }
         )

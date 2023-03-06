@@ -6,7 +6,7 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
-from tests import TestBase
+from tests import TestBase, TestBasePlusUtilities
 
 
 class Test_01_CreateUser(TestBase):
@@ -99,6 +99,15 @@ class Test_01_CreateUser(TestBase):
             data=self.data_str,
             headers={"Content-Type": "application/json"},
         )
+        # TODO: (2023/03/06, 06:25)
+        #       it has been empirically observed that,
+        #       when a unit test (such as this one!) that creates a User is run,
+        #       no account-confirmation email gets sent
+        #
+        #       the reason for that is as follows:
+        #       https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
+        #
+        #       record that in a reasonable way and place
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
@@ -247,21 +256,8 @@ class Test_01_CreateUser(TestBase):
         )
 
 
-class Test_02_GetUsers(TestBase):
+class Test_02_GetUsers(TestBasePlusUtilities):
     """Test the request responsible for getting a list of existing User resources."""
-
-    def _create_user(self, username, email, password):
-        data = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str = json.dumps(data)
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
 
     def test_1_empty_database(self):
         """
@@ -310,12 +306,7 @@ class Test_02_GetUsers(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_str_0 = json.dumps(data_0)
-        rv_0 = self.client.post(
-            "/api/users",
-            data=data_str_0,
-            headers={"Content-Type": "application/json"},
-        )
+        self.util_create_user(data_0["username"], data_0["email"], data_0["password"])
 
         # Get all User resources.
         rv = self.client.get("/api/users")
@@ -363,19 +354,11 @@ class Test_02_GetUsers(TestBase):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self._create_user(d["username"], d["email"], d["password"])
+            self.util_create_user(d["username"], d["email"], d["password"])
 
         # Confirm only the first User.
-        account_confirmation_token_for_user_1 = (
-            self.app.token_serializer_for_password_resets.dumps({"user_id": 1}).decode(
-                "utf-8"
-            )
-        )
-
-        self.client.post(
-            "/api/confirm-newly-created-account/"
-            + account_confirmation_token_for_user_1
-        )
+        user_id = 1
+        self.util_confirm_user(user_id)
 
         # Get all User resources.
         rv = self.client.get("/api/users")
@@ -411,7 +394,7 @@ class Test_02_GetUsers(TestBase):
         )
 
 
-class Test_03_GetUser(TestBase):
+class Test_03_GetUser(TestBasePlusUtilities):
     """Test the request responsible for getting one specific User resource."""
 
     def test_1_nonexistent_user(self):
@@ -428,14 +411,15 @@ class Test_03_GetUser(TestBase):
             body,
             {
                 "error": "Not Found",
-                "message": "There doesn't exist a User resource with an id of 1",
+                "message": "There doesn't exist a User resource with an id of 1.",
             },
         )
 
     def test_2_user_that_exists(self):
         """
-        Ensure that, when the database contains some User resources,
-        it is possible to get a specific User resource.
+        Ensure that
+        attempting to get a User resource, which exists but has not been confirmed,
+        returns a 404.
         """
 
         # Create one User resource.
@@ -444,12 +428,39 @@ class Test_03_GetUser(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_str_0 = json.dumps(data_0)
-        rv_0 = self.client.post(
-            "/api/users",
-            data=data_str_0,
-            headers={"Content-Type": "application/json"},
+        self.util_create_user(data_0["username"], data_0["email"], data_0["password"])
+
+        # Get the User resource that was created just now.
+        rv = self.client.get("/api/users/1")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(
+            body,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 1.",
+            },
         )
+
+    def test_3_user_that_exists(self):
+        """
+        Ensure that,
+        when the database contains some User resources that have been confirmed,
+        it is possible to get a specific confirmed User resource.
+        """
+
+        # Create one User resource and confirm it.
+        data_0 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self.util_create_user(data_0["username"], data_0["email"], data_0["password"])
+
+        user_id = 1
+        self.util_confirm_user(user_id)
 
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
