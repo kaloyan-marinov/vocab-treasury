@@ -118,11 +118,12 @@ class Test_01_CreateUser(TestBase):
         self.assertEqual(len(users), 1)
         user = users[0]
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {a: getattr(user, a) for a in ["id", "username", "email", "is_confirmed"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
+                "is_confirmed": 0,
             },
         )
         self.assertTrue(
@@ -249,6 +250,19 @@ class Test_01_CreateUser(TestBase):
 class Test_02_GetUsers(TestBase):
     """Test the request responsible for getting a list of existing User resources."""
 
+    def _create_user(self, username, email, password):
+        data = {
+            "username": username,
+            "email": email,
+            "password": password,
+        }
+        data_str = json.dumps(data)
+        rv = self.client.post(
+            "/api/users",
+            data=data_str,
+            headers={"Content-Type": "application/json"},
+        )
+
     def test_1_empty_database(self):
         """
         Ensure that, when the database doesn't contain any User resources,
@@ -284,10 +298,10 @@ class Test_02_GetUsers(TestBase):
             },
         )
 
-    def test_2_nonempty_database(self):
+    def test_2_empty_database(self):
         """
-        Ensure that, when the database contains some User resources,
-        it is possible to get a list of User resources.
+        Ensure that, when the database contains only unconfirmed User resources,
+        getting a list of User resources doesn't return any.
         """
 
         # Create one User resource.
@@ -301,6 +315,66 @@ class Test_02_GetUsers(TestBase):
             "/api/users",
             data=data_str_0,
             headers={"Content-Type": "application/json"},
+        )
+
+        # Get all User resources.
+        rv = self.client.get("/api/users")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 200)
+        with current_app.test_request_context():
+            _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
+        self.assertEqual(
+            body,
+            {
+                "items": [],
+                "_meta": {
+                    "total_items": 0,
+                    "per_page": 10,
+                    "total_pages": 0,
+                    "page": 1,
+                },
+                "_links": {
+                    "self": _links_self,
+                    "next": None,
+                    "prev": None,
+                    "first": _links_self,
+                    "last": None,
+                },
+            },
+        )
+
+    def test_3_nonempty_database(self):
+        """
+        Ensure that, when the database contains some User resources,
+        getting a list of User resources returns only those that are confirmed.
+        """
+
+        # Create two User resources.
+        data_0_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_0_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        for d in (data_0_1, data_0_2):
+            self._create_user(d["username"], d["email"], d["password"])
+
+        # Confirm only the first User.
+        account_confirmation_token_for_user_1 = (
+            self.app.token_serializer_for_password_resets.dumps({"user_id": 1}).decode(
+                "utf-8"
+            )
+        )
+
+        self.client.post(
+            "/api/confirm-newly-created-account/"
+            + account_confirmation_token_for_user_1
         )
 
         # Get all User resources.
