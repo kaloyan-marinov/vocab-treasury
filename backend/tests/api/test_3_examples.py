@@ -9,9 +9,14 @@ from src import User, Example
 from tests import TestBasePlusUtilities
 
 
+# TODO: (2023/03/07, 07:06)
+#       make a _quick_/_time-boxed_ attempt at
+#       modifying `TestBasePlusUtilities.util_create_user` in such a way that
+#       each call returns an "output dictionary" of server-generated data
+#       that is needed by the existing test cases
 class TestBaseForExampleResources(TestBasePlusUtilities):
     def create_user(self, username, email, password):
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         user_id = self.util_create_user(
             username,
             email,
