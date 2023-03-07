@@ -4,7 +4,7 @@ import base64
 from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
-from tests import TestBase, TestBasePlusUtilities
+from tests import TestBasePlusUtilities
 
 
 class Test_01_IssueToken(TestBasePlusUtilities):
@@ -182,7 +182,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         )
 
 
-class Test_02_GetUserProfile(TestBase):
+class Test_02_GetUserProfile(TestBasePlusUtilities):
     """
     Test the request responsible for getting the User Profile resource,
     which is associated with a given User resource.
@@ -191,10 +191,15 @@ class Test_02_GetUserProfile(TestBase):
     def setUp(self):
         super().setUp()
 
-        data = {"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}
-        data_str = json.dumps(data)
-        rv = self.client.post(
-            "/api/users", data=data_str, headers={"Content-Type": "application/json"}
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._user_id = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
     def test_1_missing_basic_auth(self):
@@ -223,6 +228,9 @@ class Test_02_GetUserProfile(TestBase):
         Ensure that the user, who is authenticated by the issued request's header,
         is able to fetch her own User Profile resource.
         """
+
+        # Arrange.
+        self.util_confirm_user(self._user_id)
 
         # Issue an access token for the user.
         basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"
