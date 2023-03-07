@@ -54,7 +54,39 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             },
         )
 
-    def test_2_issue_token(self):
+    def test_2_unconfirmed_user(self):
+        # Arrange.
+        # Note that
+        # the User resource identified by `self._user_id` has not been confirmed.
+
+        # Act.
+        basic_auth_credentials = "john.doe@protonmail.com:123"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.delete(
+            "/api/users/1",
+            headers={
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            },
+        )
+
+    def test_3_issue_token(self):
         """
         Ensure that a(n access) token gets issued for the user,
         who is authenticated by the issued request's header.
@@ -117,7 +149,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
 
             self.assertEqual(payload, p_expected)
 
-    def test_3_incorrect_basic_auth(self):
+    def test_4_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to issue a(n access) token
         by providing an incorrect set of Basic Auth credentials.

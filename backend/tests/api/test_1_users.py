@@ -525,7 +525,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_authenticated_user_is_unconfirmed(self):
+    def test_2_unconfirmed_user(self):
         """
         Ensure that, if a User
             (a) provides valid authentication,
@@ -1006,7 +1006,7 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_2_authenticated_user_is_unconfirmed(self):
+    def test_2_unconfirmed_user(self):
         """
         Ensure that, if a User
             (a) provides valid authentication,
