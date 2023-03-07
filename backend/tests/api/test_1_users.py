@@ -967,21 +967,8 @@ class Test_04_EditUser(TestBasePlusUtilities):
         )
 
 
-class Test_05_DeleteUser(TestBase):
+class Test_05_DeleteUser(TestBasePlusUtilities):
     """Test the request responsible for deleting a specific User resource."""
-
-    def _create_user(self, username, email, password):
-        data = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str = json.dumps(data)
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
 
     def test_1_missing_basic_auth(self):
         """
@@ -990,9 +977,10 @@ class Test_05_DeleteUser(TestBase):
         """
 
         # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        self.util_create_user(username, email, password)
 
         # Attempt to delete the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
@@ -1026,7 +1014,49 @@ class Test_05_DeleteUser(TestBase):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_2_prevent_deleting_of_another_user(self):
+    def test_2_authenticated_user_is_unconfirmed(self):
+        """
+        Ensure that, if a User
+            (a) provides valid authentication,
+            (b) attempts to delete his/her own User resource, but
+            (c) has not been confirmed,
+        then the response should be a 400.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        self.util_create_user(username, email, password)
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.delete(
+            "/api/users/1",
+            headers={
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            },
+        )
+
+    def test_3_prevent_deleting_of_another_user(self):
         """
         Ensure that it is impossible to edit a User resource,
         which does not correspond to
@@ -1034,10 +1064,21 @@ class Test_05_DeleteUser(TestBase):
         """
 
         # Create two User resources.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
-        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+        data_0_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_0_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        for d in (data_0_1, data_0_2):
+            self.util_create_user(d["username"], d["email"], d["password"])
+
+        user_id = 1
+        self.util_confirm_user(user_id)
 
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -1072,23 +1113,27 @@ class Test_05_DeleteUser(TestBase):
             {
                 "id": 2,
                 "username": "ms",
-                "email": "mary.smith@yahoo.com",
+                "email": "mary.smith@protonmail.com",
             },
         )
         self.assertTrue(
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "456"),
         )
 
-    def test_3_delete_the_authenticated_user(self):
+    def test_4_delete_the_authenticated_user(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to delete his/her corresponding User resource.
         """
 
         # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        self.util_create_user(username, email, password)
+
+        user_id = 1
+        self.util_confirm_user(user_id)
 
         # Delete a User resource.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -1107,16 +1152,20 @@ class Test_05_DeleteUser(TestBase):
         users = User.query.all()
         self.assertEqual(len(users), 0)
 
-    def test_4_incorrect_basic_auth(self):
+    def test_5_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to delete a User resource
         by providing an incorrect set of Basic Auth credentials.
         """
 
         # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        self.util_create_user(username, email, password)
+
+        user_id = 1
+        self.util_confirm_user(user_id)
 
         # Attempt to delete a User resource
         # by providing an incorrect set of Basic Auth credentials.
