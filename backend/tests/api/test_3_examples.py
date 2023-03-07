@@ -6,26 +6,15 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import User, Example
-from tests import TestBase
+from tests import TestBasePlusUtilities
 
 
-class TestBaseForExampleResources(TestBase):
+class TestBaseForExampleResources(TestBasePlusUtilities):
     def create_user(self, username, email, password):
         # Create one User resource.
-        data_1 = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str_1 = json.dumps(data_1)
-        rv_1 = self.client.post(
-            "/api/users",
-            data=data_str_1,
-            headers={"Content-Type": "application/json"},
-        )
+        user_id = self.util_create_user(username, email, password)
 
-        body_str_1 = rv_1.get_data(as_text=True)
-        body_1 = json.loads(body_str_1)
+        self.util_confirm_user(user_id)
 
         # Issue an access token for the user, which was created just now.
         basic_auth_credentials = email + ":" + password
@@ -40,7 +29,7 @@ class TestBaseForExampleResources(TestBase):
         body_2 = json.loads(body_str_2)
         token_auth = "Bearer " + body_2["token"]
 
-        return body_1, token_auth
+        return user_id, token_auth
 
 
 class Test_01_CreateExample(TestBaseForExampleResources):
@@ -50,7 +39,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
+        __, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
 
@@ -345,10 +334,9 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
+        self._jd_user_id, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_no_examples_exist(self):
         """
@@ -455,7 +443,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_token_auth = self.create_user(
+        __, ms_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
@@ -667,10 +655,9 @@ class Test_03_GetExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
+        self._jd_user_id, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -799,7 +786,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
+        __, ms_user_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
@@ -852,10 +839,9 @@ class Test_04_EditExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
+        self._jd_user_id, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@protonmail.com", password="123"
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -1073,7 +1059,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
+        __, ms_user_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
@@ -1151,10 +1137,9 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
+        self._jd_user_id, self._jd_user_token_auth = self.create_user(
             username="jd", email="john.doe@gmail.com", password="123"
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -1261,7 +1246,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
+        __, ms_user_token_auth = self.create_user(
             username="ms", email="mary.smith@yahoo.com", password="456"
         )
 
