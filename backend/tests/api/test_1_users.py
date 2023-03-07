@@ -527,6 +527,50 @@ class Test_04_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
+    def test_2_authenticated_user_is_unconfirmed(self):
+        """
+        Ensure that, if a User
+            (a) provides valid authentication,
+            (b) attempts to edit his/her own User resource, but
+            (c) has not been confirmed,
+        then the response should be a 400.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        self.util_create_user(username, email, password)
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.put(
+            "/api/users/1",
+            data=self.data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            },
+        )
+
     def test_3_missing_content_type(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
