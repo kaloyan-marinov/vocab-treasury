@@ -17,6 +17,9 @@ def verify_password(email, password):
     if not user.is_confirmed:
         # TODO: (2023/03/06, 07:06)
         #       clean up this code-block
+        #
+        #       consider renaming `g.response`
+        #       to `g.response_for_authenticated_but_unconfirmed_user`
         print({"problem": "your account has not been confirmed"})
         # fmt: off
         '''
