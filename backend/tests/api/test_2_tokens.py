@@ -1,8 +1,6 @@
 import json
 import base64
 
-from unittest.mock import patch
-
 from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
@@ -59,7 +57,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
     def test_2_unconfirmed_user(self):
         # Arrange.
         # Note that
-        # the `User` resource identified by `self._user_id` has not been confirmed.
+        # the User resource identified by `self._user_id` has not been confirmed.
 
         # Act.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -225,42 +223,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
             },
         )
 
-    def test_2_unconfirmed_user(self):
-        # Arrange.
-        # Note that
-        # the `User` resource identified by `self._user_id` has not been confirmed.
-        authorization = "Bearer use-mock-to-treat-this-as-valid-token"
-
-        # Act.
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": self._user_id}
-
-            rv = self.client.get(
-                "/api/user-profile",
-                headers={
-                    "Authorization": authorization,
-                },
-            )
-
-        # Assert.
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
-            {
-                "error": "Bad Request",
-                "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
-                ),
-            },
-        )
-
-    def test_3_get_user_profile(self):
+    def test_2_get_user_profile(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to fetch her own User Profile resource.

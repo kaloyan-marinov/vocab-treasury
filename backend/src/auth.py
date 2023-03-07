@@ -124,20 +124,6 @@ def verify_token(token):
         return None  # invalid token
 
     user = User.query.get(token_payload["user_id"])
-    if not user.is_confirmed:
-        print({"problem": "your account has not been confirmed"})
-        r = jsonify(
-            {
-                "error": "Bad Request",
-                "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
-                ),
-            }
-        )
-        r.status_code = 400
-        g.response_for_authenticated_but_unconfirmed_user = r
-        return None
     if user is None:
         return None
 
@@ -147,8 +133,6 @@ def verify_token(token):
 @token_auth.error_handler
 def token_auth_error():
     """Return a 401 error to the client."""
-    if hasattr(g, "response_for_authenticated_but_unconfirmed_user"):
-        return g.response_for_authenticated_but_unconfirmed_user
     r = jsonify(
         {
             "error": "Unauthorized",
