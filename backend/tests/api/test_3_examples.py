@@ -39,8 +39,15 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
         __, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Prepare a JSON payload, which is required for creating an Example resource
@@ -334,8 +341,15 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
         self._jd_user_id, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
     def test_1_no_examples_exist(self):
@@ -441,10 +455,19 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         Ensure that each user can get a list of her own Example resources,
         but cannot get a list of another user's Example resources.
         """
+        # TODO: (2023/03/07, 06:29)
+        #       replace each occurrence of "yahoo" with "protonmail"
 
         # Create a second User resource.
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
         __, ms_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the first user.
@@ -655,8 +678,15 @@ class Test_03_GetExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
         self._jd_user_id, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
     def test_1_missing_token_auth(self):
@@ -786,8 +816,15 @@ class Test_03_GetExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
         __, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
@@ -839,8 +876,15 @@ class Test_04_EditExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
         self._jd_user_id, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
     def test_1_missing_token_auth(self):
@@ -1059,8 +1103,15 @@ class Test_04_EditExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
         __, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
@@ -1137,8 +1188,15 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
         self._jd_user_id, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@gmail.com", password="123"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
     def test_1_missing_token_auth(self):
@@ -1246,8 +1304,15 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
         __, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
