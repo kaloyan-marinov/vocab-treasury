@@ -36,6 +36,10 @@ class TestBasePlusUtilities(TestBase):
             headers={"Content-Type": "application/json"},
         )
 
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        return body["id"]
+
     def util_confirm_user(self, user_id):
         account_confirmation_token = (
             self.app.token_serializer_for_password_resets.dumps(

@@ -4,10 +4,10 @@ import base64
 from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
-from tests import TestBase
+from tests import TestBase, TestBasePlusUtilities
 
 
-class Test_01_IssueToken(TestBase):
+class Test_01_IssueToken(TestBasePlusUtilities):
     """
     Test the request responsible for issuing a JSON Web Signature token for a user,
     who has authenticated herself successfully as part of that same request.
@@ -22,24 +22,17 @@ class Test_01_IssueToken(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        user_data_str = json.dumps(user_data)
-        rv = self.client.post(
-            "/api/users",
-            data=user_data_str,
-            headers={
-                "Content-Type": "application/json",
-            },
+        self._user_id = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Compute a valid token for the User resource, which was created just now.
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        user_id = body["id"]
-
         token_serializer = TimedJSONWebSignatureSerializer(
             current_app.config["SECRET_KEY"], expires_in=3600
         )
-        token = token_serializer.dumps({"user_id": user_id}).decode("utf-8")
+        token = token_serializer.dumps({"user_id": self._user_id}).decode("utf-8")
         self._expected_body = {"token": token}
 
     def test_1_missing_basic_auth(self):
@@ -67,6 +60,10 @@ class Test_01_IssueToken(TestBase):
         who is authenticated by the issued request's header.
         """
 
+        # Arrange.
+        self.util_confirm_user(self._user_id)
+
+        # Act.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         basic_auth = "Basic " + b_a_c
@@ -76,6 +73,7 @@ class Test_01_IssueToken(TestBase):
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 200)
 
+        # Assert.
         # fmt: off
         '''
         At first sight, it might seem that
@@ -88,9 +86,10 @@ class Test_01_IssueToken(TestBase):
             the endpoint handler relies on a _Timed_JSONWebSignatureSerializer,
             which means that,
             if the execution of the endpoint handler takes more than 1 s,
-            then (a) the observed and expected headers will not be equal to each other,
-            and (b) the observed and expected cryptographic signatures will not be equal
-            to each other.
+            then
+            (a) the observed and expected headers will not be equal to each other, and
+            (b) the observed and expected cryptographic signatures will not be
+                equal to each other.
         
         For that reason, the next code-block utilizes the `try`-`except` construct
         so that, even if the `try`-block's assertion fails,
@@ -124,6 +123,10 @@ class Test_01_IssueToken(TestBase):
         by providing an incorrect set of Basic Auth credentials.
         """
 
+        # Arrange.
+        self.util_confirm_user(self._user_id)
+
+        # Act.
         wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
         wrong_b_a_c = base64.b64encode(
             wrong_basic_auth_credentials.encode("utf-8")
@@ -134,6 +137,7 @@ class Test_01_IssueToken(TestBase):
             headers={"Authorization": wrong_authorization},
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
         self.assertEqual(rv.status_code, 401)

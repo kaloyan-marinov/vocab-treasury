@@ -304,7 +304,7 @@ class Test_02_GetUsers(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Get all User resources.
         rv = self.client.get("/api/users")
@@ -352,11 +352,10 @@ class Test_02_GetUsers(TestBasePlusUtilities):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self.util_create_user(d["username"], d["email"], d["password"])
+            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
         # Confirm only the first User.
-        user_id = 1
-        self.util_confirm_user(user_id)
+        self.util_confirm_user(data_0_1["id"])
 
         # Get all User resources.
         rv = self.client.get("/api/users")
@@ -424,7 +423,7 @@ class Test_03_GetUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
@@ -451,9 +450,8 @@ class Test_03_GetUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Get the User resource that was created just now.
@@ -493,7 +491,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Attempt to edit the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
@@ -540,7 +538,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
@@ -585,9 +583,8 @@ class Test_04_EditUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Attempt to edit the User resource, which was created just now,
@@ -656,10 +653,9 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self.util_create_user(d["username"], d["email"], d["password"])
+            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        user_id = 1
-        self.util_confirm_user(user_id)
+        self.util_confirm_user(data_0_1["id"])
 
         # Attempt to edit a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -717,9 +713,8 @@ class Test_04_EditUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Edit the User resource that was created just now.
@@ -782,10 +777,9 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self.util_create_user(d["username"], d["email"], d["password"])
+            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        user_id = 1
-        self.util_confirm_user(user_id)
+        self.util_confirm_user(data_0_1["id"])
 
         # Attempt to edit the 1st User resource in such a way that
         # its email should be end up being identical to the 2nd User resource's email.
@@ -846,9 +840,8 @@ class Test_04_EditUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Attempt to edit a User resource
@@ -912,10 +905,9 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self.util_create_user(d["username"], d["email"], d["password"])
+            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        user_id = 1
-        self.util_confirm_user(user_id)
+        self.util_confirm_user(data_0_1["id"])
 
         # Attempt to edit the 1st User resource in such a way that
         # its username would end up being identical to the 2nd User resource's username.
@@ -980,7 +972,7 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Attempt to delete the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
@@ -1027,7 +1019,7 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        __ = self.util_create_user(username, email, password)
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
@@ -1075,10 +1067,9 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
             "password": "456",
         }
         for d in (data_0_1, data_0_2):
-            self.util_create_user(d["username"], d["email"], d["password"])
+            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        user_id = 1
-        self.util_confirm_user(user_id)
+        self.util_confirm_user(data_0_1["id"])
 
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -1130,9 +1121,8 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Delete a User resource.
@@ -1162,9 +1152,8 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        self.util_create_user(username, email, password)
+        user_id = self.util_create_user(username, email, password)
 
-        user_id = 1
         self.util_confirm_user(user_id)
 
         # Attempt to delete a User resource
@@ -1221,7 +1210,7 @@ class Test_06_RequestPasswordReset(TestBase):
             "password": "123",
         }
         user_data_str = json.dumps(user_data)
-        _ = self.client.post(
+        __ = self.client.post(
             "/api/users",
             data=user_data_str,
             headers={
@@ -1332,7 +1321,7 @@ class Test_07_ResetPassword(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        _ = self.client.post(
+        __ = self.client.post(
             "/api/users",
             data=json.dumps(user_data),
             headers={
