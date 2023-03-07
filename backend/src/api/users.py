@@ -91,6 +91,8 @@ def create_user():
 def confirm_newly_created_account(token):
     # TODO: (2023/03/05, 15:15)
     #       eliminate the code duplication between this function and `reset_password`
+    # TODO: (2023/03/07, 06:08)
+    #       increase the test coverage of this function
     reject_token = False
     try:
         token_payload = current_app.token_serializer_for_password_resets.loads(token)
