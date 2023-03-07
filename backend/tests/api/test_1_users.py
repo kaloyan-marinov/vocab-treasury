@@ -340,7 +340,7 @@ class Test_02_GetUsers(TestBasePlusUtilities):
         getting a list of User resources returns only those that are confirmed.
         """
 
-        # Create two User resources.
+        # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
@@ -351,11 +351,18 @@ class Test_02_GetUsers(TestBasePlusUtilities):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        for d in (data_0_1, data_0_2):
-            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        # Confirm only the first User.
-        self.util_confirm_user(data_0_1["id"])
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Get all User resources.
         rv = self.client.get("/api/users")
@@ -450,9 +457,13 @@ class Test_03_GetUser(TestBasePlusUtilities):
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
@@ -579,13 +590,17 @@ class Test_04_EditUser(TestBasePlusUtilities):
         #       Update the comments within test cases
         #       to be organized around the "Arrange-Act-Assert" 'scaffolding'.
 
-        # Create one User resource.
+        # Create one User resource and confirm it..
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Attempt to edit the User resource, which was created just now,
         # without prodiving a 'Content-Type: application/json' header.
@@ -603,7 +618,10 @@ class Test_04_EditUser(TestBasePlusUtilities):
             body,
             {
                 "error": "Bad Request",
-                "message": 'Your request did not include a "Content-Type: application/json" header.',
+                "message": (
+                    "Your request did not include"
+                    ' a "Content-Type: application/json" header.'
+                ),
             },
         )
 
@@ -636,12 +654,8 @@ class Test_04_EditUser(TestBasePlusUtilities):
         #           to cover the 'regardless' part of the docstring;
         #       (b) inspect whether (a) needs or ought to be applied
         #           to other test cases;
-        #       (c) subsume `TestBasePlusUtilities.util_confirm_user`
-        #           into `TestBasePlusUtilities.util_create_user`,
-        #           whereby the latter gets endowed with a boolean keyword argument
-        #           `should_confirm_new_user=False`
 
-        # Create two User resources.
+        # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
@@ -652,10 +666,18 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        for d in (data_0_1, data_0_2):
-            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        self.util_confirm_user(data_0_1["id"])
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to edit a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -709,13 +731,17 @@ class Test_04_EditUser(TestBasePlusUtilities):
         is able to edit his/her corresponding User resource.
         """
 
-        # Create one User resource.
+        # Create one User resource and confirm it..
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Edit the User resource that was created just now.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -765,7 +791,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
         - regardless of whether the latter User resource is confirmed or not.
         """
 
-        # Create two User resources.
+        # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
@@ -776,10 +802,18 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        for d in (data_0_1, data_0_2):
-            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        self.util_confirm_user(data_0_1["id"])
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to edit the 1st User resource in such a way that
         # its email should be end up being identical to the 2nd User resource's email.
@@ -836,13 +870,17 @@ class Test_04_EditUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource.
+        # Create one User resource and confirm it..
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Attempt to edit a User resource
         # by providing an incorrect set of Basic Auth credentials.
@@ -893,7 +931,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
         - regardless of whether the latter User resource is confirmed or not.
         """
 
-        # Create two User resources.
+        # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
@@ -904,10 +942,18 @@ class Test_04_EditUser(TestBasePlusUtilities):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        for d in (data_0_1, data_0_2):
-            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        self.util_confirm_user(data_0_1["id"])
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to edit the 1st User resource in such a way that
         # its username would end up being identical to the 2nd User resource's username.
@@ -1055,7 +1101,7 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         the user authenticated by the issued request's header.
         """
 
-        # Create two User resources.
+        # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
@@ -1066,10 +1112,18 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        for d in (data_0_1, data_0_2):
-            d["id"] = self.util_create_user(d["username"], d["email"], d["password"])
 
-        self.util_confirm_user(data_0_1["id"])
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -1117,13 +1171,17 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         is able to delete his/her corresponding User resource.
         """
 
-        # Create one User resource.
+        # Create one User resource and confirm it..
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Delete a User resource.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -1148,13 +1206,17 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource.
+        # Create one User resource and confirm it..
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        user_id = self.util_create_user(username, email, password)
 
-        self.util_confirm_user(user_id)
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Attempt to delete a User resource
         # by providing an incorrect set of Basic Auth credentials.

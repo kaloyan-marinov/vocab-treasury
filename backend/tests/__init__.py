@@ -23,7 +23,13 @@ class TestBase(unittest.TestCase):
 
 
 class TestBasePlusUtilities(TestBase):
-    def util_create_user(self, username, email, password):
+    def util_create_user(
+        self,
+        username,
+        email,
+        password,
+        should_confirm_new_user=False,
+    ):
         data = {
             "username": username,
             "email": email,
@@ -38,7 +44,12 @@ class TestBasePlusUtilities(TestBase):
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
-        return body["id"]
+        user_id = body["id"]
+
+        if should_confirm_new_user:
+            self.util_confirm_user(user_id)
+
+        return user_id
 
     def util_confirm_user(self, user_id):
         account_confirmation_token = (

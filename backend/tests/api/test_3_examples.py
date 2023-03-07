@@ -11,10 +11,13 @@ from tests import TestBasePlusUtilities
 
 class TestBaseForExampleResources(TestBasePlusUtilities):
     def create_user(self, username, email, password):
-        # Create one User resource.
-        user_id = self.util_create_user(username, email, password)
-
-        self.util_confirm_user(user_id)
+        # Create one User resource and confirm it..
+        user_id = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
 
         # Issue an access token for the user, which was created just now.
         basic_auth_credentials = email + ":" + password
