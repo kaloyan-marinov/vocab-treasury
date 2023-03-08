@@ -4,6 +4,7 @@ from itsdangerous import BadSignature, SignatureExpired
 
 from src import flsk_bcrpt
 from src.models import User
+from src.constants import ACCESS
 
 
 basic_auth = HTTPBasicAuth()
@@ -27,7 +28,7 @@ def verify_password(email, password):
             }
         )
         r.status_code = 400
-        g.response_for_uncofirmed_user = r
+        g.response_for_unconfirmed_user = r
         return None
 
     if flsk_bcrpt.check_password_hash(user.password_hash, password) is False:
@@ -39,8 +40,8 @@ def verify_password(email, password):
 @basic_auth.error_handler
 def basic_auth_error():
     """Return an appropriate error to the client."""
-    if hasattr(g, "response_for_uncofirmed_user"):
-        return g.response_for_uncofirmed_user
+    if hasattr(g, "response_for_unconfirmed_user"):
+        return g.response_for_unconfirmed_user
 
     r = jsonify(
         {
@@ -113,6 +114,20 @@ def verify_token(token):
     except BadSignature:
         return None  # invalid token
 
+    if token_payload["purpose"] != ACCESS:
+        r = jsonify(
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "The provided token's `purpose` is"
+                    f" different from {repr(ACCESS)}."
+                ),
+            }
+        )
+        r.status = 400
+        g.response_for_inadmissible_token_purpose = r
+        return None
+
     user = User.query.get(token_payload["user_id"])
     if user is None:
         return None
@@ -123,6 +138,9 @@ def verify_token(token):
 @token_auth.error_handler
 def token_auth_error():
     """Return a 401 error to the client."""
+    if hasattr(g, "response_for_inadmissible_token_purpose"):
+        return g.response_for_inadmissible_token_purpose
+
     r = jsonify(
         {
             "error": "Unauthorized",

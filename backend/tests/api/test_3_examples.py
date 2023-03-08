@@ -7,6 +7,7 @@ from flask import url_for, current_app
 
 from src import User, Example
 from tests import TestBasePlusUtilities
+from src.constants import ACCESS
 
 
 # TODO: (2023/03/07, 07:06)
@@ -309,7 +310,10 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         nonexistent_user_id = 17
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads",
-            return_value={"user_id": nonexistent_user_id},
+            return_value={
+                "purpose": ACCESS,
+                "user_id": nonexistent_user_id,
+            },
         ):
             rv = self.client.post(
                 "/api/examples",

@@ -7,6 +7,7 @@ from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities
+from src.constants import PASSWORD_RESET
 
 
 class Test_01_CreateUser(TestBase):
@@ -1447,7 +1448,10 @@ class Test_07_ResetPassword(TestBase):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
             payload = {"new_password": "456"}
             rv = self.client.post(
@@ -1471,7 +1475,10 @@ class Test_07_ResetPassword(TestBase):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
             payload = {"not new_password": "456"}
             rv = self.client.post(
@@ -1497,7 +1504,10 @@ class Test_07_ResetPassword(TestBase):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
             payload = {"new_password": "456"}
             rv = self.client.post(

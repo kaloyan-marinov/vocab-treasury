@@ -2,6 +2,7 @@ import json
 import unittest
 
 from src import db, create_app
+from src.constants import ACCOUNT_CONFIRMATION
 
 
 class TestBase(unittest.TestCase):
@@ -52,9 +53,13 @@ class TestBasePlusUtilities(TestBase):
         return user_id
 
     def util_confirm_user(self, user_id):
+        token_payload = {
+            "purpose": ACCOUNT_CONFIRMATION,
+            "user_id": user_id,
+        }
         account_confirmation_token = (
             self.app.token_serializer_for_account_confirmation.dumps(
-                {"user_id": user_id}
+                token_payload
             ).decode("utf-8")
         )
 

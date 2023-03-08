@@ -5,6 +5,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities
+from src.constants import ACCESS
 
 
 class Test_01_IssueToken(TestBasePlusUtilities):
@@ -32,7 +33,11 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         token_serializer = TimedJSONWebSignatureSerializer(
             current_app.config["SECRET_KEY"], expires_in=3600
         )
-        token = token_serializer.dumps({"user_id": self._user_id}).decode("utf-8")
+        token_payload = {
+            "purpose": ACCESS,
+            "user_id": self._user_id,
+        }
+        token = token_serializer.dumps(token_payload).decode("utf-8")
         self._expected_body = {"token": token}
 
     def test_1_missing_basic_auth(self):
@@ -258,3 +263,8 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         self.assertEqual(
             body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}
         )
+
+
+# TODO: (2023/03/08, 07:21)
+#       write tests for the tokens with various purposes
+#       that the backend application is able to issue
