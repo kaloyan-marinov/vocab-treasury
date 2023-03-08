@@ -12,20 +12,11 @@ basic_auth = HTTPBasicAuth()
 @basic_auth.verify_password
 def verify_password(email, password):
     user = User.query.filter_by(email=email).first()
+
     if user is None:
         return None
+
     if not user.is_confirmed:
-        # TODO: (2023/03/06, 07:06)
-        #       clean up this code-block
-        #
-        #       consider renaming `g.response`
-        #       to `g.response_for_authenticated_but_unconfirmed_user`
-        print({"problem": "your account has not been confirmed"})
-        # fmt: off
-        '''
-        return {"problem": "your account has not been confirmed"}
-        '''
-        # fmt: on
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -36,8 +27,7 @@ def verify_password(email, password):
             }
         )
         r.status_code = 400
-        # return r
-        g.response = r
+        g.response_for_uncofirmed_user = r
         return None
 
     if flsk_bcrpt.check_password_hash(user.password_hash, password) is False:
@@ -49,8 +39,8 @@ def verify_password(email, password):
 @basic_auth.error_handler
 def basic_auth_error():
     """Return an appropriate error to the client."""
-    if hasattr(g, "response"):
-        return g.response
+    if hasattr(g, "response_for_uncofirmed_user"):
+        return g.response_for_uncofirmed_user
 
     r = jsonify(
         {
