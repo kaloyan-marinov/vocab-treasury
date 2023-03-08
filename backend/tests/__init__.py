@@ -53,7 +53,7 @@ class TestBasePlusUtilities(TestBase):
 
     def util_confirm_user(self, user_id):
         account_confirmation_token = (
-            self.app.token_serializer_for_password_resets.dumps(
+            self.app.token_serializer_for_account_confirmation.dumps(
                 {"user_id": user_id}
             ).decode("utf-8")
         )

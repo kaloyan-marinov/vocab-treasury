@@ -69,14 +69,19 @@ def create_app(name_of_configuration=None):
     we will also have access to the `TimedJSONWebSignatureSerializer` in question.)
     '''
     # fmt: on
+    app.token_serializer_for_account_confirmation = TimedJSONWebSignatureSerializer(
+        app.config["SECRET_KEY"],
+        expires_in=app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"] * 24 * 60 * 60,
+    )
+
     app.token_serializer = TimedJSONWebSignatureSerializer(
         app.config["SECRET_KEY"],
-        expires_in=60 * app.config["MINUTES_FOR_TOKEN_VALIDITY"],
+        expires_in=app.config["MINUTES_FOR_TOKEN_VALIDITY"] * 60,
     )
 
     app.token_serializer_for_password_resets = TimedJSONWebSignatureSerializer(
         app.config["SECRET_KEY"],
-        expires_in=60 * app.config["MINUTES_FOR_PASSWORD_RESET"],
+        expires_in=app.config["MINUTES_FOR_PASSWORD_RESET"] * 60,
     )
 
     # Register `Blueprint`(s) with the application instance.
