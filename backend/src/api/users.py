@@ -100,7 +100,7 @@ def confirm_newly_created_account(token):
     if response_or_token_payload["purpose"] != ACCOUNT_CONFIRMATION:
         r = jsonify(
             {
-                "error": "Unauthorized",
+                "error": "Bad Request",
                 "message": (
                     "The provided token's `purpose` is"
                     f" different from {repr(ACCOUNT_CONFIRMATION)}."
@@ -457,7 +457,7 @@ def reset_password(token):
     if response_or_token_payload["purpose"] != PASSWORD_RESET:
         r = jsonify(
             {
-                "error": "Unauthorized",
+                "error": "Bad Request",
                 "message": (
                     "The provided token's `purpose` is"
                     f" different from {repr(PASSWORD_RESET)}."

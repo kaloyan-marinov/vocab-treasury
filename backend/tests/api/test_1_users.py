@@ -354,7 +354,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                 self.assertEqual(
                     body,
                     {
-                        "error": "Unauthorized",
+                        "error": "Bad Request",
                         "message": (
                             "The provided token's `purpose` is"
                             f" different from {repr(ACCOUNT_CONFIRMATION)}."
@@ -1603,24 +1603,69 @@ class Test_08_ResetPassword(TestBase):
                 },
             )
 
-    def test_3_missing_content_type(self):
+    def test_3_valid_token_wrong_purpose(self):
+        for wrong_purpose in (ACCOUNT_CONFIRMATION, ACCESS):
+            with self.subTest():
+                with patch(
+                    "src.TimedJSONWebSignatureSerializer.loads",
+                ) as serializer_loads_mock:
+                    # Arrange.
+                    serializer_loads_mock.return_value = {
+                        "purpose": wrong_purpose,
+                        "user_id": 1,
+                    }
+
+                    # Act.
+                    payload = {"new_password": "456"}
+                    payload_str = json.dumps(payload)
+
+                    rv = self.client.post(
+                        "/api/reset-password/token-for-resetting-password",
+                        data=payload_str,
+                    )
+
+                    # Assert.
+                    body_str = rv.get_data(as_text=True)
+                    body = json.loads(body_str)
+
+                    self.assertEqual(rv.status_code, 400)
+                    self.assertEqual(
+                        body,
+                        {
+                            "error": "Bad Request",
+                            "message": (
+                                "The provided token's `purpose` is"
+                                f" different from {repr(PASSWORD_RESET)}."
+                            ),
+                        },
+                    )
+
+    def test_4_missing_content_type(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
+            # Arrange.
             serializer_loads_mock.return_value = {
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
 
+            # Act.
             payload = {"new_password": "456"}
+            payload_str = json.dumps(payload)
+
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
+                data=payload_str,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 400)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Bad Request",
                     "message": (
@@ -1630,7 +1675,7 @@ class Test_08_ResetPassword(TestBase):
                 },
             )
 
-    def test_4_incomplete_request_body(self):
+    def test_5_incomplete_request_body(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
@@ -1659,7 +1704,7 @@ class Test_08_ResetPassword(TestBase):
                 },
             )
 
-    def test_5_reset_password(self):
+    def test_6_reset_password(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
