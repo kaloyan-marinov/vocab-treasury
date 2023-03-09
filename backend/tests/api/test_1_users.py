@@ -7,7 +7,7 @@ from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities
-from src.constants import PASSWORD_RESET
+from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 class Test_01_CreateUser(TestBase):
@@ -257,7 +257,150 @@ class Test_01_CreateUser(TestBase):
         )
 
 
-class Test_02_GetUsers(TestBasePlusUtilities):
+class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
+    """Test the request responsible for confirming a newly-created `User` resource."""
+
+    def setUp(self):
+        self.username = "jd"
+        self.email = "john.doe@protonmail.com"
+        self.password = "123"
+        super().setUp()
+
+    def _issue_valid_account_confirmation_token(self, user_id):
+        token_payload = {
+            "purpose": ACCOUNT_CONFIRMATION,
+            "user_id": user_id,
+        }
+        valid_token_correct_purpose = (
+            self.app.token_serializer_for_account_confirmation.dumps(
+                token_payload
+            ).decode("utf-8")
+        )
+        return valid_token_correct_purpose
+
+    def test_1_invalid_token(self):
+        # Arrange.
+        user_id = self.util_create_user(self.username, self.email, self.password)
+
+        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
+            user_id
+        )
+        invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
+
+        # Act.
+        rv = self.client.post(
+            f"/api/confirm-newly-created-account/{invalid_token_correct_purpose}"
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "The provided token is invalid.",
+            },
+        )
+
+    def test_2_valid_token_wrong_purpose(self):
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        user_id = self.util_create_user(self.username, self.email, self.password)
+
+        for wrong_purpose in (PASSWORD_RESET, ACCESS):
+            with self.subTest():
+                token_payload = {
+                    "purpose": wrong_purpose,
+                    "user_id": user_id,
+                }
+                valid_token_wrong_purpose = (
+                    self.app.token_serializer_for_account_confirmation.dumps(
+                        token_payload
+                    ).decode("utf-8")
+                )
+
+                # Act.
+                rv = self.client.post(
+                    f"/api/confirm-newly-created-account/{valid_token_wrong_purpose}"
+                )
+
+                # Assert.
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Unauthorized",
+                        "message": (
+                            "The provided token's `purpose` is"
+                            f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                        ),
+                    },
+                )
+
+    def test_3_valid_token(self):
+        # Arrange.
+        user_id = self.util_create_user(
+            self.username,
+            self.email,
+            self.password,
+            should_confirm_new_user=True,
+        )
+
+        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
+            user_id
+        )
+
+        # Act.
+        rv = self.client.post(
+            f"/api/confirm-newly-created-account/{valid_token_correct_purpose}"
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(
+            body,
+            {
+                "message": (
+                    "You have confirmed your account successfully. You may now log in."
+                )
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that
+        # a User resource has been not only created but also successfully confirmed.
+        users = User.query.all()
+        self.assertEqual(len(users), 1)
+        user = users[0]
+        self.assertEqual(
+            {a: getattr(user, a) for a in ["id", "username", "email", "is_confirmed"]},
+            {
+                "id": 1,
+                "username": "jd",
+                "email": "john.doe@protonmail.com",
+                "is_confirmed": True,
+            },
+        )
+        self.assertTrue(
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
+        )
+
+        self.assertEqual(repr(user), "User(1, jd)")
+
+
+class Test_03_GetUsers(TestBasePlusUtilities):
     """Test the request responsible for getting a list of existing User resources."""
 
     def test_1_empty_database(self):
@@ -399,7 +542,7 @@ class Test_02_GetUsers(TestBasePlusUtilities):
         )
 
 
-class Test_03_GetUser(TestBasePlusUtilities):
+class Test_04_GetUser(TestBasePlusUtilities):
     """Test the request responsible for getting one specific User resource."""
 
     def test_1_nonexistent_user(self):
@@ -481,7 +624,7 @@ class Test_03_GetUser(TestBasePlusUtilities):
         )
 
 
-class Test_04_EditUser(TestBasePlusUtilities):
+class Test_05_EditUser(TestBasePlusUtilities):
     """Test the request responsible for editing a specific User resource."""
 
     def setUp(self):
@@ -1006,7 +1149,7 @@ class Test_04_EditUser(TestBasePlusUtilities):
         )
 
 
-class Test_05_DeleteUser(TestBasePlusUtilities):
+class Test_06_DeleteUser(TestBasePlusUtilities):
     """Test the request responsible for deleting a specific User resource."""
 
     def test_1_missing_basic_auth(self):
@@ -1257,7 +1400,7 @@ class Test_05_DeleteUser(TestBasePlusUtilities):
         )
 
 
-class Test_06_RequestPasswordReset(TestBase):
+class Test_07_RequestPasswordReset(TestBase):
     """
     Test the request responsible for requesting a password reset for a user,
     who wishes or needs to reset her password.
@@ -1370,7 +1513,7 @@ class Test_06_RequestPasswordReset(TestBase):
             )
 
 
-class Test_07_ResetPassword(TestBase):
+class Test_08_ResetPassword(TestBase):
     """
     Test the request responsible for resetting a user's password.
     """

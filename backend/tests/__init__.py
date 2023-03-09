@@ -40,7 +40,9 @@ class TestBasePlusUtilities(TestBase):
         rv = self.client.post(
             "/api/users",
             data=data_str,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+            },
         )
 
         body_str = rv.get_data(as_text=True)

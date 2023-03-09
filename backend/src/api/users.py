@@ -90,8 +90,6 @@ def create_user():
 
 @api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
 def confirm_newly_created_account(token):
-    # TODO: (2023/03/07, 06:08)
-    #       increase the test coverage of this function
     reject_token, response_or_token_payload = validate_token(
         token, ACCOUNT_CONFIRMATION
     )
@@ -109,7 +107,7 @@ def confirm_newly_created_account(token):
                 ),
             }
         )
-        r.status = 400
+        r.status_code = 400
         return r
 
     user_id = response_or_token_payload["user_id"]
@@ -466,7 +464,7 @@ def reset_password(token):
                 ),
             }
         )
-        r.status = 400
+        r.status_code = 400
         return r
 
     user_id = response_or_token_payload["user_id"]
