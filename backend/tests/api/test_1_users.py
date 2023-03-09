@@ -8,6 +8,7 @@ from flask import url_for, current_app
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities
 from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.auth import validate_token
 
 
 class Test_01_CreateUser(TestBase):
@@ -278,7 +279,26 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         )
         return valid_token_correct_purpose
 
-    def test_1_invalid_token(self):
+    def test_1_validate_token(self):
+        # Arrange.
+        token = "this-value-is-immaterial-for-this-test-case"
+        inadmissible_purpose = f"{ACCOUNT_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+
+        # Act.
+        with self.assertRaises(ValueError) as context_manager:
+            __ = validate_token(token, inadmissible_purpose)
+
+        # Assert.
+        self.assertEqual(
+            str(context_manager.exception),
+            (
+                "`purpose` must be one of"
+                " \"to reset account's password\", 'to confirm account',"
+                f" but it is equal to {repr(inadmissible_purpose)} instead"
+            ),
+        )
+
+    def test_2_invalid_token(self):
         # Arrange.
         user_id = self.util_create_user(self.username, self.email, self.password)
 
@@ -305,12 +325,8 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             },
         )
 
-    def test_2_valid_token_wrong_purpose(self):
+    def test_3_valid_token_wrong_purpose(self):
         # Arrange.
-        username = "jd"
-        email = "john.doe@protonmail.com"
-        password = "123"
-
         user_id = self.util_create_user(self.username, self.email, self.password)
 
         for wrong_purpose in (PASSWORD_RESET, ACCESS):
@@ -346,7 +362,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                     },
                 )
 
-    def test_3_valid_token(self):
+    def test_4_valid_token(self):
         # Arrange.
         user_id = self.util_create_user(
             self.username,
