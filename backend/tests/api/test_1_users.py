@@ -1414,7 +1414,7 @@ class Test_07_ResetPassword(TestBase):
                 json.loads(rv.get_data(as_text=True)),
                 {
                     "error": "Unauthorized",
-                    "message": "Your password-reset token is invalid.",
+                    "message": "The provided token is invalid.",
                 },
             )
 
@@ -1440,7 +1440,7 @@ class Test_07_ResetPassword(TestBase):
                 json.loads(rv.get_data(as_text=True)),
                 {
                     "error": "Unauthorized",
-                    "message": "Your password-reset token is invalid.",
+                    "message": "The provided token is invalid.",
                 },
             )
 

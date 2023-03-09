@@ -6,7 +6,7 @@ from itsdangerous import BadSignature, SignatureExpired
 
 from src import db, flsk_bcrpt, mail
 from src.models import User
-from src.auth import basic_auth, token_auth
+from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
 from src.constants import ACCOUNT_CONFIRMATION, PASSWORD_RESET
 
@@ -90,31 +90,16 @@ def create_user():
 
 @api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
 def confirm_newly_created_account(token):
-    # TODO: (2023/03/05, 15:15)
-    #       eliminate the code duplication between this function and `reset_password`
     # TODO: (2023/03/07, 06:08)
     #       increase the test coverage of this function
-    reject_token = False
-    try:
-        token_payload = current_app.token_serializer_for_account_confirmation.loads(
-            token
-        )
-    except SignatureExpired as e:
-        reject_token = True  # valid token, but expired
-    except BadSignature as e:
-        reject_token = True  # invalid token
+    reject_token, response_or_token_payload = validate_token(
+        token, ACCOUNT_CONFIRMATION
+    )
 
     if reject_token:
-        r = jsonify(
-            {
-                "error": "Unauthorized",
-                "message": "The provided account-confirmation token is invalid.",
-            }
-        )
-        r.status_code = 401
-        return r
+        return response_or_token_payload
 
-    if token_payload["purpose"] != ACCOUNT_CONFIRMATION:
+    if response_or_token_payload["purpose"] != ACCOUNT_CONFIRMATION:
         r = jsonify(
             {
                 "error": "Unauthorized",
@@ -127,7 +112,7 @@ def confirm_newly_created_account(token):
         r.status = 400
         return r
 
-    user_id = token_payload["user_id"]
+    user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
 
     user.is_confirmed = True
@@ -466,25 +451,12 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
-    reject_token = False
-    try:
-        token_payload = current_app.token_serializer_for_password_resets.loads(token)
-    except SignatureExpired as e:
-        reject_token = True  # valid token, but expired
-    except BadSignature as e:
-        reject_token = True  # invalid token
+    reject_token, response_or_token_payload = validate_token(token, PASSWORD_RESET)
 
     if reject_token:
-        r = jsonify(
-            {
-                "error": "Unauthorized",
-                "message": "Your password-reset token is invalid.",
-            }
-        )
-        r.status_code = 401
-        return r
+        return response_or_token_payload
 
-    if token_payload["purpose"] != PASSWORD_RESET:
+    if response_or_token_payload["purpose"] != PASSWORD_RESET:
         r = jsonify(
             {
                 "error": "Unauthorized",
@@ -497,7 +469,7 @@ def reset_password(token):
         r.status = 400
         return r
 
-    user_id = token_payload["user_id"]
+    user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
 
     if not request.json:

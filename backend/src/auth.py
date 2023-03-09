@@ -4,7 +4,7 @@ from itsdangerous import BadSignature, SignatureExpired
 
 from src import flsk_bcrpt
 from src.models import User
-from src.constants import ACCESS
+from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 basic_auth = HTTPBasicAuth()
@@ -149,3 +149,41 @@ def token_auth_error():
     )
     r.status_code = 401
     return r
+
+
+# TODO: (2023/03/08, 07:46)
+#       attempt to replace this function
+#       with two new instances of `HTTPTokenAuth`
+#       (or something from `flask_httpauth`
+#       which knows how to grab a token from the URL
+#       that the incoming request was targeted at)
+def validate_token(token, purpose):
+    if purpose == PASSWORD_RESET:
+        t_s = current_app.token_serializer_for_password_resets
+    elif purpose == ACCOUNT_CONFIRMATION:
+        t_s = current_app.token_serializer_for_account_confirmation
+    else:
+        raise ValueError(
+            f"`purpose` must be one of {repr(PASSWORD_RESET)}, {repr(ACCOUNT_CONFIRMATION)},"
+            f" but it is equal to {repr(purpose)} instead"
+        )
+
+    reject_token = False
+    try:
+        token_payload = t_s.loads(token)
+    except SignatureExpired as e:
+        reject_token = True  # valid token, but expired
+    except BadSignature as e:
+        reject_token = True  # invalid token
+
+    if reject_token:
+        r = jsonify(
+            {
+                "error": "Unauthorized",
+                "message": "The provided token is invalid.",
+            }
+        )
+        r.status_code = 401
+        return reject_token, r
+
+    return reject_token, token_payload
