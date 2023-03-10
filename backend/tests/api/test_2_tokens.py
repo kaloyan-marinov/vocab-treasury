@@ -5,7 +5,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities
-from src.constants import ACCESS
+from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 class Test_01_IssueToken(TestBasePlusUtilities):
@@ -228,7 +228,45 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
             },
         )
 
-    def test_2_get_user_profile(self):
+    def test_2_valid_token_wrong_purpose(self):
+        for wrong_purpose in (ACCOUNT_CONFIRMATION, PASSWORD_RESET):
+            with self.subTest():
+                # Arrange.
+                token_payload = {
+                    "purpose": wrong_purpose,
+                    "user_id": self._user_id,
+                }
+                valid_token_wrong_purpose = self.app.token_serializer.dumps(
+                    token_payload
+                ).decode("utf-8")
+
+                # Act.
+                authorization = "Bearer " + valid_token_wrong_purpose
+
+                rv = self.client.get(
+                    "/api/user-profile",
+                    headers={
+                        "Authorization": authorization,
+                    },
+                )
+
+                # Assert.
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Bad Request",
+                        "message": (
+                            "The provided token's `purpose` is"
+                            f" different from {repr(ACCESS)}."
+                        ),
+                    },
+                )
+
+    def test_3_valid_token(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to fetch her own User Profile resource.

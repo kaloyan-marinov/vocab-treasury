@@ -117,14 +117,14 @@ def verify_token(token):
     if token_payload["purpose"] != ACCESS:
         r = jsonify(
             {
-                "error": "Unauthorized",
+                "error": "Bad Request",
                 "message": (
                     "The provided token's `purpose` is"
                     f" different from {repr(ACCESS)}."
                 ),
             }
         )
-        r.status = 400
+        r.status_code = 400
         g.response_for_inadmissible_token_purpose = r
         return None
 
@@ -137,7 +137,7 @@ def verify_token(token):
 
 @token_auth.error_handler
 def token_auth_error():
-    """Return a 401 error to the client."""
+    """Return an appropriate error to the client."""
     if hasattr(g, "response_for_inadmissible_token_purpose"):
         return g.response_for_inadmissible_token_purpose
 
