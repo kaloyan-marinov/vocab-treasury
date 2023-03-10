@@ -301,8 +301,3 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         self.assertEqual(
             body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}
         )
-
-
-# TODO: (2023/03/08, 07:21)
-#       write tests for the tokens with various purposes
-#       that the backend application is able to issue

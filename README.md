@@ -240,9 +240,16 @@ and use `localhost` to serve a frontend application.
 
         ---------
 
+        $ export EMAIL_1=<a-real-email-address-that-you-have-access-to>
+
         $ curl -v \
             -X POST \
-            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            -d \
+                "{ \
+                    \"username\": \"jd\", \
+                    \"email\": \"${EMAIL_1}\", \
+                    \"password\": \"123\" \
+                }" \
             localhost:5000/api/users \
             | json_pp
 
@@ -251,20 +258,58 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"username": "jd", "email": "john.doe@protonmail.com", "password": "123"}' \
+            -d \
+                "{ \
+                    \"username\": \"jd\", \
+                    \"email\": \"${EMAIL_1}\", \
+                    \"password\": \"123\" \
+                }" \
             localhost:5000/api/users \
             | json_pp
         
         201
 
         $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
+
+        404
+
+        # Check the inbox of `EMAIL_1`.
+        # You will receive an email with instructions
+        # for confirming the newly-created (user) account.
+        # Follow those instructions.
+
+        $ curl -v \
+            -X GET \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        200
+
+        ---
+
+        $ export EMAIL_2=<another-real-email-address-that-you-have-access-to>
+
+        $ curl -v \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"username": "ms", "email": "mary.smith@yahoo.com", "password": "456"}' \
+            -d \
+                "{ \
+                    \"username\": \"ms\", \
+                    \"email\": \"${EMAIL_2}\", \
+                    \"password\": \"456\"\
+                }" \
             localhost:5000/api/users \
             | json_pp
 
         201
+
+        # Check the inbox of `EMAIL_1`.
+        # You will receive an email with instructions
+        # for confirming the newly-created (user) account.
+        # Follow those instructions.
 
         ----
 
@@ -278,7 +323,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X PUT \
-            -u john.doe@protonmail.com:123 \
+            -u ${EMAIL_1}:123 \
             -d '{"username": "j-d"}' \
             localhost:5000/api/users/1 \
             | json_pp
@@ -288,7 +333,7 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u john.doe@protonmail.com:123 \
+            -u ${EMAIL_1}:123 \
             -d '{"username": "j-d"}' \
             localhost:5000/api/users/2 \
             | json_pp
@@ -298,7 +343,7 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u john.doe@protonmail.com:123 \
+            -u ${EMAIL_1}:123 \
             -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
             localhost:5000/api/users/1 \
             | json_pp
@@ -315,7 +360,7 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u mary.smith@yahoo.com:456 \
+            -u ${EMAIL_2}:456 \
             -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
             localhost:5000/api/users/2 \
             | json_pp
@@ -325,7 +370,7 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u mary.smith@yahoo.com:wrong-password \
+            -u ${EMAIL_2}:wrong-password \
             -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
             localhost:5000/api/users/2 \
             | json_pp
@@ -366,7 +411,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X DELETE \
-            -u mary.smith@yahoo.com:wrong-password \
+            -u ${EMAIL_2}:wrong-password \
             localhost:5000/api/users/2 \
             | json_pp
 
@@ -376,7 +421,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X POST \
-            -u mary.smith@yahoo.com:456 \
+            -u ${EMAIL_2}:456 \
             localhost:5000/api/tokens
 
         200
@@ -394,7 +439,12 @@ and use `localhost` to serve a frontend application.
             -X POST \
             -H "Authorization: Bearer ${T2}" \
             -H "Content-Type: application/json" \
-            -d '{"source_language": "German", "new_word": "die Tasse, -n", "content": "e-e Tasse Kaffe"}' \
+            -d \
+                "{ \
+                    \"source_language\": \"German\", \
+                    \"new_word\": \"die Tasse, -n\", \
+                    \"content\": \"e-e Tasse Kaffe\" \
+                }" \
             localhost:5000/api/examples \
             | json_pp
 
@@ -411,7 +461,10 @@ and use `localhost` to serve a frontend application.
             -X PUT \
             -H "Authorization: Bearer ${T2}" \
             -H "Content-Type: application/json" \
-            -d '{"content_translation": "a cup of coffee"}' \
+            -d \
+                "{ \
+                    \"content_translation\": \"a cup of coffee\" \
+                }" \
             localhost:5000/api/examples/1 \
             | json_pp
         
@@ -452,7 +505,8 @@ and use `localhost` to serve a frontend application.
 
 - modularize the frontend
 
-- require every newly-created user to confirm their email address
+- if a (confirmed) user requests to change their email address,
+  require them to confirm the new email address
 
 - allow each user to export their personal data in JSON format
 

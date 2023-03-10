@@ -467,8 +467,6 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         Ensure that each user can get a list of her own Example resources,
         but cannot get a list of another user's Example resources.
         """
-        # TODO: (2023/03/07, 06:29)
-        #       replace each occurrence of "yahoo" with "protonmail"
 
         # Create a second User resource.
         user_data = {
