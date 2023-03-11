@@ -820,45 +820,49 @@ class Test_05_EditUser(TestBasePlusUtilities):
         the user authenticated by the issued request's header
         - regardless of whether the targeted User resource is confirmed or not.
         """
-        # TODO: (2023/03/06, 07:34)
-        #       before submitting a pull request for review:
-        #
-        #       (a) augment this test case
-        #           to cover the 'regardless' part of the docstring;
-        #       (b) inspect whether (a) needs or ought to be applied
-        #           to other test cases;
 
-        # Create two User resources, but confirm only the first one.
-        data_0_1 = {
+        # Arrange.
+        data_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_0_2 = {
+        data_2 = {
             "username": "ms",
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
+        data_3 = {
+            "username": "at",
+            "email": "alice.taylor@protonmail.com",
+            "password": "789",
+        }
 
         __ = self.util_create_user(
-            data_0_1["username"],
-            data_0_1["email"],
-            data_0_1["password"],
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
             should_confirm_new_user=True,
         )
-        __ = self.util_create_user(
-            data_0_2["username"],
-            data_0_2["email"],
-            data_0_2["password"],
+        user_id_2 = self.util_create_user(
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
+            should_confirm_new_user=True,
+        )
+        user_id_3 = self.util_create_user(
+            data_3["username"],
+            data_3["email"],
+            data_3["password"],
         )
 
-        # Attempt to edit a User resource, which does not correspond to
-        # the user authenticated by the issued request's header.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        # Act.
+        basic_auth_credentials = f"{data_1['email']}:{data_1['password']}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
-        rv = self.client.put(
-            "/api/users/2",
+
+        rv_2 = self.client.put(
+            f"/api/users/{user_id_2}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -866,35 +870,69 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(
-            body,
-            {
-                "error": "Forbidden",
-                "message": (
-                    "You are not allowed to edit any User resource different from your"
-                    " own."
-                ),
+        rv_3 = self.client.put(
+            f"/api/users/{user_id_3}",
+            data=self.data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
             },
         )
+
+        # Assert.
+        for rv in (rv_2, rv_3):
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
+            self.assertEqual(rv.status_code, 403)
+            self.assertEqual(
+                body,
+                {
+                    "error": "Forbidden",
+                    "message": (
+                        "You are not allowed to edit any User resource different from"
+                        " your own."
+                    ),
+                },
+            )
 
         # (Reach directly into the application's persistence layer to)
         # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
-        self.assertEqual(len(users), 2)
-        user = User.query.get(2)
+        self.assertEqual(len(users), 3)
+
+        user_2 = User.query.get(2)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {
+                a: getattr(user_2, a)
+                for a in ("id", "username", "email", "is_confirmed")
+            },
             {
                 "id": 2,
                 "username": "ms",
                 "email": "mary.smith@protonmail.com",
+                "is_confirmed": True,
             },
         )
         self.assertTrue(
-            flsk_bcrpt.check_password_hash(user.password_hash, "456"),
+            flsk_bcrpt.check_password_hash(user_2.password_hash, "456"),
+        )
+
+        user_3 = User.query.get(3)
+        self.assertEqual(
+            {
+                a: getattr(user_3, a)
+                for a in ("id", "username", "email", "is_confirmed")
+            },
+            {
+                "id": 3,
+                "username": "at",
+                "email": "alice.taylor@protonmail.com",
+                "is_confirmed": False,
+            },
+        )
+        self.assertTrue(
+            flsk_bcrpt.check_password_hash(user_3.password_hash, "789"),
         )
 
     def test_5_prevent_editing_of_email(self):
