@@ -23,7 +23,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._user_id = self.util_create_user(
+        self._data_about_created_user = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -35,7 +35,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         )
         token_payload = {
             "purpose": ACCESS,
-            "user_id": self._user_id,
+            "user_id": self._data_about_created_user["id"],
         }
         token = token_serializer.dumps(token_payload).decode("utf-8")
         self._expected_body = {"token": token}
@@ -98,7 +98,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        self.util_confirm_user(self._user_id)
+        self.util_confirm_user(self._data_about_created_user["id"])
 
         # Act.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -161,7 +161,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        self.util_confirm_user(self._user_id)
+        self.util_confirm_user(self._data_about_created_user["id"])
 
         # Act.
         wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
@@ -201,7 +201,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._user_id = self.util_create_user(
+        self._data_about_created_user = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -234,7 +234,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
                 # Arrange.
                 token_payload = {
                     "purpose": wrong_purpose,
-                    "user_id": self._user_id,
+                    "user_id": self._data_about_created_user["id"],
                 }
                 valid_token_wrong_purpose = self.app.token_serializer.dumps(
                     token_payload
@@ -273,7 +273,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         """
 
         # Arrange.
-        self.util_confirm_user(self._user_id)
+        self.util_confirm_user(self._data_about_created_user["id"])
 
         # Issue an access token for the user.
         basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"

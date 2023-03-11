@@ -10,17 +10,19 @@ from tests import TestBasePlusUtilities
 from src.constants import ACCESS
 
 
-# TODO: (2023/03/07, 07:06)
-#       before submitting a pull request for review:
-#
-#       make a _quick_/_time-boxed_ attempt at
-#       modifying `TestBasePlusUtilities.util_create_user` in such a way that
-#       each call returns an "output dictionary" of server-generated data
-#       that is needed by the existing test cases
 class TestBaseForExampleResources(TestBasePlusUtilities):
     def create_user(self, username, email, password):
+        # TODO: (2023/03/07, 16:15)
+        #       before submitting a pull request for review:
+        #
+        #       modify this method so that
+        #       it will
+        #           update `data_about_created_user`;
+        #           return only the updated `data_about_created_user`
+        #           (without returning a second output called `token_auth`)
+
         # Create one User resource and confirm it.
-        user_id = self.util_create_user(
+        data_about_created_user = self.util_create_user(
             username,
             email,
             password,
@@ -40,7 +42,7 @@ class TestBaseForExampleResources(TestBasePlusUtilities):
         body_2 = json.loads(body_str_2)
         token_auth = "Bearer " + body_2["token"]
 
-        return user_id, token_auth
+        return data_about_created_user, token_auth
 
 
 class Test_01_CreateExample(TestBaseForExampleResources):
@@ -695,7 +697,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._jd_user_id, self._jd_user_token_auth = self.create_user(
+        self._data_about_created_user, self._jd_user_token_auth = self.create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -749,7 +751,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         users = User.query.all()
         self.assertEqual(len(users), 1)
         u = users[0]
-        self.assertEqual(u.id, self._jd_user_id)
+        self.assertEqual(u.id, self._data_about_created_user["id"])
 
         examples = Example.query.all()
         self.assertEqual(len(examples), 1)
@@ -893,7 +895,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._jd_user_id, self._jd_user_token_auth = self.create_user(
+        self._data_about_created_user, self._jd_user_token_auth = self.create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],

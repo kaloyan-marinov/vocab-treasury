@@ -31,6 +31,11 @@ class TestBasePlusUtilities(TestBase):
         password,
         should_confirm_new_user=False,
     ):
+        # TODO: (2023/03/11, 16:13)
+        #       before submitting a pull request for review:
+        #
+        #       refactor this method so that
+        #       it will return an instance of a (to-be-implemented) frozen dataclass
         data = {
             "username": username,
             "email": email,
@@ -52,7 +57,14 @@ class TestBasePlusUtilities(TestBase):
         if should_confirm_new_user:
             self.util_confirm_user(user_id)
 
-        return user_id
+        # frozen dataclass ?
+        augmented_data = data.copy()
+        augmented_data.update(
+            {
+                "id": user_id,
+            }
+        )
+        return augmented_data
 
     def util_confirm_user(self, user_id):
         token_payload = {
