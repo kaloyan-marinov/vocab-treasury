@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import unittest
 
@@ -23,6 +24,16 @@ class TestBase(unittest.TestCase):
         self.app_context.pop()
 
 
+@dataclasses.dataclass(frozen=True)
+class UserResource:
+    id: int
+    username: str
+    email: str
+    password: str
+    is_confirmed: bool = False
+    token: str = ""
+
+
 class TestBasePlusUtilities(TestBase):
     def util_create_user(
         self,
@@ -30,12 +41,7 @@ class TestBasePlusUtilities(TestBase):
         email,
         password,
         should_confirm_new_user=False,
-    ):
-        # TODO: (2023/03/11, 16:13)
-        #       before submitting a pull request for review:
-        #
-        #       refactor this method so that
-        #       it will return an instance of a (to-be-implemented) frozen dataclass
+    ) -> UserResource:
         data = {
             "username": username,
             "email": email,
@@ -57,14 +63,13 @@ class TestBasePlusUtilities(TestBase):
         if should_confirm_new_user:
             self.util_confirm_user(user_id)
 
-        # frozen dataclass ?
-        augmented_data = data.copy()
-        augmented_data.update(
-            {
-                "id": user_id,
-            }
+        return UserResource(
+            user_id,
+            username,
+            email,
+            password,
+            is_confirmed=should_confirm_new_user,
         )
-        return augmented_data
 
     def util_confirm_user(self, user_id):
         token_payload = {

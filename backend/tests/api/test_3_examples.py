@@ -6,7 +6,7 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import User, Example
-from tests import TestBasePlusUtilities
+from tests import TestBasePlusUtilities, UserResource
 from src.constants import ACCESS
 
 
@@ -22,7 +22,7 @@ class TestBaseForExampleResources(TestBasePlusUtilities):
         #           (without returning a second output called `token_auth`)
 
         # Create one User resource and confirm it.
-        data_about_created_user = self.util_create_user(
+        u_r: UserResource = self.util_create_user(
             username,
             email,
             password,
@@ -42,7 +42,7 @@ class TestBaseForExampleResources(TestBasePlusUtilities):
         body_2 = json.loads(body_str_2)
         token_auth = "Bearer " + body_2["token"]
 
-        return data_about_created_user, token_auth
+        return u_r, token_auth
 
 
 class Test_01_CreateExample(TestBaseForExampleResources):
@@ -697,7 +697,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._data_about_created_user, self._jd_user_token_auth = self.create_user(
+        self._jd_u_r, self._jd_user_token_auth = self.create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -751,7 +751,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         users = User.query.all()
         self.assertEqual(len(users), 1)
         u = users[0]
-        self.assertEqual(u.id, self._data_about_created_user["id"])
+        self.assertEqual(u.id, self._jd_u_r.id)
 
         examples = Example.query.all()
         self.assertEqual(len(examples), 1)

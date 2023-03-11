@@ -7,7 +7,7 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
-from tests import TestBase, TestBasePlusUtilities
+from tests import TestBase, TestBasePlusUtilities, UserResource
 from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
 from src.auth import validate_token
 
@@ -310,10 +310,12 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
 
     def test_2_invalid_token(self):
         # Arrange.
-        user_id = self.util_create_user(self.username, self.email, self.password)
+        u_r: UserResource = self.util_create_user(
+            self.username, self.email, self.password
+        )
 
         valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            user_id
+            u_r.id
         )
         invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
 
@@ -337,13 +339,15 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
 
     def test_3_valid_token_wrong_purpose(self):
         # Arrange.
-        user_id = self.util_create_user(self.username, self.email, self.password)
+        u_r: UserResource = self.util_create_user(
+            self.username, self.email, self.password
+        )
 
         for wrong_purpose in (PASSWORD_RESET, ACCESS):
             with self.subTest():
                 token_payload = {
                     "purpose": wrong_purpose,
-                    "user_id": user_id,
+                    "user_id": u_r.id,
                 }
                 valid_token_wrong_purpose = (
                     self.app.token_serializer_for_account_confirmation.dumps(
@@ -374,7 +378,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
 
     def test_4_valid_token(self):
         # Arrange.
-        data_about_created_user = self.util_create_user(
+        u_r: UserResource = self.util_create_user(
             self.username,
             self.email,
             self.password,
@@ -382,7 +386,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         )
 
         valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            data_about_created_user["id"]
+            u_r.id
         )
 
         # Act.
@@ -844,13 +848,13 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_1["password"],
             should_confirm_new_user=True,
         )
-        data_about_created_user_2 = self.util_create_user(
+        u_r_2: UserResource = self.util_create_user(
             data_2["username"],
             data_2["email"],
             data_2["password"],
             should_confirm_new_user=True,
         )
-        data_about_created_user_3 = self.util_create_user(
+        u_r_3: UserResource = self.util_create_user(
             data_3["username"],
             data_3["email"],
             data_3["password"],
@@ -862,7 +866,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
 
         rv_2 = self.client.put(
-            f"/api/users/{data_about_created_user_2['id']}",
+            f"/api/users/{u_r_2.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -871,7 +875,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         rv_3 = self.client.put(
-            f"/api/users/{data_about_created_user_3['id']}",
+            f"/api/users/{u_r_3.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -947,7 +951,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         email = "john.doe@protonmail.com"
         password = "123"
 
-        data_about_created_user = self.util_create_user(
+        u_r: UserResource = self.util_create_user(
             username,
             email,
             password,
@@ -965,7 +969,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         data_str = json.dumps(data)
 
         rv = self.client.put(
-            f"/api/users/{data_about_created_user['id']}",
+            f"/api/users/{u_r.id}",
             data=data_str,
             headers={
                 "Content-Type": "application/json",
@@ -1002,7 +1006,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         email = "john.doe@protonmail.com"
         password = "123"
 
-        data_about_created_user = self.util_create_user(
+        u_r: UserResource = self.util_create_user(
             username,
             email,
             password,
@@ -1014,7 +1018,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
-            f"/api/users/{data_about_created_user['id']}",
+            f"/api/users/{u_r.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
