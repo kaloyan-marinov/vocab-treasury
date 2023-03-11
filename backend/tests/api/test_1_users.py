@@ -756,6 +756,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
         """
 
         # TODO: (2023/03/06, 07:29)
+        #       before submitting a pull request for review:
+        #
         #       Update the comments within test cases
         #       to be organized around the "Arrange-Act-Assert" 'scaffolding'.
 
@@ -819,6 +821,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
         - regardless of whether the targeted User resource is confirmed or not.
         """
         # TODO: (2023/03/06, 07:34)
+        #       before submitting a pull request for review:
+        #
         #       (a) augment this test case
         #           to cover the 'regardless' part of the docstring;
         #       (b) inspect whether (a) needs or ought to be applied

@@ -152,6 +152,8 @@ def token_auth_error():
 
 
 # TODO: (2023/03/08, 07:46)
+#       before submitting a pull request for review:
+#
 #       attempt to replace this function
 #       with two new instances of `HTTPTokenAuth`
 #       (or something from `flask_httpauth`

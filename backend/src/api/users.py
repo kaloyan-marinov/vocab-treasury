@@ -220,6 +220,8 @@ def edit_user(user_id):
 
     if email is not None:
         # TODO: (2023/03/10, 08:41)
+        #       resolve v-t-i-66
+        #       :=
         #       require the user to confirm the new email address
         #       before it actually becomes their _active_ email address
         #       (from the perspective of the backend application)
