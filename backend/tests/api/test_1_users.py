@@ -94,7 +94,25 @@ class Test_01_CreateUser(TestBase):
                 self.assertEqual(len(users), 0)
 
     def test_3_create_user(self):
-        """Ensure that it is possible to create a new User resource."""
+        """
+        Ensure that it is possible to create a new User resource.
+
+        (
+        This remark
+        is likely obvious to experienced users of the `Flask-Mail` extension,
+        but may be appreciated by those who are relatively new to using that extension.
+
+        - while implementing the feature that
+          requires every newly-created user to confirm their email address,
+          I observed - empirically! - that,
+          when the Python interpreter runs
+          a unit test - such as the encompassing one! - that creates a User,
+          no account-confirmation email gets sent
+
+        - the reason for that is as follows:
+          https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
+        )
+        """
 
         # Create a new User resource.
         rv = self.client.post(
@@ -102,15 +120,6 @@ class Test_01_CreateUser(TestBase):
             data=self.data_str,
             headers={"Content-Type": "application/json"},
         )
-        # TODO: (2023/03/06, 06:25)
-        #       it has been empirically observed that,
-        #       when a unit test (such as this one!) that creates a User is run,
-        #       no account-confirmation email gets sent
-        #
-        #       the reason for that is as follows:
-        #       https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
-        #
-        #       record that in a reasonable way and place
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
@@ -750,7 +759,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         #       Update the comments within test cases
         #       to be organized around the "Arrange-Act-Assert" 'scaffolding'.
 
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -1089,7 +1098,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -1390,7 +1399,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         is able to delete his/her corresponding User resource.
         """
 
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -1425,7 +1434,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
