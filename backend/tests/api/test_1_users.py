@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 import base64
+import unittest
 
 from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
@@ -646,7 +647,6 @@ class Test_05_EditUser(TestBasePlusUtilities):
     def setUp(self):
         self.data = {
             "username": "JD",
-            "email": "JOHN.DOE@PROTONMAIL.COM",
             "password": "!@#",
         }
         self.data_str = json.dumps(self.data)
@@ -884,19 +884,74 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "456"),
         )
 
-    def test_5_edit_the_authenticated_user(self):
+    def test_5_prevent_editing_of_email(self):
+        """
+        Ensure that the user,
+        who has been confirmed and is authenticated by the issued request's header,
+        is unable to edit the email address associated with his/her User resource.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        user_id = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+
+        data = {
+            "email": "JOHN.DOE@PROTONMAIL.COM",
+        }
+        data_str = json.dumps(data)
+
+        rv = self.client.put(
+            f"/api/users/{user_id}",
+            data=data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Currently, it is not possible"
+                    " to edit the email address associated with your User resource."
+                    " But it is planned to implement that feature in the future."
+                ),
+            },
+        )
+
+    def test_6_edit_the_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
         is able to edit his/her corresponding User resource.
         """
 
-        # Create one User resource and confirm it..
+        # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
 
-        __ = self.util_create_user(
+        user_id = self.util_create_user(
             username,
             email,
             password,
@@ -904,11 +959,11 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         # Edit the User resource that was created just now.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
-            "/api/users/1",
+            f"/api/users/{user_id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -937,14 +992,18 @@ class Test_05_EditUser(TestBasePlusUtilities):
             {
                 "id": 1,
                 "username": "JD",
-                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "email": "john.doe@protonmail.com",
             },
         )
         self.assertTrue(
             flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
-    def test_6_prevent_duplication_of_emails(self):
+    @unittest.skip(
+        "as long as the 'TODO: (2023/03/10, 08:41)' has not been handled,"
+        " this test case has to be skipped"
+    )
+    def test_7_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that it would end up having the same email as another User resource
@@ -976,7 +1035,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         # Attempt to edit the 1st User resource in such a way that
-        # its email should be end up being identical to the 2nd User resource's email.
+        # its email should end up being identical to the 2nd User resource's email.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
@@ -1024,7 +1083,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_7_incorrect_basic_auth(self):
+    def test_8_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
@@ -1084,7 +1143,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_8_prevent_duplication_of_usernames(self):
+    def test_9_prevent_duplication_of_usernames(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that two different User resources would end up having the same username

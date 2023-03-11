@@ -219,6 +219,12 @@ def edit_user(user_id):
     email = request.json.get("email")
 
     if email is not None:
+        # TODO: (2023/03/10, 08:41)
+        #       require the user to confirm the new email address
+        #       before it actually becomes their _active_ email address
+        #       (from the perspective of the backend application)
+        # fmt: off
+        '''
         if User.query.filter_by(email=email).first() is not None:
             r = jsonify(
                 {
@@ -231,6 +237,20 @@ def edit_user(user_id):
             )
             r.status_code = 400
             return r
+        '''
+        # fmt: on
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Currently, it is not possible"
+                    " to edit the email address associated with your User resource."
+                    " But it is planned to implement that feature in the future."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
 
     if username is not None:
         if User.query.filter_by(username=username).first() is not None:
@@ -249,8 +269,15 @@ def edit_user(user_id):
     u = User.query.get(user_id)
     if username is not None:
         u.username = username
+    # fmt: off
+    # The following code-block is commented out, because it is unreachable.
+    # Its unreachability is due to
+    # the statements within the body the preceding `if email is not None` statement.
+    '''
     if email is not None:
         u.email = email
+    '''
+    # fmt: on
     if password is not None:
         u.password_hash = flsk_bcrpt.generate_password_hash(password).decode("utf-8")
 

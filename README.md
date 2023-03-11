@@ -315,7 +315,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X PUT \
-            -d '{"username": "j-d"}' \
+            -d '{"username": "JD"}' \
             localhost:5000/api/users/1 \
             | json_pp
 
@@ -324,7 +324,7 @@ and use `localhost` to serve a frontend application.
         $ curl -v \
             -X PUT \
             -u ${EMAIL_1}:123 \
-            -d '{"username": "j-d"}' \
+            -d '{"username": "JD"}' \
             localhost:5000/api/users/1 \
             | json_pp
 
@@ -334,7 +334,7 @@ and use `localhost` to serve a frontend application.
             -X PUT \
             -H "Content-Type: application/json" \
             -u ${EMAIL_1}:123 \
-            -d '{"username": "j-d"}' \
+            -d '{"username": "JD"}' \
             localhost:5000/api/users/2 \
             | json_pp
 
@@ -344,7 +344,22 @@ and use `localhost` to serve a frontend application.
             -X PUT \
             -H "Content-Type: application/json" \
             -u ${EMAIL_1}:123 \
-            -d '{"username": "JD", "email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            -d "{ \
+                    \"username\": \"JD\", \
+                    \"email\": \"JOHN.DOE@PROTONMAIL.COM\" \
+                }" \
+            localhost:5000/api/users/1 \
+            | json_pp
+        
+        400
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u ${EMAIL_1}:123 \
+            -d "{ \
+                    \"username\": \"JD\" \
+                }" \
             localhost:5000/api/users/1 \
             | json_pp
         
@@ -361,17 +376,33 @@ and use `localhost` to serve a frontend application.
             -X PUT \
             -H "Content-Type: application/json" \
             -u ${EMAIL_2}:456 \
-            -d '{"email": "JOHN.DOE@PROTONMAIL.COM"}' \
+            -d "{ \
+                    \"username\": \"JD\" \
+                }" \
             localhost:5000/api/users/2 \
             | json_pp
 
         400
 
+        # $ curl -v \
+        #     -X PUT \
+        #     -H "Content-Type: application/json" \
+        #     -u ${EMAIL_2}:456 \
+        #     -d "{ \
+        #             \"email\": \"${EMAIL_1}\" \
+        #         }" \
+        #     localhost:5000/api/users/2 \
+        #     | json_pp
+        # 
+        # 400
+
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
             -u ${EMAIL_2}:wrong-password \
-            -d '{"email": "MARY.SMITH@YAHOO.COM"}' \
+            -d "{ \
+                    \"username\": \"MS\" \
+                }" \
             localhost:5000/api/users/2 \
             | json_pp
 
@@ -388,7 +419,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X DELETE \
-            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            -u ${EMAIL_1}:123 \
             localhost:5000/api/users/2 \
             | json_pp
 
@@ -396,7 +427,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X DELETE \
-            -u JOHN.DOE@PROTONMAIL.COM:123 \
+            -u ${EMAIL_1}:123 \
             localhost:5000/api/users/1 \
             | json_pp
 
