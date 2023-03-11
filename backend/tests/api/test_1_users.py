@@ -756,10 +756,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
         """
 
         # TODO: (2023/03/06, 07:29)
-        #       before submitting a pull request for review:
-        #
-        #       Update the comments within test cases
-        #       to be organized around the "Arrange-Act-Assert" 'scaffolding'.
+        #       resolve v-t-i-67
+        #       :=
+        #       update the comments within test cases
+        #       to be organized around the "Arrange-Act-Assert" 'scaffolding'
 
         # Create one User resource and confirm it.
         username = "jd"
