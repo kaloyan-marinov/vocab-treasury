@@ -11,16 +11,9 @@ from src.constants import ACCESS
 
 
 class TestBaseForExampleResources(TestBasePlusUtilities):
-    def create_user(self, username, email, password):
-        # TODO: (2023/03/11, 17:06)
-        #       before submitting a pull request for review:
-        #
-        #       rename this method to `util_create_user`, and
-        #       take advantage of the same-named method
-        #       that is implemented within the parent class
-
+    def util_create_user(self, username, email, password):
         # Create one User resource and confirm it.
-        u_r: UserResource = self.util_create_user(
+        u_r: UserResource = super().util_create_user(
             username,
             email,
             password,
@@ -61,7 +54,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._u_r_1: UserResource = self.create_user(
+        self._u_r_1: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -366,7 +359,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._u_r_1: UserResource = self.create_user(
+        self._u_r_1: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -482,7 +475,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        u_r_2: UserResource = self.create_user(
+        u_r_2: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -701,7 +694,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._u_r_1: UserResource = self.create_user(
+        self._u_r_1: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -839,7 +832,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        u_r_2: UserResource = self.create_user(
+        u_r_2: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -899,7 +892,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._u_r_1: UserResource = self.create_user(
+        self._u_r_1: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -1126,7 +1119,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        u_r_2: UserResource = self.create_user(
+        u_r_2: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -1211,7 +1204,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self._u_r_1: UserResource = self.create_user(
+        self._u_r_1: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
@@ -1327,7 +1320,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
-        u_r_2: UserResource = self.create_user(
+        u_r_2: UserResource = self.util_create_user(
             user_data["username"],
             user_data["email"],
             user_data["password"],
