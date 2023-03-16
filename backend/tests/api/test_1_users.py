@@ -842,7 +842,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             "password": "789",
         }
 
-        __ = self.util_create_user(
+        u_r_1: UserResource = self.util_create_user(
             data_1["username"],
             data_1["email"],
             data_1["password"],
@@ -861,7 +861,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         # Act.
-        basic_auth_credentials = f"{data_1['email']}:{data_1['password']}"
+        basic_auth_credentials = f"{u_r_1.email}:{u_r_1.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
@@ -1205,69 +1205,91 @@ class Test_05_EditUser(TestBasePlusUtilities):
         - regardless of whether the latter User resource is confirmed or not.
         """
 
-        # Create two User resources, but confirm only the first one.
-        data_0_1 = {
+        # Arrange.
+        data_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_0_2 = {
+        data_2 = {
             "username": "ms",
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
+        data_3 = {
+            "username": "at",
+            "email": "alice.taylor@protonmail.com",
+            "password": "789",
+        }
 
-        __ = self.util_create_user(
-            data_0_1["username"],
-            data_0_1["email"],
-            data_0_1["password"],
+        u_r_1: UserResource = self.util_create_user(
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
             should_confirm_new_user=True,
         )
-        __ = self.util_create_user(
-            data_0_2["username"],
-            data_0_2["email"],
-            data_0_2["password"],
+        u_r_2: UserResource = self.util_create_user(
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
+            should_confirm_new_user=True,
+        )
+        u_r_3: UserResource = self.util_create_user(
+            data_3["username"],
+            data_3["email"],
+            data_3["password"],
         )
 
-        # Attempt to edit the 1st User resource in such a way that
-        # its username would end up being identical to the 2nd User resource's username.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        # Act.
+        basic_auth_credentials = f"{u_r_1.email}:{u_r_1.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {"username": "ms"}
-        data_str = json.dumps(data)
-
-        rv = self.client.put(
-            "/api/users/1",
-            data=data_str,
+        new_data_2 = {"username": u_r_2.username}
+        new_data_str_2 = json.dumps(new_data_2)
+        rv_2 = self.client.put(
+            f"/api/users/{u_r_1.id}",
+            data=new_data_str_2,
             headers={
                 "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
 
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
-            {
-                "error": "Bad Request",
-                "message": (
-                    "There already exists a User resource with the same username as the"
-                    " one you provided."
-                ),
+        new_data_3 = {"username": u_r_3.username}
+        new_data_str_3 = json.dumps(new_data_3)
+        rv_3 = self.client.put(
+            f"/api/users/{u_r_1.id}",
+            data=new_data_str_3,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
             },
         )
 
+        # Assert.
+        for rv in (rv_2, rv_3):
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(
+                body,
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        "There already exists a User resource with the same username as"
+                        " the one you provided."
+                    ),
+                },
+            )
+
         # (Reach directly into the application's persistence layer to)
-        # Ensure that the attempt has not created a second User resource.
+        # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
-        self.assertEqual(len(users), 2)
-        user = User.query.get(1)
+        self.assertEqual(len(users), 3)
+        targeted_u = User.query.get(u_r_1.id)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
@@ -1275,7 +1297,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
         self.assertTrue(
-            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
 
