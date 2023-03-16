@@ -151,14 +151,6 @@ def token_auth_error():
     return r
 
 
-# TODO: (2023/03/08, 07:46)
-#       before submitting a pull request for review:
-#
-#       attempt to replace this function
-#       with two new instances of `HTTPTokenAuth`
-#       (or something from `flask_httpauth`
-#       which knows how to grab a token from the URL
-#       that the incoming request was targeted at)
 def validate_token(token, purpose):
     if purpose == PASSWORD_RESET:
         t_s = current_app.token_serializer_for_password_resets
