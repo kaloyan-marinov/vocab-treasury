@@ -6,8 +6,9 @@ from itsdangerous import BadSignature, SignatureExpired
 
 from src import db, flsk_bcrpt, mail
 from src.models import User
-from src.auth import basic_auth, token_auth
+from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
+from src.constants import ACCOUNT_CONFIRMATION, PASSWORD_RESET
 
 
 @api_bp.route("/users", methods=["POST"])
@@ -73,14 +74,57 @@ def create_user():
         username=username,
         email=email,
         password_hash=flsk_bcrpt.generate_password_hash(password).decode("utf-8"),
+        is_confirmed=False,
     )
     db.session.add(user)
     db.session.commit()
+
+    send_email_requesting_that_account_should_be_confirmed(user)
 
     payload = user.to_dict()
     r = jsonify(payload)
     r.status_code = 201
     r.headers["Location"] = url_for("api_blueprint.get_user", user_id=user.id)
+    return r
+
+
+@api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
+def confirm_newly_created_account(token):
+    reject_token, response_or_token_payload = validate_token(
+        token, ACCOUNT_CONFIRMATION
+    )
+
+    if reject_token:
+        return response_or_token_payload
+
+    if response_or_token_payload["purpose"] != ACCOUNT_CONFIRMATION:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "The provided token's `purpose` is"
+                    f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    user_id = response_or_token_payload["user_id"]
+    user = User.query.get(user_id)
+
+    user.is_confirmed = True
+    db.session.add(user)
+    db.session.commit()
+
+    r = jsonify(
+        {
+            "message": (
+                "You have confirmed your account successfully. You may now log in."
+            )
+        }
+    )
+    r.status_code = 200
     return r
 
 
@@ -98,13 +142,14 @@ def get_users():
     with the reason for this restriction being
     that we do not want to task the server too much.
     """
+
     per_page = min(
         request.args.get("per_page", 10, type=int),
         100,
     )
     page = request.args.get("page", 1, type=int)
     users_collection = User.to_collection_dict(
-        User.query,
+        User.query.filter_by(is_confirmed=True),
         per_page,
         page,
         "api_blueprint.get_users",
@@ -116,12 +161,12 @@ def get_users():
 def get_user(user_id):
     u = User.query.get(user_id)
 
-    if u is None:
+    if u is None or u.is_confirmed is False:
         r = jsonify(
             {
                 "error": "Not Found",
                 "message": (
-                    f"There doesn't exist a User resource with an id of {user_id}"
+                    f"There doesn't exist a User resource with an id of {user_id}."
                 ),
             }
         )
@@ -174,6 +219,14 @@ def edit_user(user_id):
     email = request.json.get("email")
 
     if email is not None:
+        # TODO: (2023/03/10, 08:41)
+        #       resolve v-t-i-66
+        #       :=
+        #       require the user to confirm the new email address
+        #       before it actually becomes their _active_ email address
+        #       (from the perspective of the backend application)
+        # fmt: off
+        '''
         if User.query.filter_by(email=email).first() is not None:
             r = jsonify(
                 {
@@ -186,6 +239,20 @@ def edit_user(user_id):
             )
             r.status_code = 400
             return r
+        '''
+        # fmt: on
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Currently, it is not possible"
+                    " to edit the email address associated with your User resource."
+                    " But it is planned to implement that feature in the future."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
 
     if username is not None:
         if User.query.filter_by(username=username).first() is not None:
@@ -204,8 +271,15 @@ def edit_user(user_id):
     u = User.query.get(user_id)
     if username is not None:
         u.username = username
+    # fmt: off
+    # The following code-block is commented out, because it is unreachable.
+    # Its unreachability is due to
+    # the statements within the body the preceding `if email is not None` statement.
+    '''
     if email is not None:
         u.email = email
+    '''
+    # fmt: on
     if password is not None:
         u.password_hash = flsk_bcrpt.generate_password_hash(password).decode("utf-8")
 
@@ -288,9 +362,61 @@ def request_password_reset():
     return r
 
 
+def send_email_requesting_that_account_should_be_confirmed(user):
+    token_payload = {
+        "purpose": ACCOUNT_CONFIRMATION,
+        "user_id": user.id,
+    }
+    account_confirmation_token = (
+        current_app.token_serializer_for_account_confirmation.dumps(
+            token_payload
+        ).decode("utf-8")
+    )
+
+    msg_body = f"""Dear {user.username},
+
+Thank you for creating a VocabTreasury account.
+
+Please confirm your account
+in order to be able to log in and start using VocabTreasury.
+
+To confirm your account, launch a terminal instance and issue the following request:
+```
+$ curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_newly_created_account',
+        token=account_confirmation_token,
+        _external=True,
+    )}
+```
+
+Sincerely,
+The VocabTreasury Team
+
+PS: If you do not confirm your account within {current_app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"]} days of receiving this email,
+your account will be deleted.
+If your account is deleted but you do want to use VocabTreasury,
+you can still do so by simply creating a new VocabTreasury account.
+    """
+
+    send_email(
+        subject="[VocabTreasury] Please confirm your newly-created account",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+        body=msg_body,
+    )
+
+
 def send_password_reset_email(user):
+    token_payload = {
+        "purpose": PASSWORD_RESET,
+        "user_id": user.id,
+    }
     password_reset_token = current_app.token_serializer_for_password_resets.dumps(
-        {"user_id": user.id}
+        token_payload
     ).decode("utf-8")
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
@@ -352,24 +478,25 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
-    reject_token = False
-    try:
-        token_payload = current_app.token_serializer_for_password_resets.loads(token)
-    except SignatureExpired as e:
-        reject_token = True  # valid token, but expired
-    except BadSignature as e:
-        reject_token = True  # invalid token
+    reject_token, response_or_token_payload = validate_token(token, PASSWORD_RESET)
 
     if reject_token:
+        return response_or_token_payload
+
+    if response_or_token_payload["purpose"] != PASSWORD_RESET:
         r = jsonify(
             {
-                "error": "Unauthorized",
-                "message": "Your password-reset token is invalid.",
+                "error": "Bad Request",
+                "message": (
+                    "The provided token's `purpose` is"
+                    f" different from {repr(PASSWORD_RESET)}."
+                ),
             }
         )
-        r.status_code = 401
+        r.status_code = 400
         return r
-    user_id = token_payload["user_id"]
+
+    user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
 
     if not request.json:

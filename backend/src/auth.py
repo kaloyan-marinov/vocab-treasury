@@ -1,9 +1,10 @@
-from flask import jsonify, current_app
+from flask import jsonify, current_app, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from itsdangerous import BadSignature, SignatureExpired
 
 from src import flsk_bcrpt
 from src.models import User
+from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 basic_auth = HTTPBasicAuth()
@@ -12,7 +13,22 @@ basic_auth = HTTPBasicAuth()
 @basic_auth.verify_password
 def verify_password(email, password):
     user = User.query.filter_by(email=email).first()
+
     if user is None:
+        return None
+
+    if not user.is_confirmed:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            }
+        )
+        r.status_code = 400
+        g.response_for_unconfirmed_user = r
         return None
 
     if flsk_bcrpt.check_password_hash(user.password_hash, password) is False:
@@ -23,7 +39,10 @@ def verify_password(email, password):
 
 @basic_auth.error_handler
 def basic_auth_error():
-    """Return a 401 error to the client."""
+    """Return an appropriate error to the client."""
+    if hasattr(g, "response_for_unconfirmed_user"):
+        return g.response_for_unconfirmed_user
+
     r = jsonify(
         {
             "error": "Unauthorized",
@@ -95,6 +114,20 @@ def verify_token(token):
     except BadSignature:
         return None  # invalid token
 
+    if token_payload["purpose"] != ACCESS:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "The provided token's `purpose` is"
+                    f" different from {repr(ACCESS)}."
+                ),
+            }
+        )
+        r.status_code = 400
+        g.response_for_inadmissible_token_purpose = r
+        return None
+
     user = User.query.get(token_payload["user_id"])
     if user is None:
         return None
@@ -104,7 +137,10 @@ def verify_token(token):
 
 @token_auth.error_handler
 def token_auth_error():
-    """Return a 401 error to the client."""
+    """Return an appropriate error to the client."""
+    if hasattr(g, "response_for_inadmissible_token_purpose"):
+        return g.response_for_inadmissible_token_purpose
+
     r = jsonify(
         {
             "error": "Unauthorized",
@@ -113,3 +149,35 @@ def token_auth_error():
     )
     r.status_code = 401
     return r
+
+
+def validate_token(token, purpose):
+    if purpose == PASSWORD_RESET:
+        t_s = current_app.token_serializer_for_password_resets
+    elif purpose == ACCOUNT_CONFIRMATION:
+        t_s = current_app.token_serializer_for_account_confirmation
+    else:
+        raise ValueError(
+            f"`purpose` must be one of {repr(PASSWORD_RESET)}, {repr(ACCOUNT_CONFIRMATION)},"
+            f" but it is equal to {repr(purpose)} instead"
+        )
+
+    reject_token = False
+    try:
+        token_payload = t_s.loads(token)
+    except SignatureExpired as e:
+        reject_token = True  # valid token, but expired
+    except BadSignature as e:
+        reject_token = True  # invalid token
+
+    if reject_token:
+        r = jsonify(
+            {
+                "error": "Unauthorized",
+                "message": "The provided token is invalid.",
+            }
+        )
+        r.status_code = 401
+        return reject_token, r
+
+    return reject_token, token_payload

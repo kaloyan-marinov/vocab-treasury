@@ -1,12 +1,15 @@
 import json
 from unittest.mock import patch
 import base64
+import unittest
 
 from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
-from tests import TestBase
+from tests import TestBase, TestBasePlusUtilities, UserResource
+from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.auth import validate_token
 
 
 class Test_01_CreateUser(TestBase):
@@ -91,7 +94,25 @@ class Test_01_CreateUser(TestBase):
                 self.assertEqual(len(users), 0)
 
     def test_3_create_user(self):
-        """Ensure that it is possible to create a new User resource."""
+        """
+        Ensure that it is possible to create a new User resource.
+
+        (
+        This remark
+        is likely obvious to experienced users of the `Flask-Mail` extension,
+        but may be appreciated by those who are relatively new to using that extension.
+
+        - while implementing the feature that
+          requires every newly-created user to confirm their email address,
+          I observed - empirically! - that,
+          when the Python interpreter runs
+          a unit test - such as the encompassing one! - that creates a User,
+          no account-confirmation email gets sent
+
+        - the reason for that is as follows:
+          https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
+        )
+        """
 
         # Create a new User resource.
         rv = self.client.post(
@@ -118,11 +139,12 @@ class Test_01_CreateUser(TestBase):
         self.assertEqual(len(users), 1)
         user = users[0]
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {a: getattr(user, a) for a in ["id", "username", "email", "is_confirmed"]},
             {
                 "id": 1,
                 "username": "jd",
                 "email": "john.doe@protonmail.com",
+                "is_confirmed": 0,
             },
         )
         self.assertTrue(
@@ -246,7 +268,169 @@ class Test_01_CreateUser(TestBase):
         )
 
 
-class Test_02_GetUsers(TestBase):
+class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
+    """Test the request responsible for confirming a newly-created `User` resource."""
+
+    def setUp(self):
+        self.username = "jd"
+        self.email = "john.doe@protonmail.com"
+        self.password = "123"
+        super().setUp()
+
+    def _issue_valid_account_confirmation_token(self, user_id):
+        token_payload = {
+            "purpose": ACCOUNT_CONFIRMATION,
+            "user_id": user_id,
+        }
+        valid_token_correct_purpose = (
+            self.app.token_serializer_for_account_confirmation.dumps(
+                token_payload
+            ).decode("utf-8")
+        )
+        return valid_token_correct_purpose
+
+    def test_1_validate_token(self):
+        # Arrange.
+        token = "this-value-is-immaterial-for-this-test-case"
+        inadmissible_purpose = f"{ACCOUNT_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+
+        # Act.
+        with self.assertRaises(ValueError) as context_manager:
+            __ = validate_token(token, inadmissible_purpose)
+
+        # Assert.
+        self.assertEqual(
+            str(context_manager.exception),
+            (
+                "`purpose` must be one of"
+                " \"to reset account's password\", 'to confirm account',"
+                f" but it is equal to {repr(inadmissible_purpose)} instead"
+            ),
+        )
+
+    def test_2_invalid_token(self):
+        # Arrange.
+        u_r: UserResource = self.util_create_user(
+            self.username, self.email, self.password
+        )
+
+        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
+            u_r.id
+        )
+        invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
+
+        # Act.
+        rv = self.client.post(
+            f"/api/confirm-newly-created-account/{invalid_token_correct_purpose}"
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": "The provided token is invalid.",
+            },
+        )
+
+    def test_3_valid_token_wrong_purpose(self):
+        # Arrange.
+        u_r: UserResource = self.util_create_user(
+            self.username, self.email, self.password
+        )
+
+        for wrong_purpose in (PASSWORD_RESET, ACCESS):
+            with self.subTest():
+                token_payload = {
+                    "purpose": wrong_purpose,
+                    "user_id": u_r.id,
+                }
+                valid_token_wrong_purpose = (
+                    self.app.token_serializer_for_account_confirmation.dumps(
+                        token_payload
+                    ).decode("utf-8")
+                )
+
+                # Act.
+                rv = self.client.post(
+                    f"/api/confirm-newly-created-account/{valid_token_wrong_purpose}"
+                )
+
+                # Assert.
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Bad Request",
+                        "message": (
+                            "The provided token's `purpose` is"
+                            f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                        ),
+                    },
+                )
+
+    def test_4_valid_token(self):
+        # Arrange.
+        u_r: UserResource = self.util_create_user(
+            self.username,
+            self.email,
+            self.password,
+            should_confirm_new_user=True,
+        )
+
+        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
+            u_r.id
+        )
+
+        # Act.
+        rv = self.client.post(
+            f"/api/confirm-newly-created-account/{valid_token_correct_purpose}"
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(
+            body,
+            {
+                "message": (
+                    "You have confirmed your account successfully. You may now log in."
+                )
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that
+        # a User resource has been not only created but also successfully confirmed.
+        users = User.query.all()
+        self.assertEqual(len(users), 1)
+        user = users[0]
+        self.assertEqual(
+            {a: getattr(user, a) for a in ["id", "username", "email", "is_confirmed"]},
+            {
+                "id": 1,
+                "username": "jd",
+                "email": "john.doe@protonmail.com",
+                "is_confirmed": True,
+            },
+        )
+        self.assertTrue(
+            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
+        )
+
+        self.assertEqual(repr(user), "User(1, jd)")
+
+
+class Test_03_GetUsers(TestBasePlusUtilities):
     """Test the request responsible for getting a list of existing User resources."""
 
     def test_1_empty_database(self):
@@ -284,23 +468,74 @@ class Test_02_GetUsers(TestBase):
             },
         )
 
-    def test_2_nonempty_database(self):
+    def test_2_empty_database(self):
         """
-        Ensure that, when the database contains some User resources,
-        it is possible to get a list of User resources.
+        Ensure that, when the database contains only unconfirmed User resources,
+        getting a list of User resources doesn't return any.
         """
 
         # Create one User resource.
-        data_0 = {
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
+
+        # Get all User resources.
+        rv = self.client.get("/api/users")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 200)
+        with current_app.test_request_context():
+            _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
+        self.assertEqual(
+            body,
+            {
+                "items": [],
+                "_meta": {
+                    "total_items": 0,
+                    "per_page": 10,
+                    "total_pages": 0,
+                    "page": 1,
+                },
+                "_links": {
+                    "self": _links_self,
+                    "next": None,
+                    "prev": None,
+                    "first": _links_self,
+                    "last": None,
+                },
+            },
+        )
+
+    def test_3_nonempty_database(self):
+        """
+        Ensure that, when the database contains some User resources,
+        getting a list of User resources returns only those that are confirmed.
+        """
+
+        # Create two User resources, but confirm only the first one.
+        data_0_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_str_0 = json.dumps(data_0)
-        rv_0 = self.client.post(
-            "/api/users",
-            data=data_str_0,
-            headers={"Content-Type": "application/json"},
+        data_0_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
+        )
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
         )
 
         # Get all User resources.
@@ -337,7 +572,7 @@ class Test_02_GetUsers(TestBase):
         )
 
 
-class Test_03_GetUser(TestBase):
+class Test_04_GetUser(TestBasePlusUtilities):
     """Test the request responsible for getting one specific User resource."""
 
     def test_1_nonexistent_user(self):
@@ -354,27 +589,54 @@ class Test_03_GetUser(TestBase):
             body,
             {
                 "error": "Not Found",
-                "message": "There doesn't exist a User resource with an id of 1",
+                "message": "There doesn't exist a User resource with an id of 1.",
             },
         )
 
     def test_2_user_that_exists(self):
         """
-        Ensure that, when the database contains some User resources,
-        it is possible to get a specific User resource.
+        Ensure that
+        attempting to get a User resource, which exists but has not been confirmed,
+        returns a 404.
         """
 
         # Create one User resource.
-        data_0 = {
-            "username": "jd",
-            "email": "john.doe@protonmail.com",
-            "password": "123",
-        }
-        data_str_0 = json.dumps(data_0)
-        rv_0 = self.client.post(
-            "/api/users",
-            data=data_str_0,
-            headers={"Content-Type": "application/json"},
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
+
+        # Get the User resource that was created just now.
+        rv = self.client.get("/api/users/1")
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(
+            body,
+            {
+                "error": "Not Found",
+                "message": "There doesn't exist a User resource with an id of 1.",
+            },
+        )
+
+    def test_3_user_that_exists(self):
+        """
+        Ensure that,
+        when the database contains some User resources that have been confirmed,
+        it is possible to get a specific confirmed User resource.
+        """
+
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Get the User resource that was created just now.
@@ -392,30 +654,16 @@ class Test_03_GetUser(TestBase):
         )
 
 
-class Test_04_EditUser(TestBase):
+class Test_05_EditUser(TestBasePlusUtilities):
     """Test the request responsible for editing a specific User resource."""
 
     def setUp(self):
         self.data = {
             "username": "JD",
-            "email": "JOHN.DOE@PROTONMAIL.COM",
             "password": "!@#",
         }
         self.data_str = json.dumps(self.data)
         super().setUp()
-
-    def _create_user(self, username, email, password):
-        data = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str = json.dumps(data)
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
 
     def test_1_missing_basic_auth(self):
         """
@@ -424,9 +672,10 @@ class Test_04_EditUser(TestBase):
         """
 
         # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
 
         # Attempt to edit the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
@@ -460,15 +709,72 @@ class Test_04_EditUser(TestBase):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_missing_content_type(self):
+    def test_2_unconfirmed_user(self):
         """
-        Ensure that it is impossible to edit a User resource
+        Ensure that, if a User
+            (a) provides valid authentication,
+            (b) attempts to edit his/her own User resource, but
+            (c) has not been confirmed,
+        then the response should be a 400.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.put(
+            "/api/users/1",
+            data=self.data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            },
+        )
+
+    def test_3_missing_content_type(self):
+        """
+        Ensure that it is impossible to edit a confirmed User resource
         without providing a 'Content-Type: application/json' header.
         """
 
-        # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # TODO: (2023/03/06, 07:29)
+        #       resolve v-t-i-67
+        #       :=
+        #       update the comments within test cases
+        #       to be organized around the "Arrange-Act-Assert" 'scaffolding'
+
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Attempt to edit the User resource, which was created just now,
@@ -487,7 +793,10 @@ class Test_04_EditUser(TestBase):
             body,
             {
                 "error": "Bad Request",
-                "message": 'Your request did not include a "Content-Type: application/json" header.',
+                "message": (
+                    "Your request did not include"
+                    ' a "Content-Type: application/json" header.'
+                ),
             },
         )
 
@@ -508,26 +817,56 @@ class Test_04_EditUser(TestBase):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_3_prevent_editing_of_another_user(self):
+    def test_4_prevent_editing_of_another_user(self):
         """
-        Ensure that it is impossible to edit a User resource,
+        Ensure that it is impossible to edit a confirmed User resource,
         which does not correspond to
-        the user authenticated by the issued request's header.
+        the user authenticated by the issued request's header
+        - regardless of whether the targeted User resource is confirmed or not.
         """
 
-        # Create two User resources.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
-        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+        # Arrange.
+        data_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        data_3 = {
+            "username": "at",
+            "email": "alice.taylor@protonmail.com",
+            "password": "789",
+        }
 
-        # Attempt to edit a User resource, which does not correspond to
-        # the user authenticated by the issued request's header.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        u_r_1: UserResource = self.util_create_user(
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
+            should_confirm_new_user=True,
+        )
+        u_r_2: UserResource = self.util_create_user(
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
+            should_confirm_new_user=True,
+        )
+        u_r_3: UserResource = self.util_create_user(
+            data_3["username"],
+            data_3["email"],
+            data_3["password"],
+        )
+
+        # Act.
+        basic_auth_credentials = f"{u_r_1.email}:{u_r_1.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
-        rv = self.client.put(
-            "/api/users/2",
+
+        rv_2 = self.client.put(
+            f"/api/users/{u_r_2.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -535,54 +874,151 @@ class Test_04_EditUser(TestBase):
             },
         )
 
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(
-            body,
-            {
-                "error": "Forbidden",
-                "message": (
-                    "You are not allowed to edit any User resource different from your"
-                    " own."
-                ),
+        rv_3 = self.client.put(
+            f"/api/users/{u_r_3.id}",
+            data=self.data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
             },
         )
+
+        # Assert.
+        for rv in (rv_2, rv_3):
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
+            self.assertEqual(rv.status_code, 403)
+            self.assertEqual(
+                body,
+                {
+                    "error": "Forbidden",
+                    "message": (
+                        "You are not allowed to edit any User resource different from"
+                        " your own."
+                    ),
+                },
+            )
 
         # (Reach directly into the application's persistence layer to)
         # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
-        self.assertEqual(len(users), 2)
-        user = User.query.get(2)
+        self.assertEqual(len(users), 3)
+
+        user_2 = User.query.get(2)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {
+                a: getattr(user_2, a)
+                for a in ("id", "username", "email", "is_confirmed")
+            },
             {
                 "id": 2,
                 "username": "ms",
-                "email": "mary.smith@yahoo.com",
+                "email": "mary.smith@protonmail.com",
+                "is_confirmed": True,
             },
         )
         self.assertTrue(
-            flsk_bcrpt.check_password_hash(user.password_hash, "456"),
+            flsk_bcrpt.check_password_hash(user_2.password_hash, "456"),
         )
 
-    def test_4_edit_the_authenticated_user(self):
+        user_3 = User.query.get(3)
+        self.assertEqual(
+            {
+                a: getattr(user_3, a)
+                for a in ("id", "username", "email", "is_confirmed")
+            },
+            {
+                "id": 3,
+                "username": "at",
+                "email": "alice.taylor@protonmail.com",
+                "is_confirmed": False,
+            },
+        )
+        self.assertTrue(
+            flsk_bcrpt.check_password_hash(user_3.password_hash, "789"),
+        )
+
+    def test_5_prevent_editing_of_email(self):
         """
-        Ensure that the user, who is authenticated by the issued request's header,
+        Ensure that the user,
+        who has been confirmed and is authenticated by the issued request's header,
+        is unable to edit the email address associated with his/her User resource.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+
+        data = {
+            "email": "JOHN.DOE@PROTONMAIL.COM",
+        }
+        data_str = json.dumps(data)
+
+        rv = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Currently, it is not possible"
+                    " to edit the email address associated with your User resource."
+                    " But it is planned to implement that feature in the future."
+                ),
+            },
+        )
+
+    def test_6_edit_the_authenticated_user(self):
+        """
+        Ensure that the user,
+        who has been confirmed and is authenticated by the issued request's header,
         is able to edit his/her corresponding User resource.
         """
 
-        # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Edit the User resource that was created just now.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
-            "/api/users/1",
+            f"/api/users/{u_r.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -611,32 +1047,55 @@ class Test_04_EditUser(TestBase):
             {
                 "id": 1,
                 "username": "JD",
-                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "email": "john.doe@protonmail.com",
             },
         )
         self.assertTrue(
             flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
-    def test_5_prevent_duplication_of_emails(self):
+    @unittest.skip(
+        "as long as the 'TODO: (2023/03/10, 08:41)' has not been handled,"
+        " this test case has to be skipped"
+    )
+    def test_7_prevent_duplication_of_emails(self):
         """
-        Ensure that it is impossible to edit a User resource in such a way
-        that two different User resources would end up having the same email.
+        Ensure that it is impossible to edit a confirmed User resource in such a way
+        that it would end up having the same email as another User resource
+        - regardless of whether the latter User resource is confirmed or not.
         """
 
-        # Create two User resources.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create two User resources, but confirm only the first one.
+        data_0_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_0_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
         )
-        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to edit the 1st User resource in such a way that
-        # its email should be end up being identical to the 2nd User resource's email.
+        # its email should end up being identical to the 2nd User resource's email.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {"email": "mary.smith@yahoo.com"}
+        data = {"email": "mary.smith@protonmail.com"}
         data_str = json.dumps(data)
 
         rv = self.client.put(
@@ -679,15 +1138,22 @@ class Test_04_EditUser(TestBase):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_6_incorrect_basic_auth(self):
+    def test_8_incorrect_basic_auth(self):
         """
-        Ensure that it is impossible to edit a User resource
+        Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Attempt to edit a User resource
@@ -732,57 +1198,98 @@ class Test_04_EditUser(TestBase):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_7_prevent_duplication_of_usernames(self):
+    def test_9_prevent_duplication_of_usernames(self):
         """
-        Ensure that it is impossible to edit a User resource in such a way
-        that two different User resources would end up having the same username.
+        Ensure that it is impossible to edit a confirmed User resource in such a way
+        that two different User resources would end up having the same username
+        - regardless of whether the latter User resource is confirmed or not.
         """
 
-        # Create two User resources.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Arrange.
+        data_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        data_3 = {
+            "username": "at",
+            "email": "alice.taylor@protonmail.com",
+            "password": "789",
+        }
+
+        u_r_1: UserResource = self.util_create_user(
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
+            should_confirm_new_user=True,
         )
-        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+        u_r_2: UserResource = self.util_create_user(
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
+            should_confirm_new_user=True,
+        )
+        u_r_3: UserResource = self.util_create_user(
+            data_3["username"],
+            data_3["email"],
+            data_3["password"],
+        )
 
-        # Attempt to edit the 1st User resource in such a way that
-        # its username would end up being identical to the 2nd User resource's username.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        # Act.
+        basic_auth_credentials = f"{u_r_1.email}:{u_r_1.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {"username": "ms"}
-        data_str = json.dumps(data)
-
-        rv = self.client.put(
-            "/api/users/1",
-            data=data_str,
+        new_data_2 = {"username": u_r_2.username}
+        new_data_str_2 = json.dumps(new_data_2)
+        rv_2 = self.client.put(
+            f"/api/users/{u_r_1.id}",
+            data=new_data_str_2,
             headers={
                 "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
 
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
-            {
-                "error": "Bad Request",
-                "message": (
-                    "There already exists a User resource with the same username as the"
-                    " one you provided."
-                ),
+        new_data_3 = {"username": u_r_3.username}
+        new_data_str_3 = json.dumps(new_data_3)
+        rv_3 = self.client.put(
+            f"/api/users/{u_r_1.id}",
+            data=new_data_str_3,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
             },
         )
 
+        # Assert.
+        for rv in (rv_2, rv_3):
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(
+                body,
+                {
+                    "error": "Bad Request",
+                    "message": (
+                        "There already exists a User resource with the same username as"
+                        " the one you provided."
+                    ),
+                },
+            )
+
         # (Reach directly into the application's persistence layer to)
-        # Ensure that the attempt has not created a second User resource.
+        # Ensure that the User resource, which was targeted, did not get edited.
         users = User.query.all()
-        self.assertEqual(len(users), 2)
-        user = User.query.get(1)
+        self.assertEqual(len(users), 3)
+        targeted_u = User.query.get(u_r_1.id)
         self.assertEqual(
-            {a: getattr(user, a) for a in ["id", "username", "email"]},
+            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
             {
                 "id": 1,
                 "username": "jd",
@@ -790,25 +1297,12 @@ class Test_04_EditUser(TestBase):
             },
         )
         self.assertTrue(
-            flsk_bcrpt.check_password_hash(user.password_hash, "123"),
+            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
 
-class Test_05_DeleteUser(TestBase):
+class Test_06_DeleteUser(TestBasePlusUtilities):
     """Test the request responsible for deleting a specific User resource."""
-
-    def _create_user(self, username, email, password):
-        data = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str = json.dumps(data)
-        rv = self.client.post(
-            "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
-        )
 
     def test_1_missing_basic_auth(self):
         """
@@ -817,9 +1311,10 @@ class Test_05_DeleteUser(TestBase):
         """
 
         # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
-        )
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
 
         # Attempt to delete the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
@@ -853,18 +1348,78 @@ class Test_05_DeleteUser(TestBase):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_2_prevent_deleting_of_another_user(self):
+    def test_2_unconfirmed_user(self):
+        """
+        Ensure that, if a User
+            (a) provides valid authentication,
+            (b) attempts to delete his/her own User resource, but
+            (c) has not been confirmed,
+        then the response should be a 400.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        __ = self.util_create_user(username, email, password)
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.delete(
+            "/api/users/1",
+            headers={
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your account has not been confirmed."
+                    " Please confirm your account and re-issue the same HTTP request."
+                ),
+            },
+        )
+
+    def test_3_prevent_deleting_of_another_user(self):
         """
         Ensure that it is impossible to edit a User resource,
         which does not correspond to
         the user authenticated by the issued request's header.
         """
 
-        # Create two User resources.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create two User resources, but confirm only the first one.
+        data_0_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        data_0_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+
+        __ = self.util_create_user(
+            data_0_1["username"],
+            data_0_1["email"],
+            data_0_1["password"],
+            should_confirm_new_user=True,
         )
-        self._create_user(username="ms", email="mary.smith@yahoo.com", password="456")
+        __ = self.util_create_user(
+            data_0_2["username"],
+            data_0_2["email"],
+            data_0_2["password"],
+        )
 
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
@@ -899,22 +1454,29 @@ class Test_05_DeleteUser(TestBase):
             {
                 "id": 2,
                 "username": "ms",
-                "email": "mary.smith@yahoo.com",
+                "email": "mary.smith@protonmail.com",
             },
         )
         self.assertTrue(
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "456"),
         )
 
-    def test_3_delete_the_authenticated_user(self):
+    def test_4_delete_the_authenticated_user(self):
         """
         Ensure that the user, who is authenticated by the issued request's header,
         is able to delete his/her corresponding User resource.
         """
 
-        # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Delete a User resource.
@@ -934,15 +1496,22 @@ class Test_05_DeleteUser(TestBase):
         users = User.query.all()
         self.assertEqual(len(users), 0)
 
-    def test_4_incorrect_basic_auth(self):
+    def test_5_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to delete a User resource
         by providing an incorrect set of Basic Auth credentials.
         """
 
-        # Create one User resource.
-        self._create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        # Create one User resource and confirm it.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        __ = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
 
         # Attempt to delete a User resource
@@ -983,7 +1552,7 @@ class Test_05_DeleteUser(TestBase):
         )
 
 
-class Test_06_RequestPasswordReset(TestBase):
+class Test_07_RequestPasswordReset(TestBase):
     """
     Test the request responsible for requesting a password reset for a user,
     who wishes or needs to reset her password.
@@ -999,7 +1568,7 @@ class Test_06_RequestPasswordReset(TestBase):
             "password": "123",
         }
         user_data_str = json.dumps(user_data)
-        _ = self.client.post(
+        __ = self.client.post(
             "/api/users",
             data=user_data_str,
             headers={
@@ -1096,7 +1665,7 @@ class Test_06_RequestPasswordReset(TestBase):
             )
 
 
-class Test_07_ResetPassword(TestBase):
+class Test_08_ResetPassword(TestBase):
     """
     Test the request responsible for resetting a user's password.
     """
@@ -1110,7 +1679,7 @@ class Test_07_ResetPassword(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        _ = self.client.post(
+        __ = self.client.post(
             "/api/users",
             data=json.dumps(user_data),
             headers={
@@ -1140,7 +1709,7 @@ class Test_07_ResetPassword(TestBase):
                 json.loads(rv.get_data(as_text=True)),
                 {
                     "error": "Unauthorized",
-                    "message": "Your password-reset token is invalid.",
+                    "message": "The provided token is invalid.",
                 },
             )
 
@@ -1166,25 +1735,73 @@ class Test_07_ResetPassword(TestBase):
                 json.loads(rv.get_data(as_text=True)),
                 {
                     "error": "Unauthorized",
-                    "message": "Your password-reset token is invalid.",
+                    "message": "The provided token is invalid.",
                 },
             )
 
-    def test_3_missing_content_type(self):
+    def test_3_valid_token_wrong_purpose(self):
+        for wrong_purpose in (ACCOUNT_CONFIRMATION, ACCESS):
+            with self.subTest():
+                with patch(
+                    "src.TimedJSONWebSignatureSerializer.loads",
+                ) as serializer_loads_mock:
+                    # Arrange.
+                    serializer_loads_mock.return_value = {
+                        "purpose": wrong_purpose,
+                        "user_id": 1,
+                    }
+
+                    # Act.
+                    payload = {"new_password": "456"}
+                    payload_str = json.dumps(payload)
+
+                    rv = self.client.post(
+                        "/api/reset-password/token-for-resetting-password",
+                        data=payload_str,
+                    )
+
+                    # Assert.
+                    body_str = rv.get_data(as_text=True)
+                    body = json.loads(body_str)
+
+                    self.assertEqual(rv.status_code, 400)
+                    self.assertEqual(
+                        body,
+                        {
+                            "error": "Bad Request",
+                            "message": (
+                                "The provided token's `purpose` is"
+                                f" different from {repr(PASSWORD_RESET)}."
+                            ),
+                        },
+                    )
+
+    def test_4_missing_content_type(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            # Arrange.
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
+            # Act.
             payload = {"new_password": "456"}
+            payload_str = json.dumps(payload)
+
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
+                data=payload_str,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 400)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Bad Request",
                     "message": (
@@ -1194,11 +1811,14 @@ class Test_07_ResetPassword(TestBase):
                 },
             )
 
-    def test_4_incomplete_request_body(self):
+    def test_5_incomplete_request_body(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
             payload = {"not new_password": "456"}
             rv = self.client.post(
@@ -1220,11 +1840,14 @@ class Test_07_ResetPassword(TestBase):
                 },
             )
 
-    def test_5_reset_password(self):
+    def test_6_reset_password(self):
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads"
         ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {"user_id": 1}
+            serializer_loads_mock.return_value = {
+                "purpose": PASSWORD_RESET,
+                "user_id": 1,
+            }
 
             payload = {"new_password": "456"}
             rv = self.client.post(

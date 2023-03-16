@@ -6,26 +6,19 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import User, Example
-from tests import TestBase
+from tests import TestBasePlusUtilities, UserResource
+from src.constants import ACCESS
 
 
-class TestBaseForExampleResources(TestBase):
-    def create_user(self, username, email, password):
-        # Create one User resource.
-        data_1 = {
-            "username": username,
-            "email": email,
-            "password": password,
-        }
-        data_str_1 = json.dumps(data_1)
-        rv_1 = self.client.post(
-            "/api/users",
-            data=data_str_1,
-            headers={"Content-Type": "application/json"},
+class TestBaseForExampleResources(TestBasePlusUtilities):
+    def util_create_user(self, username, email, password):
+        # Create one User resource and confirm it.
+        u_r: UserResource = super().util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_new_user=True,
         )
-
-        body_str_1 = rv_1.get_data(as_text=True)
-        body_1 = json.loads(body_str_1)
 
         # Issue an access token for the user, which was created just now.
         basic_auth_credentials = email + ":" + password
@@ -38,9 +31,15 @@ class TestBaseForExampleResources(TestBase):
 
         body_str_2 = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_str_2)
-        token_auth = "Bearer " + body_2["token"]
 
-        return body_1, token_auth
+        return UserResource(
+            u_r.id,
+            u_r.username,
+            u_r.email,
+            u_r.password,
+            u_r.is_confirmed,
+            body_2["token"],
+        )
 
 
 class Test_01_CreateExample(TestBaseForExampleResources):
@@ -50,8 +49,15 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Prepare a JSON payload, which is required for creating an Example resource
@@ -97,7 +103,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str = rv.get_data(as_text=True)
@@ -130,7 +136,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
                 data=data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
@@ -163,7 +169,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
             data=self._example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -196,7 +202,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         by providing an incorrect Bearer-Token Auth credential.
         """
 
-        wrong_authorization = self._jd_user_token_auth + "-wrong"
+        wrong_authorization = "Bearer " + self._u_r_1.token + "-wrong"
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
@@ -235,7 +241,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
                 data=self._example_data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
@@ -273,7 +279,7 @@ class Test_01_CreateExample(TestBaseForExampleResources):
                 data=self._example_data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
@@ -305,14 +311,17 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         nonexistent_user_id = 17
         with patch(
             "src.TimedJSONWebSignatureSerializer.loads",
-            return_value={"user_id": nonexistent_user_id},
+            return_value={
+                "purpose": ACCESS,
+                "user_id": nonexistent_user_id,
+            },
         ):
             rv = self.client.post(
                 "/api/examples",
                 data=self._example_data_str,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
@@ -345,10 +354,16 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         super().setUp()
 
         # Create one User resource.
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_no_examples_exist(self):
         """
@@ -358,7 +373,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         """
 
         rv = self.client.get(
-            "/api/examples", headers={"Authorization": self._jd_user_token_auth}
+            "/api/examples", headers={"Authorization": "Bearer " + self._u_r_1.token}
         )
 
         body_str = rv.get_data(as_text=True)
@@ -406,13 +421,13 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             data=example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
         # Get all Example resources that are associated with the only existing user.
         rv_2 = self.client.get(
-            "/api/examples", headers={"Authorization": self._jd_user_token_auth}
+            "/api/examples", headers={"Authorization": "Bearer " + self._u_r_1.token}
         )
 
         body_2_str = rv_2.get_data(as_text=True)
@@ -455,8 +470,15 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        u_r_2: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the first user.
@@ -472,7 +494,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -493,7 +515,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             data=data_str_2,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": ms_token_auth,
+                "Authorization": "Bearer " + u_r_2.token,
             },
         )
 
@@ -505,7 +527,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         # but cannot get any of the Example resources that belong to another user.
         rv_3 = self.client.get(
             "/api/examples",
-            headers={"Authorization": ms_token_auth},
+            headers={"Authorization": "Bearer " + u_r_2.token},
         )
 
         body_str_3 = rv_3.get_data(as_text=True)
@@ -547,7 +569,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
                 data=data_str_1,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
@@ -585,7 +607,7 @@ class Test_02_GetExamples(TestBaseForExampleResources):
             )
             url = "/api/examples" + query_param_str
             rv_2 = self.client.get(
-                url, headers={"Authorization": self._jd_user_token_auth}
+                url, headers={"Authorization": "Bearer " + self._u_r_1.token}
             )
 
             body_str_2 = rv_2.get_data(as_text=True)
@@ -610,14 +632,14 @@ class Test_02_GetExamples(TestBaseForExampleResources):
                 data=data_str_1,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": self._jd_user_token_auth,
+                    "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
 
         # Act.
         rv_2 = self.client.get(
             "/api/examples?per_page=2&page=2&new_word=1",
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -667,10 +689,16 @@ class Test_03_GetExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -691,7 +719,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -720,7 +748,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         users = User.query.all()
         self.assertEqual(len(users), 1)
         u = users[0]
-        self.assertEqual(u.id, self._jd_user_id)
+        self.assertEqual(u.id, self._u_r_1.id)
 
         examples = Example.query.all()
         self.assertEqual(len(examples), 1)
@@ -734,7 +762,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         """
 
         rv = self.client.get(
-            "/api/examples/1", headers={"Authorization": self._jd_user_token_auth}
+            "/api/examples/1", headers={"Authorization": "Bearer " + self._u_r_1.token}
         )
 
         body_str = rv.get_data(as_text=True)
@@ -764,7 +792,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -775,7 +803,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         # Get the Example resource that was created just now.
         rv_2 = self.client.get(
             f"/api/examples/{example_id}",
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -799,8 +827,15 @@ class Test_03_GetExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        u_r_2: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
@@ -816,7 +851,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
             data=data_str_2,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": ms_user_token_auth,
+                "Authorization": "Bearer " + u_r_2.token,
             },
         )
 
@@ -828,7 +863,7 @@ class Test_03_GetExample(TestBaseForExampleResources):
         # the 1st user cannot get a specific resource, which belongs to the 2nd user.
         rv_3 = self.client.get(
             f"/api/examples/{example_id_2}",
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str_3 = rv_3.get_data(as_text=True)
@@ -852,10 +887,16 @@ class Test_04_EditExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@protonmail.com", password="123"
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -876,7 +917,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -942,7 +983,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -963,7 +1004,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             f"/api/examples/{example_id}",
             data=data_str_2,
             headers={
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1013,7 +1054,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1034,7 +1075,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_2,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1073,8 +1114,15 @@ class Test_04_EditExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        u_r_2: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
@@ -1090,7 +1138,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_2,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": ms_user_token_auth,
+                "Authorization": "Bearer " + u_r_2.token,
             },
         )
 
@@ -1112,7 +1160,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
             data=data_str_3,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1151,10 +1199,16 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
     def setUp(self):
         super().setUp()
 
-        jd_user_dict, self._jd_user_token_auth = self.create_user(
-            username="jd", email="john.doe@gmail.com", password="123"
+        user_data = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
-        self._jd_user_id = jd_user_dict["id"]
 
     def test_1_missing_token_auth(self):
         """
@@ -1175,7 +1229,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1230,7 +1284,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
             data=data_str_1,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": self._jd_user_token_auth,
+                "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
 
@@ -1241,7 +1295,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
         # Delete the Example resource, which was created just now.
         rv_2 = self.client.delete(
             f"/api/examples/{example_id}",
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -1261,8 +1315,15 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
         """
 
         # Create a second User resource.
-        ms_user_dict, ms_user_token_auth = self.create_user(
-            username="ms", email="mary.smith@yahoo.com", password="456"
+        user_data = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "456",
+        }
+        u_r_2: UserResource = self.util_create_user(
+            user_data["username"],
+            user_data["email"],
+            user_data["password"],
         )
 
         # Create one Example resource for the second user.
@@ -1278,7 +1339,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
             data=data_str_2,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": ms_user_token_auth,
+                "Authorization": "Bearer " + u_r_2.token,
             },
         )
 
@@ -1290,7 +1351,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources):
         # the 1st user cannot delete a specific resource, which belongs to the 2nd user.
         rv_3 = self.client.delete(
             f"/api/examples/{example_id_2}",
-            headers={"Authorization": self._jd_user_token_auth},
+            headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
         body_str_3 = rv_3.get_data(as_text=True)

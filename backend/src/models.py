@@ -54,9 +54,11 @@ class PaginatedAPIMixin(object):
 
 class User(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     username = db.Column(db.String(32), unique=True, nullable=False)
     email = db.Column(db.String(128), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    is_confirmed = db.Column(db.Boolean)
 
     def to_dict(self):
         """Export `self` to a dict, which omits any and all sensitive information."""
@@ -69,12 +71,13 @@ class User(PaginatedAPIMixin, db.Model):
 class Example(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
-    created = db.Column(
-        db.DateTime, nullable=False, default=datetime.datetime.utcnow
-    )  # the function, not its invocation; also, you always want to use UTC when saving date+time to a DB (so they're consistent)
-    user_id = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=False
-    )  # note the lower-case 'u'
+    # Note that the next statement passes a function - not its invocation! -
+    # to the `default` keyword argument.
+    # Also, you always want to use UTC
+    # when saving date+time to a DB (so they're consistent).
+    created = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    # Note that the string within the next statement uses a lower-case "u".
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     source_language = db.Column(db.String(32), default="Finnish")
     new_word = db.Column(db.String(128), nullable=False)

@@ -43,6 +43,7 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 
+    DAYS_FOR_ACCOUNT_CONFIRMATION = int(os.environ.get("DAYS_FOR_ACCOUNT_CONFIRMATION"))
     MINUTES_FOR_TOKEN_VALIDITY = int(os.environ.get("MINUTES_FOR_TOKEN_VALIDITY"))
     MINUTES_FOR_PASSWORD_RESET = int(os.environ.get("MINUTES_FOR_PASSWORD_RESET"))
 
