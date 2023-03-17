@@ -373,6 +373,10 @@ def send_email_requesting_that_account_should_be_confirmed(user):
         ).decode("utf-8")
     )
 
+    msg_sender = "noreply@demo.com"
+    msg_recipients = [user.email]
+
+    msg_subject = "[VocabTreasury] Please confirm your newly-created account"
     msg_body = f"""Dear {user.username},
 
 Thank you for creating a VocabTreasury account.
@@ -403,10 +407,10 @@ you can still do so by simply creating a new VocabTreasury account.
     """
 
     send_email(
-        subject="[VocabTreasury] Please confirm your newly-created account",
-        sender="noreply@demo.com",
-        recipients=[user.email],
-        body=msg_body,
+        msg_sender,
+        msg_recipients,
+        msg_subject,
+        msg_body,
     )
 
 
@@ -421,6 +425,10 @@ def send_password_reset_email(user):
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
 
+    msg_sender = "noreply@demo.com"
+    msg_recipients = [user.email]
+
+    msg_subject = "[VocabTreasury] Your request for a password reset"
     msg_body = f"""Dear {user.username},
 
 You may reset your password within {minutes_for_password_reset} minutes of receiving
@@ -453,14 +461,14 @@ then simply ignore this email message and your password will remain unchanged.
     """
 
     send_email(
-        subject="[VocabTreasury] Your request for a password reset",
-        sender="noreply@demo.com",
-        recipients=[user.email],
+        msg_sender,
+        msg_recipients,
+        msg_subject,
         body=msg_body,
     )
 
 
-def send_email(subject, sender, recipients, body):
+def send_email(sender, recipients, subject, body):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = body
 
