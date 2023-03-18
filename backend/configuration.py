@@ -61,6 +61,8 @@ class Config:
     MINUTES_FOR_TOKEN_VALIDITY = int(os.environ.get("MINUTES_FOR_TOKEN_VALIDITY"))
     MINUTES_FOR_PASSWORD_RESET = int(os.environ.get("MINUTES_FOR_PASSWORD_RESET"))
 
+    SERVER_NAME = os.environ.get("SERVER_NAME")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

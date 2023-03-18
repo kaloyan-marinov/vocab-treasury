@@ -30,18 +30,20 @@ logger.addHandler(handler_1)
 
 
 if __name__ == "__main__":
-    import os
-
-    os.environ["SERVER_NAME"] = "localhost"
-
     app = create_app(
         name_of_configuration="production",
     )
 
-    with app.app_context(), app.test_request_context():
+    with app.app_context():
         users = User.query.all()
 
         for u in users:
+            if u.is_confirmed:
+                logger.info(
+                    f"skipping '{repr(u)}' (because that user has been confirmed)",
+                )
+                continue
+
             logger.info(f"sending email to '{repr(u)}', i.e. to '{u.email}'")
 
             # Imitate the implementation of
@@ -93,6 +95,7 @@ $ curl \\
         'api_blueprint.confirm_newly_created_account',
         token=account_confirmation_token,
         _external=True,
+        _scheme='https',
     )}
 ```
 
