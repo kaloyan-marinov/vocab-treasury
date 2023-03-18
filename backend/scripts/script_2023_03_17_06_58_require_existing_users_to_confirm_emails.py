@@ -1,3 +1,12 @@
+"""
+- launch a terminal instance
+
+- execute this script by issuing
+  ```
+  (venv) backend $ PYTHONPATH=. python scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_emails.py
+  ```
+"""
+
 import logging
 
 from flask import url_for
@@ -90,14 +99,12 @@ $ curl \\
 We hope
 that you will confirm your email address at your earliest convenience,
 and that you will continue using VocabTreasury in the future.
-We are looking forward to bringing new features to you
+We are looking forward to bringing out new features
 that will make your language learning more enjoyable!
 
-Questions? ...
-TODO: (2023/03/17, 08:17)
-      before submitting a pull request for review,
-      add an email address
-      where the user can send their questions about the required account-confirmation
+Do you have questions about the required account confirmation?
+Please get in touch with us by sending a message to the following email address:
+{app.config['ADMINS'][0]}
 
 Sincerely,
 The VocabTreasury Team

@@ -1,3 +1,18 @@
+"""
+- launch a terminal instance
+
+- specify an environment variable called 'EMAIL_1',
+  as described in `./README.md`
+
+- specify an environment variable called 'EMAIL_2',
+  as described in `./README.md`
+
+- execute this script by issuing
+  ```
+  (venv) backend $ PYTHONPATH=. python scripts/script_2023_03_17_06_29_populate_db.py
+  ```
+"""
+
 import datetime
 import os
 import sys
