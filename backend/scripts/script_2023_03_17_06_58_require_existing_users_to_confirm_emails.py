@@ -60,10 +60,10 @@ We hope you have found that both helpful and enjoyable.
 
 A new version of VocabTreasury was released recently.
 As part of that release,
-we have taken a step towards ensuring more robust security for user accounts.
+we have taken a step towards ensuring more robust security for your user account.
 In particular:
 from now on, VocabTreasury can be used
-only by users who go on to confirm their email addresses.
+only by registered users who also confirm their email addresses.
 
 ACTION REQUIRED:
 Please confirm your email address
@@ -93,11 +93,20 @@ and that you will continue using VocabTreasury in the future.
 We are looking forward to bringing new features to you
 that will make your language learning more enjoyable!
 
+Questions? ...
+TODO: (2023/03/17, 08:17)
+      before submitting a pull request for review,
+      add an email address
+      where the user can send their questions about the required account-confirmation
+
 Sincerely,
 The VocabTreasury Team
 
-PS: If you do not confirm your account within {app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"]} days of receiving this email,
+ATTENTION:
+If you do not confirm your account within {app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"]} days of receiving this email,
 _both_ your account _and_ all your data stored therein will be deleted.
+After your account and data have been deleted,
+it will be impossible to recover them.
             """
 
             send_email(
