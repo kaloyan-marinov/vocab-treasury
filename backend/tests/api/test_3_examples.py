@@ -28,7 +28,10 @@ class TestBaseForExampleResources_1(TestBasePlusUtilities):
         basic_auth = "Basic " + b_a_c
         rv_2 = self.client.post(
             "/api/tokens",
-            headers={"Content-Type": "application/json", "Authorization": basic_auth},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": basic_auth,
+            },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -109,7 +112,9 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         rv = self.client.post(
             "/api/examples",
             data=self._example_data_str,
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         # Assert.
@@ -729,7 +734,9 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
         # Act.
         rv_2 = self.client.get(
             "/api/examples?per_page=2&page=2&new_word=1",
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         body_str_2 = rv_2.get_data(as_text=True)
@@ -893,7 +900,9 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         # Act.
         rv = self.client.get(
             f"/api/examples/{example.id}",
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         # Assert.
@@ -949,7 +958,9 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         # Act.
         rv = self.client.get(
             f"/api/examples/{example_2.id}",
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         # Assert.
@@ -1380,7 +1391,9 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
         # Delete the `Example` resource, which was created just now.
         rv_2 = self.client.delete(
             f"/api/examples/{example.id}",
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         # Assert.
@@ -1436,7 +1449,9 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
         # a specific `Example` resource, which belongs to the 2nd `User`.
         rv = self.client.delete(
             f"/api/examples/{example_2.id}",
-            headers={"Authorization": "Bearer " + self._u_r_1.token},
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
         # Assert.
@@ -1467,4 +1482,122 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
                 "content": "Mitä kieltä sinä puhut?",
                 "content_translation": "What languages do you speak?",
             },
+        )
+
+
+class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
+    """
+    Test the request responsible for deleting a specific `User` resource
+    in the specific case where
+    there exist `Example` resources
+    that are associated with the targeted `User` resource.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        user_data_1 = {
+            "username": "jd",
+            "email": "john.doe@protonmail.com",
+            "password": "123",
+        }
+        self._u_r_1: UserResource = self.util_create_user(
+            user_data_1["username"],
+            user_data_1["email"],
+            user_data_1["password"],
+        )
+
+    def test_1_single_user_present(self):
+        # Arrange.
+        source_language = "Finnish"
+        new_word = "kieli"
+        content = "Mitä kieltä sinä puhut?"
+        content_translation = "What languages do you speak?"
+
+        __ = self.util_create_example(
+            self._u_r_1,
+            source_language,
+            new_word,
+            content,
+            content_translation,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{self._u_r_1.email}:{self._u_r_1.password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.delete(
+            f"/api/users/{self._u_r_1.id}",
+            headers={
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+
+        self.assertEqual(rv.status_code, 204)
+        self.assertEqual(body_str, "")
+
+        examples = Example.query.filter_by(user_id=self._u_r_1.id).all()
+        self.assertEqual(len(examples), 0)
+
+    def test_2_multiple_users_present(self):
+        # Arrange.
+        user_data_2 = {
+            "username": "ms",
+            "email": "mary.smith@protonmail.com",
+            "password": "123",
+        }
+        u_r_2: UserResource = self.util_create_user(
+            user_data_2["username"],
+            user_data_2["email"],
+            user_data_2["password"],
+        )
+
+        source_language_1 = "Finnish"
+        new_word_1 = "kieli"
+        content_1 = "Mitä kieltä sinä puhut?"
+        content_translation_1 = "What languages do you speak?"
+        example_1 = self.util_create_example(
+            self._u_r_1,
+            source_language_1,
+            new_word_1,
+            content_1,
+            content_translation_1,
+        )
+
+        source_language_2 = "Finnish"
+        new_word_2 = "osallistua [+ MIHIN]"
+        content_2 = "Kuka haluaa osallistua kilpailuun?"
+        content_translation_2 = "Who wants to participate in the competition?"
+        example_2 = self.util_create_example(
+            u_r_2,
+            source_language_2,
+            new_word_2,
+            content_2,
+            content_translation_2,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{self._u_r_1.email}:{self._u_r_1.password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.delete(
+            f"/api/users/{self._u_r_1.id}",
+            headers={
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+
+        self.assertEqual(rv.status_code, 204)
+        self.assertEqual(body_str, "")
+
+        examples = Example.query.all()
+        self.assertEqual(
+            {e.user_id for e in examples},
+            {u_r_2.id},
         )

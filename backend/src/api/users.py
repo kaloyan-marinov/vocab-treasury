@@ -2,10 +2,9 @@ import threading
 
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
-from itsdangerous import BadSignature, SignatureExpired
 
 from src import db, flsk_bcrpt, mail
-from src.models import User
+from src.models import User, Example
 from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
 from src.constants import ACCOUNT_CONFIRMATION, PASSWORD_RESET
@@ -304,6 +303,10 @@ def delete_user(user_id):
         )
         r.status_code = 403
         return r
+
+    examples = Example.query.filter_by(user_id=user_id)
+    # db.session.delete(examples)
+    examples.delete()
 
     u = User.query.get(user_id)
     db.session.delete(u)
