@@ -12,7 +12,7 @@ from src.constants import ACCESS
 from typing import Optional
 
 
-class TestBaseForExampleResources(TestBasePlusUtilities):
+class TestBaseForExampleResources_1(TestBasePlusUtilities):
     def util_create_user(self, username, email, password):
         # Create one `User` resource and confirm it.
         u_r: UserResource = super().util_create_user(
@@ -43,52 +43,8 @@ class TestBaseForExampleResources(TestBasePlusUtilities):
             body_2["token"],
         )
 
-    def util_create_example(
-        self,
-        user_resource: UserResource,
-        source_language,
-        new_word,
-        content,
-        content_translation: Optional[str],
-    ):
-        # TODO: (2023/03/19, 12:27)
-        #       before submitting a pull request for review,
-        #       attempt to replace `user_resource: UserResource`
-        #       with `access_token_for_specific_user: str`
-        example_data = {
-            "source_language": source_language,
-            "new_word": new_word,
-            "content": content,
-        }
-        if content_translation is not None:
-            example_data["content_translation"] = content_translation
-        example_data_str = json.dumps(example_data)
 
-        rv = self.client.post(
-            "/api/examples",
-            data=example_data_str,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + user_resource.token,
-            },
-        )
-
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-
-        e = Example.query.get(body["id"])
-        # return ExampleResource(
-        #     e.id,
-        #     e.created,
-        #     e.user_id,
-        #     e.new_word,
-        #     e.content,
-        #     e.content_translation,
-        # )
-        return e
-
-
-class Test_01_CreateExample(TestBaseForExampleResources):
+class Test_01_CreateExample(TestBaseForExampleResources_1):
     """Test the request responsible for creating a new `Example` resource."""
 
     def setUp(self):
@@ -426,7 +382,53 @@ class Test_01_CreateExample(TestBaseForExampleResources):
         self.assertEqual(len(examples), 0)
 
 
-class Test_02_GetExamples(TestBaseForExampleResources):
+class TestBaseForExampleResources_2(TestBaseForExampleResources_1):
+    def util_create_example(
+        self,
+        user_resource: UserResource,
+        source_language,
+        new_word,
+        content,
+        content_translation: Optional[str],
+    ):
+        # TODO: (2023/03/19, 12:27)
+        #       before submitting a pull request for review,
+        #       attempt to replace `user_resource: UserResource`
+        #       with `access_token_for_specific_user: str`
+        example_data = {
+            "source_language": source_language,
+            "new_word": new_word,
+            "content": content,
+        }
+        if content_translation is not None:
+            example_data["content_translation"] = content_translation
+        example_data_str = json.dumps(example_data)
+
+        rv = self.client.post(
+            "/api/examples",
+            data=example_data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user_resource.token,
+            },
+        )
+
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        e = Example.query.get(body["id"])
+        # return ExampleResource(
+        #     e.id,
+        #     e.created,
+        #     e.user_id,
+        #     e.new_word,
+        #     e.content,
+        #     e.content_translation,
+        # )
+        return e
+
+
+class Test_02_GetExamples(TestBaseForExampleResources_2):
     """
     Test the request responsible for getting a list of `Example` resources,
     all of which are associated with a given User resource.
@@ -771,8 +773,8 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         )
 
 
-class Test_03_GetExample(TestBaseForExampleResources):
-    """Test the request responsible for getting a specific Example resource."""
+class Test_03_GetExample(TestBaseForExampleResources_2):
+    """Test the request responsible for getting a specific `Example` resource."""
 
     def setUp(self):
         super().setUp()
@@ -794,36 +796,35 @@ class Test_03_GetExample(TestBaseForExampleResources):
         without providing a Bearer-Token Auth credential.
         """
 
-        # Create one Example resource.
-        data_1 = {
-            "source_language": "Finnish",
-            "new_word": "osallistua [+ MIHIN]",
-            "content": "Kuka haluaa osallistua kilpailuun?",
-            "content_translation": "Who wants to participate in the competition?",
-        }
-        data_str_1 = json.dumps(data_1)
-        rv_1 = self.client.post(
-            "/api/examples",
-            data=data_str_1,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + self._u_r_1.token,
-            },
+        # Arrange.
+
+        # Create one `Example` resource.
+        source_language = "Finnish"
+        new_word = "osallistua [+ MIHIN]"
+        content = "Kuka haluaa osallistua kilpailuun?"
+        content_translation = "Who wants to participate in the competition?"
+
+        example_1 = self.util_create_example(
+            self._u_r_1,
+            source_language,
+            new_word,
+            content,
+            content_translation,
         )
 
-        body_str_1 = rv_1.get_data(as_text=True)
-        body_1 = json.loads(body_str_1)
-        example_id = body_1["id"]
+        # Act.
 
         # Attempt to get the Example resource, which was created just now,
         # without providing a Bearer-Token Auth credential.
-        rv_2 = self.client.get(f"/api/examples/{example_id}")
+        rv = self.client.get(f"/api/examples/{example_1.id}")
 
-        body_str_2 = rv_2.get_data(as_text=True)
-        body_2 = json.loads(body_str_2)
-        self.assertEqual(rv_2.status_code, 401)
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 401)
         self.assertEqual(
-            body_2,
+            body,
             {
                 "error": "Unauthorized",
                 "message": "Authentication in the Bearer-Token Auth format is required.",
@@ -846,15 +847,21 @@ class Test_03_GetExample(TestBaseForExampleResources):
     def test_2_nonexistent_example(self):
         """
         Ensure that
-        attempting to get an Example resource, which doesn't exist, returns a 404.
+        attempting to get an `Example` resource, which doesn't exist, returns a 404.
         """
 
+        # Act.
         rv = self.client.get(
-            "/api/examples/1", headers={"Authorization": "Bearer " + self._u_r_1.token}
+            "/api/examples/1",
+            headers={
+                "Authorization": "Bearer " + self._u_r_1.token,
+            },
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(
             body,
@@ -865,40 +872,37 @@ class Test_03_GetExample(TestBaseForExampleResources):
         )
 
     def test_3_example_that_exists(self):
-        """Ensure that a user is able to get a specific Example resource of her own."""
+        """Ensure that a user is able to get a specific `Example` resource of her own."""
 
-        # Create one Example resource.
-        data_1 = {
-            "source_language": "Finnish",
-            "new_word": "osallistua [+ MIHIN]",
-            "content": "Kuka haluaa osallistua kilpailuun?",
-            "content_translation": "Who wants to participate in the competition?",
-        }
-        data_str_1 = json.dumps(data_1)
-        rv_1 = self.client.post(
-            "/api/examples",
-            data=data_str_1,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + self._u_r_1.token,
-            },
+        # Arrange.
+
+        # Create one `Example` resource.
+        source_language = "Finnish"
+        new_word = "osallistua [+ MIHIN]"
+        content = "Kuka haluaa osallistua kilpailuun?"
+        content_translation = "Who wants to participate in the competition?"
+
+        example = self.util_create_example(
+            self._u_r_1,
+            source_language,
+            new_word,
+            content,
+            content_translation,
         )
 
-        body_str_1 = rv_1.get_data(as_text=True)
-        body_1 = json.loads(body_str_1)
-        example_id = body_1["id"]
-
-        # Get the Example resource that was created just now.
-        rv_2 = self.client.get(
-            f"/api/examples/{example_id}",
+        # Act.
+        rv = self.client.get(
+            f"/api/examples/{example.id}",
             headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
-        body_str_2 = rv_2.get_data(as_text=True)
-        body_2 = json.loads(body_str_2)
-        self.assertEqual(rv_2.status_code, 200)
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 200)
         self.assertEqual(
-            body_2,
+            body,
             {
                 "id": 1,
                 "source_language": "Finnish",
@@ -910,11 +914,13 @@ class Test_03_GetExample(TestBaseForExampleResources):
 
     def test_4_prevent_accessing_of_foreign_example(self):
         """
-        Ensure that a user cannot get a specific Example resource,
-        which belongs to a different user.
+        Ensure that a `User` cannot get a specific `Example` resource,
+        which belongs to a different `User`.
         """
 
-        # Create a second User resource.
+        # Arrange.
+
+        # Create a second `User` resource.
         user_data = {
             "username": "ms",
             "email": "mary.smith@protonmail.com",
@@ -926,50 +932,44 @@ class Test_03_GetExample(TestBaseForExampleResources):
             user_data["password"],
         )
 
-        # Create one Example resource for the second user.
-        data_2 = {
-            "source_language": "Finnish",
-            "new_word": "kieli",
-            "content": "Mitä kieltä sinä puhut?",
-            "content_translation": "What languages do you speak?",
-        }
-        data_str_2 = json.dumps(data_2)
-        rv_2 = self.client.post(
-            "/api/examples",
-            data=data_str_2,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + u_r_2.token,
-            },
+        # Create one `Example` resource for the second `User`.
+        source_language = "Finnish"
+        new_word = "kieli"
+        content = "Mitä kieltä sinä puhut?"
+        content_translation = "What languages do you speak?"
+
+        example_2 = self.util_create_example(
+            u_r_2,
+            source_language,
+            new_word,
+            content,
+            content_translation,
         )
 
-        body_str_2 = rv_2.get_data(as_text=True)
-        body_2 = json.loads(body_str_2)
-        example_id_2 = body_2["id"]
-
-        # Ensure that
-        # the 1st user cannot get a specific resource, which belongs to the 2nd user.
-        rv_3 = self.client.get(
-            f"/api/examples/{example_id_2}",
+        # Act.
+        rv = self.client.get(
+            f"/api/examples/{example_2.id}",
             headers={"Authorization": "Bearer " + self._u_r_1.token},
         )
 
-        body_str_3 = rv_3.get_data(as_text=True)
-        body_3 = json.loads(body_str_3)
-        self.assertEqual(rv_3.status_code, 404)
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 404)
         self.assertEqual(
-            body_3,
+            body,
             {
                 "error": "Not Found",
                 "message": (
                     "Your User doesn't have an Example resource with an ID of "
-                    + str(example_id_2)
+                    + str(example_2.id)
                 ),
             },
         )
 
 
-class Test_04_EditExample(TestBaseForExampleResources):
+class Test_04_EditExample(TestBaseForExampleResources_2):
     """Test the request responsible for editing a specific Example resource."""
 
     def setUp(self):
@@ -1281,7 +1281,7 @@ class Test_04_EditExample(TestBaseForExampleResources):
         )
 
 
-class Test_05_DeleteExample(TestBaseForExampleResources):
+class Test_05_DeleteExample(TestBaseForExampleResources_2):
     """Test the request responsible for deleting a specific Example resource."""
 
     def setUp(self):
