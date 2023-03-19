@@ -304,8 +304,20 @@ def delete_user(user_id):
         r.status_code = 403
         return r
 
+    # TODO: (2023/03/19, 15:21)
+    #       before submitting a pull request for review,
+    #       consider whether it would be wiser/safer
+    #       to switch back to the previous 2-step deletion process
+    #       (
+    #       as opposed to "emulating" an `ON DELETE CASCADE`
+    #       as would be achieved via a Python statement analogous to
+    #       https://github.com/kaloyan-marinov/flask-sqlalchemy/blob/main/ex_1_one_to_many.py#L19
+    #       )
+    #
+    #       (2023/03/19, 15:27)
+    #       yes, it would be save -
+    #       do the reversion
     examples = Example.query.filter_by(user_id=user_id)
-    # db.session.delete(examples)
     examples.delete()
 
     u = User.query.get(user_id)

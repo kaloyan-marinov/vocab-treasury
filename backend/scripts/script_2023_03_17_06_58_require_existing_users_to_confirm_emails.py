@@ -125,8 +125,3 @@ it will be impossible to recover them.
                 msg_subject,
                 msg_body,
             )
-
-        # TODO: (2023/03/17, 07:03)
-        #       before submitting a pull request for review:
-        #       write a test case ensuring that
-        #       deleting a `User` resource will also delete all their `Example`s
