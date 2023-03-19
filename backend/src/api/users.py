@@ -88,8 +88,8 @@ def create_user():
     return r
 
 
-@api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
-def confirm_newly_created_account(token):
+@api_bp.route("/confirm-account/<token>", methods=["POST"])
+def confirm_account(token):
     reject_token, response_or_token_payload = validate_token(
         token, ACCOUNT_CONFIRMATION
     )
@@ -391,7 +391,7 @@ $ curl \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
-        'api_blueprint.confirm_newly_created_account',
+        'api_blueprint.confirm_account',
         token=account_confirmation_token,
         _external=True,
     )}

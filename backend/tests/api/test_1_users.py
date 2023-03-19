@@ -320,9 +320,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
 
         # Act.
-        rv = self.client.post(
-            f"/api/confirm-newly-created-account/{invalid_token_correct_purpose}"
-        )
+        rv = self.client.post(f"/api/confirm-account/{invalid_token_correct_purpose}")
 
         # Assert.
         body_str = rv.get_data(as_text=True)
@@ -357,7 +355,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
 
                 # Act.
                 rv = self.client.post(
-                    f"/api/confirm-newly-created-account/{valid_token_wrong_purpose}"
+                    f"/api/confirm-account/{valid_token_wrong_purpose}"
                 )
 
                 # Assert.
@@ -390,9 +388,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         )
 
         # Act.
-        rv = self.client.post(
-            f"/api/confirm-newly-created-account/{valid_token_correct_purpose}"
-        )
+        rv = self.client.post(f"/api/confirm-account/{valid_token_correct_purpose}")
 
         # Assert.
         body_str = rv.get_data(as_text=True)

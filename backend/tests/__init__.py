@@ -82,6 +82,4 @@ class TestBasePlusUtilities(TestBase):
             ).decode("utf-8")
         )
 
-        self.client.post(
-            f"/api/confirm-newly-created-account/{account_confirmation_token}"
-        )
+        self.client.post(f"/api/confirm-account/{account_confirmation_token}")

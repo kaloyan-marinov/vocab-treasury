@@ -92,7 +92,7 @@ $ curl \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
-        'api_blueprint.confirm_newly_created_account',
+        'api_blueprint.confirm_account',
         token=account_confirmation_token,
         _external=True,
         _scheme='https',
