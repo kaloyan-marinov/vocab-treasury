@@ -62,11 +62,6 @@ class Config:
     MINUTES_FOR_PASSWORD_RESET = int(os.environ.get("MINUTES_FOR_PASSWORD_RESET"))
 
     SERVER_NAME = os.environ.get("SERVER_NAME")
-    PREFERRED_URL_SCHEME = (
-        os.environ.get("PREFERRED_URL_SCHEME")
-        if os.environ.get("PREFERRED_URL_SCHEME") is not None
-        else ""
-    )
 
 
 class DevelopmentConfig(Config):

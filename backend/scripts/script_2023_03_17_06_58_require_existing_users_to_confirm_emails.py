@@ -95,6 +95,7 @@ $ curl \\
         'api_blueprint.confirm_newly_created_account',
         token=account_confirmation_token,
         _external=True,
+        _scheme='https',
     )}
 ```
 
