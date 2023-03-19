@@ -1,6 +1,9 @@
 import dataclasses
+import datetime
 import json
 import unittest
+
+from typing import Optional
 
 from src import db, create_app
 from src.constants import ACCOUNT_CONFIRMATION
@@ -32,6 +35,23 @@ class UserResource:
     password: str
     is_confirmed: bool = False
     token: str = ""
+
+
+# TODO: (2023/03/19, 12:26)
+#       before submitting a pull request for review,
+#       consider whether this can be eliminated altogether
+#       (by replacing each of its uses with the use of the `Example` class/model)
+@dataclasses.dataclass(frozen=True)
+class ExampleResource:
+    id: int
+
+    created: datetime.datetime
+    user_id: int
+
+    source_language: str
+    new_word: str
+    content: str
+    content_translation: str = ""
 
 
 class TestBasePlusUtilities(TestBase):
