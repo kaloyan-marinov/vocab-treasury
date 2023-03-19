@@ -575,29 +575,6 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         )
 
         # Create one `Example` resource for the first `User`.
-        # fmt: off
-        '''
-        data_1 = {
-            "source_language": "Finnish",
-            "new_word": "osallistua [+ MIHIN]",
-            "content": "Kuka haluaa osallistua kilpailuun?",
-            "content_translation": "Who wants to participate in the competition?",
-        }
-        data_str_1 = json.dumps(data_1)
-        rv_1 = self.client.post(
-            "/api/examples",
-            data=data_str_1,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + self._u_r_1.token,
-            },
-        )
-
-        body_str_1 = rv_1.get_data(as_text=True)
-        body_1 = json.loads(body_str_1)
-        example_id_1 = body_1["id"]
-        '''
-        # fmt: on
         source_language_1 = "Finnish"
         new_word_1 = "osallistua [+ MIHIN]"
         content_1 = "Kuka haluaa osallistua kilpailuun?"
@@ -612,29 +589,6 @@ class Test_02_GetExamples(TestBaseForExampleResources):
         )
 
         # Create one `Example` resource for the second `User`.
-        # fmt: off
-        '''
-        data_2 = {
-            "source_language": "Finnish",
-            "new_word": "kieli",
-            "content": "Mitä kieltä sinä puhut?",
-            "content_translation": "What languages do you speak?",
-        }
-        data_str_2 = json.dumps(data_2)
-        rv_2 = self.client.post(
-            "/api/examples",
-            data=data_str_2,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + u_r_2.token,
-            },
-        )
-
-        body_str_2 = rv_2.get_data(as_text=True)
-        body_2 = json.loads(body_str_2)
-        example_id_2 = body_2["id"]
-        '''
-        # fmt: on
         source_language_2 = "Finnish"
         new_word_2 = "kieli"
         content_2 = "Mitä kieltä sinä puhut?"
