@@ -3,6 +3,8 @@ import threading
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
 
+import sqlalchemy
+
 from src import db, flsk_bcrpt, mail
 from src.models import User, Example
 from src.auth import basic_auth, token_auth, validate_token
@@ -304,25 +306,23 @@ def delete_user(user_id):
         r.status_code = 403
         return r
 
-    # TODO: (2023/03/19, 15:21)
-    #       before submitting a pull request for review,
-    #       consider whether it would be wiser/safer
-    #       to switch back to the previous 2-step deletion process
-    #       (
-    #       as opposed to "emulating" an `ON DELETE CASCADE`
-    #       as would be achieved via a Python statement analogous to
-    #       https://github.com/kaloyan-marinov/flask-sqlalchemy/blob/main/ex_1_one_to_many.py#L19
-    #       )
-    #
-    #       (2023/03/19, 15:27)
-    #       yes, it would be save -
-    #       do the reversion
-    examples = Example.query.filter_by(user_id=user_id)
-    examples.delete()
-
     u = User.query.get(user_id)
     db.session.delete(u)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your User resource cannot be deleted at this time,"
+                    " because there exists at least one Example resource"
+                    " that is associated with your User resource."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
 
     return "", 204
 
