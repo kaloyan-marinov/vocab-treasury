@@ -3,7 +3,9 @@
 
 - execute this script by issuing
   ```
-  (venv) backend $ PYTHONPATH=. python scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_emails.py
+  (venv) backend $ PYTHONPATH=. \
+    python \
+    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_emails.py
   ```
 """
 

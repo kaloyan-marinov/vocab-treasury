@@ -9,16 +9,30 @@
 
 - execute this script by issuing
   ```
-  (venv) backend $ PYTHONPATH=. python scripts/script_2023_03_17_06_29_populate_db.py
+  (venv) backend $ PYTHONPATH=. \
+    python \
+    scripts/script_2023_03_17_06_29_populate_db.py
   ```
 """
 
 import datetime
 import os
-import sys
+import logging
 
 from src import db, flsk_bcrpt, create_app
 from src.models import User, Example
+
+
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
+
+handler_1 = logging.StreamHandler()
+handler_1.setFormatter(
+    logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"),
+)
+
+logger.addHandler(handler_1)
 
 
 if __name__ == "__main__":
@@ -30,13 +44,20 @@ if __name__ == "__main__":
         email_1_real = os.environ.get("EMAIL_1")
         email_2_real = os.environ.get("EMAIL_2")
         if email_1_real is None or email_2_real is None:
-            sys.exit(
+            msg = (
+                "Environment variables called 'EMAIL_1' and 'EMAIL_2' must be"
+                " specified: crashing..."
+            )
+            logger.error(msg)
+            raise ValueError(
                 datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
-                + " - Environment variables called 'EMAIL_1' and 'EMAIL_2' must be specified:"
-                + " crashing..."
+                + " - "
+                + msg
             )
 
         # Create `User`s with real email addresses.
+        logger.info("Create `User`s with real email addresses.")
+
         u_1_real = User(
             username=email_1_real.split("@")[0],
             email=email_1_real,
@@ -56,6 +77,10 @@ if __name__ == "__main__":
         db.session.commit()
 
         # Create `User`s with fake (= invalid = non-existent) email addresses.
+        logger.info(
+            "Create `User`s with fake (= invalid = non-existent) email addresses."
+        )
+
         email_3_fake = "abc@def.ghi"
         u_3_fake = User(
             username=email_3_fake.split("@")[0],
@@ -77,6 +102,8 @@ if __name__ == "__main__":
         db.session.commit()
 
         # Create `Example`s for the `User`s with real email addresses.
+        logger.info("Create `Example`s for the `User`s with real email addresses.")
+
         e_1 = Example(
             user_id=u_1_real.id,
             new_word="word-1",
@@ -102,6 +129,10 @@ if __name__ == "__main__":
         # several rogue `User`s have somehow managed
         # to create `Example` resources of their own
         # without having confirmed their accounts beforehand.
+        logger.info(
+            "Create `Example`s for the `User`s with fake (= invalid = non-existent) email addresses."
+        )
+
         e_3 = Example(
             user_id=u_3_fake.id,
             new_word="word-3",
