@@ -41,6 +41,10 @@ if __name__ == "__main__":
     )
 
     with app.app_context():
+        # TODO: (2023/03/21, 07:24)
+        #       consider refactoring this code-block
+        #       based on the suggestion made by the comment at
+        #       https://stackoverflow.com/questions/60435406/which-exception-should-be-raised-when-a-required-environment-variable-is-missing#comment106913452_60435527
         email_1_real = os.environ.get("EMAIL_1")
         email_2_real = os.environ.get("EMAIL_2")
         if email_1_real is None or email_2_real is None:
