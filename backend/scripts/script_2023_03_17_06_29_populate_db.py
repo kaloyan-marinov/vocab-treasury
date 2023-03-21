@@ -35,29 +35,27 @@ handler_1.setFormatter(
 logger.addHandler(handler_1)
 
 
+def read_environment_variable(env_variable_name):
+    try:
+        env_variable_value = os.environ[env_variable_name]
+    except KeyError as e:
+        logger.exception(
+            f"Environment variables called '{env_variable_name}' must be specified:"
+            " crashing..."
+        )
+        raise e
+
+    return env_variable_value
+
+
 if __name__ == "__main__":
     app = create_app(
         name_of_configuration="production",
     )
 
     with app.app_context():
-        # TODO: (2023/03/21, 07:24)
-        #       consider refactoring this code-block
-        #       based on the suggestion made by the comment at
-        #       https://stackoverflow.com/questions/60435406/which-exception-should-be-raised-when-a-required-environment-variable-is-missing#comment106913452_60435527
-        email_1_real = os.environ.get("EMAIL_1")
-        email_2_real = os.environ.get("EMAIL_2")
-        if email_1_real is None or email_2_real is None:
-            msg = (
-                "Environment variables called 'EMAIL_1' and 'EMAIL_2' must be"
-                " specified: crashing..."
-            )
-            logger.error(msg)
-            raise ValueError(
-                datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
-                + " - "
-                + msg
-            )
+        email_1_real = read_environment_variable("EMAIL_1")
+        email_2_real = read_environment_variable("EMAIL_2")
 
         # Create `User`s with real email addresses.
         logger.info("Create `User`s with real email addresses.")
