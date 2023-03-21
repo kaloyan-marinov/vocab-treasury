@@ -75,3 +75,45 @@ if __name__ == "__main__":
         db.session.add(u_3_fake)
         db.session.add(u_4_fake)
         db.session.commit()
+
+        # Create `Example`s for the `User`s with real email addresses.
+        e_1 = Example(
+            user_id=u_1_real.id,
+            new_word="word-1",
+            content="This is how to use 'word-1' in a sentence.",
+        )
+
+        e_2 = Example(
+            user_id=u_2_real.id,
+            new_word="word-2",
+            content="This is how to use 'word-2' in a sentence.",
+        )
+
+        db.session.add(e_1)
+        db.session.add(e_2)
+        db.session.commit()
+
+        # It is (or, at minimum, _should_ be) very much impossible
+        # for the database to contain `Example` resources,
+        # which are associated with any unconfirmed `User`
+        # (and much less so with an unconfirmed `User`
+        # whose email address is a fake one!).
+        # Nevertheless, go on to pretend that
+        # several rogue `User`s have somehow managed
+        # to create `Example` resources of their own
+        # without having confirmed their accounts beforehand.
+        e_3 = Example(
+            user_id=u_3_fake.id,
+            new_word="word-3",
+            content="This is how to use 'word-3' in a sentence.",
+        )
+
+        e_4 = Example(
+            user_id=u_4_fake.id,
+            new_word="word-4",
+            content="This is how to use 'word-4' in a sentence.",
+        )
+
+        db.session.add(e_3)
+        db.session.add(e_4)
+        db.session.commit()

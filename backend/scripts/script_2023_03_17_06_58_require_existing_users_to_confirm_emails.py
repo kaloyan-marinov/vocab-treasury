@@ -40,11 +40,16 @@ if __name__ == "__main__":
         for u in users:
             if u.is_confirmed:
                 logger.info(
-                    f"skipping '{repr(u)}' (because that user has been confirmed)",
+                    "skipping %s (because that user has been confirmed)",
+                    repr(u),
                 )
                 continue
 
-            logger.info(f"sending email to '{repr(u)}', i.e. to '{u.email}'")
+            logger.info(
+                "sending email to %s, i.e. to %s",
+                repr(u),
+                u.email,
+            )
 
             # Imitate the implementation of
             # the `send_email_requesting_that_account_should_be_confirmed` function.
