@@ -1,4 +1,12 @@
 """
+This script may not be used in a 'production' environment.
+Its only purpose is to act as a helper script
+for populating the database in a 'development' (or other non-'production') environment.
+
+#######################################################################################
+
+The following steps describe how to use this script:
+
 - launch a terminal instance
 
 - specify an environment variable called 'EMAIL_1',
@@ -15,9 +23,9 @@
   ```
 """
 
-import datetime
 import os
 import logging
+import sys
 
 from src import db, flsk_bcrpt, create_app
 from src.models import User, Example
@@ -49,8 +57,17 @@ def read_environment_variable(env_variable_name):
 
 
 if __name__ == "__main__":
+    if os.environ.get("CONFIGURATION_4_BACKEND") == "production":
+        msg = (
+            "An environment variable 'CONFIGURATION_4_BACKEND' is set to 'production'."
+            " However, this script may not be used in a 'production' environment"
+            " - crashing..."
+        )
+        logger.error(msg)
+        sys.exit(msg)
+
     app = create_app(
-        name_of_configuration="production",
+        name_of_configuration="development",
     )
 
     with app.app_context():

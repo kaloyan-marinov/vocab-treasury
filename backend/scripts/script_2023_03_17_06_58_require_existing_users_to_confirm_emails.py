@@ -1,4 +1,14 @@
 """
+If you wish to use this script
+in a 'development' (or other non-'production') environment,
+it might be advisable
+to start by executing `backend/scripts/script_2023_03_17_06_29_populate_db.py`,
+and only then to go on to execute this script.
+
+###############################################################################
+
+The following steps describe how to use this script:
+
 - launch a terminal instance
 
 - execute this script by issuing
