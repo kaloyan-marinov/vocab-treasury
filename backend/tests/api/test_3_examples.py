@@ -391,16 +391,12 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
 class TestBaseForExampleResources_2(TestBaseForExampleResources_1):
     def util_create_example(
         self,
-        user_resource: UserResource,
+        access_token_for_specific_user: str,
         source_language,
         new_word,
         content,
         content_translation: Optional[str],
     ):
-        # TODO: (2023/03/19, 12:27)
-        #       before submitting a pull request for review,
-        #       attempt to replace `user_resource: UserResource`
-        #       with `access_token_for_specific_user: str`
         example_data = {
             "source_language": source_language,
             "new_word": new_word,
@@ -415,7 +411,7 @@ class TestBaseForExampleResources_2(TestBaseForExampleResources_1):
             data=example_data_str,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + user_resource.token,
+                "Authorization": "Bearer " + access_token_for_specific_user,
             },
         )
 
@@ -503,7 +499,7 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         e: Example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -581,7 +577,7 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
         content_translation_1 = "Who wants to participate in the competition?"
 
         example_1 = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language_1,
             new_word_1,
             content_1,
@@ -595,7 +591,7 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
         content_translation_2 = "What languages do you speak?"
 
         example_2 = self.util_create_example(
-            u_r_2,
+            u_r_2.token,
             source_language_2,
             new_word_2,
             content_2,
@@ -651,7 +647,7 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
 
         for example_data in list_of_example_data:
             self.util_create_example(
-                self._u_r_1,
+                self._u_r_1.token,
                 source_language,
                 example_data["new_word"],
                 example_data["content"],
@@ -717,7 +713,7 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
         content_translation = None
         for example_data in list_of_example_data:
             self.util_create_example(
-                self._u_r_1,
+                self._u_r_1.token,
                 source_language,
                 example_data["new_word"],
                 example_data["content"],
@@ -805,7 +801,7 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example_1 = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -883,7 +879,7 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -941,7 +937,7 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         content_translation = "What languages do you speak?"
 
         example_2 = self.util_create_example(
-            u_r_2,
+            u_r_2.token,
             source_language,
             new_word,
             content,
@@ -1005,7 +1001,7 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -1071,7 +1067,7 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -1142,7 +1138,7 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -1227,7 +1223,7 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         content_translation_2 = "What languages do you speak?"
 
         example_2 = self.util_create_example(
-            u_r_2,
+            u_r_2.token,
             source_language_2,
             new_word_2,
             content_2,
@@ -1318,7 +1314,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -1372,7 +1368,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
         content_translation = "Who wants to participate in the competition?"
 
         example = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
@@ -1428,7 +1424,7 @@ class Test_05_DeleteExample(TestBaseForExampleResources_2):
         content_translation = "What languages do you speak?"
 
         example_2 = self.util_create_example(
-            u_r_2,
+            u_r_2.token,
             source_language,
             new_word,
             content,
@@ -1528,7 +1524,7 @@ class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
         content_translation = "What languages do you speak?"
 
         __ = self.util_create_example(
-            self._u_r_1,
+            self._u_r_1.token,
             source_language,
             new_word,
             content,
