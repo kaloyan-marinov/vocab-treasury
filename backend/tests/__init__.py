@@ -1,9 +1,6 @@
 import dataclasses
-import datetime
 import json
 import unittest
-
-from typing import Optional
 
 from src import db, create_app
 from src.constants import ACCOUNT_CONFIRMATION

@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 ).decode("utf-8")
             )
 
-            msg_sender = "noreply@demo.com"
+            msg_sender = app.config["ADMINS"][0]
             msg_recipients = [u.email]
 
             msg_subject = (

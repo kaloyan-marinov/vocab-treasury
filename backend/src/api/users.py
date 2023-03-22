@@ -6,7 +6,7 @@ from flask_mail import Message
 import sqlalchemy
 
 from src import db, flsk_bcrpt, mail
-from src.models import User, Example
+from src.models import User
 from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
 from src.constants import ACCOUNT_CONFIRMATION, PASSWORD_RESET
@@ -388,7 +388,7 @@ def send_email_requesting_that_account_should_be_confirmed(user):
         ).decode("utf-8")
     )
 
-    msg_sender = "noreply@demo.com"
+    msg_sender = current_app.config["ADMINS"][0]
     msg_recipients = [user.email]
 
     msg_subject = "[VocabTreasury] Please confirm your newly-created account"
@@ -440,7 +440,7 @@ def send_password_reset_email(user):
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
 
-    msg_sender = "noreply@demo.com"
+    msg_sender = current_app.config["ADMINS"][0]
     msg_recipients = [user.email]
 
     msg_subject = "[VocabTreasury] Your request for a password reset"
