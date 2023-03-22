@@ -2,7 +2,8 @@ import threading
 
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
-from itsdangerous import BadSignature, SignatureExpired
+
+import sqlalchemy
 
 from src import db, flsk_bcrpt, mail
 from src.models import User
@@ -88,8 +89,8 @@ def create_user():
     return r
 
 
-@api_bp.route("/confirm-newly-created-account/<token>", methods=["POST"])
-def confirm_newly_created_account(token):
+@api_bp.route("/confirm-account/<token>", methods=["POST"])
+def confirm_account(token):
     reject_token, response_or_token_payload = validate_token(
         token, ACCOUNT_CONFIRMATION
     )
@@ -307,7 +308,21 @@ def delete_user(user_id):
 
     u = User.query.get(user_id)
     db.session.delete(u)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your User resource cannot be deleted at this time,"
+                    " because there exists at least one Example resource"
+                    " that is associated with your User resource."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
 
     return "", 204
 
@@ -373,6 +388,10 @@ def send_email_requesting_that_account_should_be_confirmed(user):
         ).decode("utf-8")
     )
 
+    msg_sender = current_app.config["ADMINS"][0]
+    msg_recipients = [user.email]
+
+    msg_subject = "[VocabTreasury] Please confirm your newly-created account"
     msg_body = f"""Dear {user.username},
 
 Thank you for creating a VocabTreasury account.
@@ -387,7 +406,7 @@ $ curl \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
-        'api_blueprint.confirm_newly_created_account',
+        'api_blueprint.confirm_account',
         token=account_confirmation_token,
         _external=True,
     )}
@@ -403,10 +422,10 @@ you can still do so by simply creating a new VocabTreasury account.
     """
 
     send_email(
-        subject="[VocabTreasury] Please confirm your newly-created account",
-        sender="noreply@demo.com",
-        recipients=[user.email],
-        body=msg_body,
+        msg_sender,
+        msg_recipients,
+        msg_subject,
+        msg_body,
     )
 
 
@@ -421,6 +440,10 @@ def send_password_reset_email(user):
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
 
+    msg_sender = current_app.config["ADMINS"][0]
+    msg_recipients = [user.email]
+
+    msg_subject = "[VocabTreasury] Your request for a password reset"
     msg_body = f"""Dear {user.username},
 
 You may reset your password within {minutes_for_password_reset} minutes of receiving
@@ -453,14 +476,14 @@ then simply ignore this email message and your password will remain unchanged.
     """
 
     send_email(
-        subject="[VocabTreasury] Your request for a password reset",
-        sender="noreply@demo.com",
-        recipients=[user.email],
+        msg_sender,
+        msg_recipients,
+        msg_subject,
         body=msg_body,
     )
 
 
-def send_email(subject, sender, recipients, body):
+def send_email(sender, recipients, subject, body):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = body
 

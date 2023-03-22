@@ -9,6 +9,8 @@ load_dotenv(dotenv_path=dotenv_path)
 
 CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND")
 print("CONFIGURATION_4_BACKEND:", CONFIGURATION_4_BACKEND)
+EMAIL_ADDRESS_OF_ADMINISTRATOR = os.environ.get("EMAIL_ADDRESS_OF_ADMINISTRATOR")
+
 if CONFIGURATION_4_BACKEND in {"development", "production"}:
     for env_var_name in (
         "MYSQL_HOST",
@@ -19,10 +21,19 @@ if CONFIGURATION_4_BACKEND in {"development", "production"}:
     ):
         env_var_value = os.environ.get(env_var_name)
         if env_var_value is None and bool(os.environ.get("TESTING")) is False:
-            raise KeyError(
-                f"failed to find an environment variable called {env_var_name}"
+            raise ValueError(
+                f"failed to find an environment variable called '{env_var_name}'"
             )
         print(env_var_name)
+
+    if (
+        EMAIL_ADDRESS_OF_ADMINISTRATOR is None
+        and bool(os.environ.get("TESTING")) is False
+    ):
+        raise ValueError(
+            f"failed to find an environment variable called 'EMAIL_ADDRESS_OF_ADMINISTRATOR'"
+        )
+    print("EMAIL_ADDRESS_OF_ADMINISTRATOR")
 
 
 class Config:
@@ -42,10 +53,15 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    ADMINS = [
+        EMAIL_ADDRESS_OF_ADMINISTRATOR,
+    ]
 
     DAYS_FOR_ACCOUNT_CONFIRMATION = int(os.environ.get("DAYS_FOR_ACCOUNT_CONFIRMATION"))
     MINUTES_FOR_TOKEN_VALIDITY = int(os.environ.get("MINUTES_FOR_TOKEN_VALIDITY"))
     MINUTES_FOR_PASSWORD_RESET = int(os.environ.get("MINUTES_FOR_PASSWORD_RESET"))
+
+    SERVER_NAME = None
 
 
 class DevelopmentConfig(Config):
@@ -53,7 +69,7 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    pass
+    SERVER_NAME = os.environ.get("SERVER_NAME")
 
 
 class TestingConfig(Config):
