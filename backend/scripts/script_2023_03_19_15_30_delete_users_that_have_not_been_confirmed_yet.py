@@ -6,6 +6,7 @@ to start by executing `backend/scripts/script_2023_03_17_06_29_populate_db.py`,
 and only then to go on to execute this script.
 
 ###############################################################################
+
 The following steps describe how to use this script:
 
 - launch a terminal instance
