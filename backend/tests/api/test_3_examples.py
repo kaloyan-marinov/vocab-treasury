@@ -9,7 +9,7 @@ from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import User, Example
-from tests import TestBasePlusUtilities, UserResource, ExampleResource
+from tests import TestBasePlusUtilities, UserResource
 from src.constants import ACCESS
 
 
@@ -423,14 +423,6 @@ class TestBaseForExampleResources_2(TestBaseForExampleResources_1):
         body = json.loads(body_str)
 
         e = Example.query.get(body["id"])
-        # return ExampleResource(
-        #     e.id,
-        #     e.created,
-        #     e.user_id,
-        #     e.new_word,
-        #     e.content,
-        #     e.content_translation,
-        # )
         return e
 
 

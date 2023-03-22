@@ -37,23 +37,6 @@ class UserResource:
     token: str = ""
 
 
-# TODO: (2023/03/19, 12:26)
-#       before submitting a pull request for review,
-#       consider whether this can be eliminated altogether
-#       (by replacing each of its uses with the use of the `Example` class/model)
-@dataclasses.dataclass(frozen=True)
-class ExampleResource:
-    id: int
-
-    created: datetime.datetime
-    user_id: int
-
-    source_language: str
-    new_word: str
-    content: str
-    content_translation: str = ""
-
-
 class TestBasePlusUtilities(TestBase):
     def util_create_user(
         self,
