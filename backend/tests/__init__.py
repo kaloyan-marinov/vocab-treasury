@@ -3,7 +3,7 @@ import json
 import unittest
 
 from src import db, create_app
-from src.constants import ACCOUNT_CONFIRMATION
+from src.constants import EMAIL_ADDRESS_CONFIRMATION
 
 
 class TestBase(unittest.TestCase):
@@ -73,13 +73,15 @@ class TestBasePlusUtilities(TestBase):
 
     def util_confirm_user(self, user_id):
         token_payload = {
-            "purpose": ACCOUNT_CONFIRMATION,
+            "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
-        account_confirmation_token = (
-            self.app.token_serializer_for_account_confirmation.dumps(
+        email_address_confirmation_token = (
+            self.app.token_serializer_for_email_address_confirmation.dumps(
                 token_payload
             ).decode("utf-8")
         )
 
-        self.client.post(f"/api/confirm-account/{account_confirmation_token}")
+        self.client.post(
+            f"/api/confirm-email-address/{email_address_confirmation_token}"
+        )

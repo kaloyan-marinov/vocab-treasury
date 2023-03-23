@@ -8,7 +8,7 @@ from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities, UserResource
-from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 from src.auth import validate_token
 
 
@@ -107,7 +107,7 @@ class Test_01_CreateUser(TestBase):
           I observed - empirically! - that,
           when the Python interpreter runs
           a unit test - such as the encompassing one! - that creates a User,
-          no account-confirmation email gets sent
+          no email-address-confirmation email gets sent
 
         - the reason for that is as follows:
           https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
@@ -277,13 +277,13 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         self.password = "123"
         super().setUp()
 
-    def _issue_valid_account_confirmation_token(self, user_id):
+    def _issue_valid_email_address_confirmation_token(self, user_id):
         token_payload = {
-            "purpose": ACCOUNT_CONFIRMATION,
+            "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
         valid_token_correct_purpose = (
-            self.app.token_serializer_for_account_confirmation.dumps(
+            self.app.token_serializer_for_email_address_confirmation.dumps(
                 token_payload
             ).decode("utf-8")
         )
@@ -292,7 +292,9 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
     def test_1_validate_token(self):
         # Arrange.
         token = "this-value-is-immaterial-for-this-test-case"
-        inadmissible_purpose = f"{ACCOUNT_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+        inadmissible_purpose = (
+            f"{EMAIL_ADDRESS_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+        )
 
         # Act.
         with self.assertRaises(ValueError) as context_manager:
@@ -303,7 +305,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             str(context_manager.exception),
             (
                 "`purpose` must be one of"
-                " \"to reset account's password\", 'to confirm account',"
+                " \"to reset account's password\", 'to confirm email address',"
                 f" but it is equal to {repr(inadmissible_purpose)} instead"
             ),
         )
@@ -314,13 +316,15 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             self.username, self.email, self.password
         )
 
-        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            u_r.id
+        valid_token_correct_purpose = (
+            self._issue_valid_email_address_confirmation_token(u_r.id)
         )
         invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
 
         # Act.
-        rv = self.client.post(f"/api/confirm-account/{invalid_token_correct_purpose}")
+        rv = self.client.post(
+            f"/api/confirm-email-address/{invalid_token_correct_purpose}"
+        )
 
         # Assert.
         body_str = rv.get_data(as_text=True)
@@ -348,14 +352,14 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                     "user_id": u_r.id,
                 }
                 valid_token_wrong_purpose = (
-                    self.app.token_serializer_for_account_confirmation.dumps(
+                    self.app.token_serializer_for_email_address_confirmation.dumps(
                         token_payload
                     ).decode("utf-8")
                 )
 
                 # Act.
                 rv = self.client.post(
-                    f"/api/confirm-account/{valid_token_wrong_purpose}"
+                    f"/api/confirm-email-address/{valid_token_wrong_purpose}"
                 )
 
                 # Assert.
@@ -369,7 +373,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                         "error": "Bad Request",
                         "message": (
                             "The provided token's `purpose` is"
-                            f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                            f" different from {repr(EMAIL_ADDRESS_CONFIRMATION)}."
                         ),
                     },
                 )
@@ -383,12 +387,14 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             should_confirm_new_user=True,
         )
 
-        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            u_r.id
+        valid_token_correct_purpose = (
+            self._issue_valid_email_address_confirmation_token(u_r.id)
         )
 
         # Act.
-        rv = self.client.post(f"/api/confirm-account/{valid_token_correct_purpose}")
+        rv = self.client.post(
+            f"/api/confirm-email-address/{valid_token_correct_purpose}"
+        )
 
         # Assert.
         body_str = rv.get_data(as_text=True)
@@ -399,7 +405,8 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             body,
             {
                 "message": (
-                    "You have confirmed your account successfully. You may now log in."
+                    "You have confirmed your email address successfully."
+                    " You may now log in."
                 )
             },
         )
@@ -743,8 +750,9 @@ class Test_05_EditUser(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -1380,8 +1388,9 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -1736,7 +1745,7 @@ class Test_08_ResetPassword(TestBase):
             )
 
     def test_3_valid_token_wrong_purpose(self):
-        for wrong_purpose in (ACCOUNT_CONFIRMATION, ACCESS):
+        for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, ACCESS):
             with self.subTest():
                 with patch(
                     "src.TimedJSONWebSignatureSerializer.loads",

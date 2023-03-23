@@ -5,7 +5,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities, UserResource
-from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 class Test_01_IssueToken(TestBasePlusUtilities):
@@ -85,8 +85,9 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -229,7 +230,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         )
 
     def test_2_valid_token_wrong_purpose(self):
-        for wrong_purpose in (ACCOUNT_CONFIRMATION, PASSWORD_RESET):
+        for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET):
             with self.subTest():
                 # Arrange.
                 token_payload = {

@@ -9,7 +9,7 @@ from src import db, flsk_bcrpt, mail
 from src.models import User
 from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
-from src.constants import ACCOUNT_CONFIRMATION, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET
 
 
 @api_bp.route("/users", methods=["POST"])
@@ -80,7 +80,7 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    send_email_requesting_that_account_should_be_confirmed(user)
+    send_email_requesting_that_email_address_should_be_confirmed(user)
 
     payload = user.to_dict()
     r = jsonify(payload)
@@ -89,22 +89,22 @@ def create_user():
     return r
 
 
-@api_bp.route("/confirm-account/<token>", methods=["POST"])
-def confirm_account(token):
+@api_bp.route("/confirm-email-address/<token>", methods=["POST"])
+def confirm_email_address(token):
     reject_token, response_or_token_payload = validate_token(
-        token, ACCOUNT_CONFIRMATION
+        token, EMAIL_ADDRESS_CONFIRMATION
     )
 
     if reject_token:
         return response_or_token_payload
 
-    if response_or_token_payload["purpose"] != ACCOUNT_CONFIRMATION:
+    if response_or_token_payload["purpose"] != EMAIL_ADDRESS_CONFIRMATION:
         r = jsonify(
             {
                 "error": "Bad Request",
                 "message": (
                     "The provided token's `purpose` is"
-                    f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                    f" different from {repr(EMAIL_ADDRESS_CONFIRMATION)}."
                 ),
             }
         )
@@ -121,7 +121,8 @@ def confirm_account(token):
     r = jsonify(
         {
             "message": (
-                "You have confirmed your account successfully. You may now log in."
+                "You have confirmed your email address successfully."
+                " You may now log in."
             )
         }
     )
@@ -377,13 +378,13 @@ def request_password_reset():
     return r
 
 
-def send_email_requesting_that_account_should_be_confirmed(user):
+def send_email_requesting_that_email_address_should_be_confirmed(user):
     token_payload = {
-        "purpose": ACCOUNT_CONFIRMATION,
+        "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
     }
-    account_confirmation_token = (
-        current_app.token_serializer_for_account_confirmation.dumps(
+    email_address_confirmation_token = (
+        current_app.token_serializer_for_email_address_confirmation.dumps(
             token_payload
         ).decode("utf-8")
     )
@@ -391,23 +392,24 @@ def send_email_requesting_that_account_should_be_confirmed(user):
     msg_sender = current_app.config["ADMINS"][0]
     msg_recipients = [user.email]
 
-    msg_subject = "[VocabTreasury] Please confirm your newly-created account"
+    msg_subject = "[VocabTreasury] Please confirm your email address"
     msg_body = f"""Dear {user.username},
 
 Thank you for creating a VocabTreasury account.
 
-Please confirm your account
+Please confirm your email address
 in order to be able to log in and start using VocabTreasury.
 
-To confirm your account, launch a terminal instance and issue the following request:
+To confirm your email address,
+launch a terminal instance and issue the following request:
 ```
 $ curl \\
     -i \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
-        'api_blueprint.confirm_account',
-        token=account_confirmation_token,
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
         _external=True,
     )}
 ```
@@ -415,7 +417,7 @@ $ curl \\
 Sincerely,
 The VocabTreasury Team
 
-PS: If you do not confirm your account within {current_app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"]} days of receiving this email,
+PS: If you do not confirm your email address within {current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]} days of receiving this message,
 your account will be deleted.
 If your account is deleted but you do want to use VocabTreasury,
 you can still do so by simply creating a new VocabTreasury account.

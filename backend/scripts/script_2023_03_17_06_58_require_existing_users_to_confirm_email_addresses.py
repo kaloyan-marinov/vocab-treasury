@@ -15,7 +15,7 @@ The following steps describe how to use this script:
   ```
   (venv) backend $ PYTHONPATH=. \
     python \
-    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_emails.py
+    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py
   ```
 """
 
@@ -26,7 +26,7 @@ from flask import url_for
 from src import create_app
 from src.models import User
 from src.api.users import send_email
-from src.constants import ACCOUNT_CONFIRMATION
+from src.constants import EMAIL_ADDRESS_CONFIRMATION
 
 
 logger = logging.getLogger(__name__)
@@ -64,13 +64,13 @@ if __name__ == "__main__":
             )
 
             # Imitate the implementation of
-            # the `send_email_requesting_that_account_should_be_confirmed` function.
+            # the `send_email_requesting_that_email_address_should_be_confirmed` function.
             token_payload = {
-                "purpose": ACCOUNT_CONFIRMATION,
+                "purpose": EMAIL_ADDRESS_CONFIRMATION,
                 "user_id": u.id,
             }
-            account_confirmation_token = (
-                app.token_serializer_for_account_confirmation.dumps(
+            email_address_confirmation_token = (
+                app.token_serializer_for_email_address_confirmation.dumps(
                     token_payload
                 ).decode("utf-8")
             )
@@ -109,8 +109,8 @@ $ curl \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
-        'api_blueprint.confirm_account',
-        token=account_confirmation_token,
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
         _external=True,
         _scheme='https',
     )}
@@ -122,7 +122,7 @@ and that you will continue using VocabTreasury in the future.
 We are looking forward to bringing out new features
 that will make your language learning more enjoyable!
 
-Do you have questions about the required account confirmation?
+Do you have questions about the required email-address confirmation?
 Please get in touch with us by sending a message to the following email address:
 {app.config['ADMINS'][0]}
 
@@ -130,7 +130,7 @@ Sincerely,
 The VocabTreasury Team
 
 ATTENTION:
-If you do not confirm your account within {app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"]} days of receiving this email,
+If you do not confirm your email address within {app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]} days of receiving this message,
 _both_ your account _and_ all your data stored therein will be deleted.
 After your account and data have been deleted,
 it will be impossible to recover them.

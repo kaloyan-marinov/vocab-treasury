@@ -4,7 +4,7 @@ from itsdangerous import BadSignature, SignatureExpired
 
 from src import flsk_bcrpt
 from src.models import User
-from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 basic_auth = HTTPBasicAuth()
@@ -22,8 +22,9 @@ def verify_password(email, password):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             }
         )
@@ -154,11 +155,11 @@ def token_auth_error():
 def validate_token(token, purpose):
     if purpose == PASSWORD_RESET:
         t_s = current_app.token_serializer_for_password_resets
-    elif purpose == ACCOUNT_CONFIRMATION:
-        t_s = current_app.token_serializer_for_account_confirmation
+    elif purpose == EMAIL_ADDRESS_CONFIRMATION:
+        t_s = current_app.token_serializer_for_email_address_confirmation
     else:
         raise ValueError(
-            f"`purpose` must be one of {repr(PASSWORD_RESET)}, {repr(ACCOUNT_CONFIRMATION)},"
+            f"`purpose` must be one of {repr(PASSWORD_RESET)}, {repr(EMAIL_ADDRESS_CONFIRMATION)},"
             f" but it is equal to {repr(purpose)} instead"
         )
 
