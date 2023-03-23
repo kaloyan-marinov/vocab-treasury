@@ -94,3 +94,15 @@ v2.2.0 (2023/02/28)
 -------------------
 
 - refactor the backend sub-project into a modular structure
+
+v2.3.0 (2023/03/23)
+-------------------
+
+- introduce the concept of a user confirming their email address,
+  as well as the corresponding workflow in the backend sub-project
+
+- add ``backend/scripts/*.py``,
+  which are scripts that can be used
+  to require existing users to confirm their email addresses
+
+- require every newly-created user to confirm their email address
