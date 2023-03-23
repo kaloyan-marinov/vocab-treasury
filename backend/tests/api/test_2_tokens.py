@@ -59,17 +59,13 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             },
         )
 
-    def test_2_unconfirmed_user(self):
-        # Arrange.
-        # Note that
-        # the User resource identified by `self._user_id` has not been confirmed.
-
+    def test_2_unconfirmed_email_address(self):
         # Act.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        basic_auth_credentials = f"{self._u_r.email}:{self._u_r.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.delete(
-            "/api/users/1",
+            f"/api/users/{self._u_r.id}",
             headers={
                 "Authorization": authorization,
             },

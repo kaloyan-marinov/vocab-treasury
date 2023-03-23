@@ -476,21 +476,25 @@ class Test_03_GetUsers(TestBasePlusUtilities):
 
     def test_2_empty_database(self):
         """
-        Ensure that, when the database contains only unconfirmed User resources,
-        getting a list of User resources doesn't return any.
+        Ensure that,
+        when none of the `User` resources that are present in the database
+        has confirmed its email address,
+        getting a list of `User` resources will return an empty list.
         """
 
-        # Create one User resource.
+        # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
-        # Get all User resources.
+        # Act.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -516,39 +520,42 @@ class Test_03_GetUsers(TestBasePlusUtilities):
 
     def test_3_nonempty_database(self):
         """
-        Ensure that, when the database contains some User resources,
-        getting a list of User resources returns only those that are confirmed.
+        Ensure that, when the database contains some `User` resources,
+        getting a list of `User` resources returns only those
+        whose email addresses have been confirmed.
         """
 
-        # Create two User resources, but confirm only the first one.
-        data_0_1 = {
+        # Arrange.
+        data_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_0_2 = {
+        data_2 = {
             "username": "ms",
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
 
         __ = self.util_create_user(
-            data_0_1["username"],
-            data_0_1["email"],
-            data_0_1["password"],
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
             should_confirm_email_address=True,
         )
         __ = self.util_create_user(
-            data_0_2["username"],
-            data_0_2["email"],
-            data_0_2["password"],
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
         )
 
-        # Get all User resources.
+        # Act.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -715,12 +722,12 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_user(self):
+    def test_2_unconfirmed_email_address(self):
         """
-        Ensure that, if a User
+        Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to edit his/her own User resource, but
-            (c) has not been confirmed,
+            (b) attempts to edit his/her own `User` resource, but
+            (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
 
@@ -1355,12 +1362,12 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_user(self):
+    def test_2_unconfirmed_email_address(self):
         """
-        Ensure that, if a User
+        Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to delete his/her own User resource, but
-            (c) has not been confirmed,
+            (b) attempts to delete his/her own `User` resource, but
+            (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
 

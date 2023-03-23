@@ -276,7 +276,7 @@ def edit_user(user_id):
     # fmt: off
     # The following code-block is commented out, because it is unreachable.
     # Its unreachability is due to
-    # the statements within the body the preceding `if email is not None` statement.
+    # the statements within the body of the preceding `if email is not None` statement.
     '''
     if email is not None:
         u.email = email

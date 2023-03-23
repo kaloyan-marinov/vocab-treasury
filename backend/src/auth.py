@@ -29,7 +29,7 @@ def verify_password(email, password):
             }
         )
         r.status_code = 400
-        g.response_for_unconfirmed_user = r
+        g.response_for_unconfirmed_email_address = r
         return None
 
     if flsk_bcrpt.check_password_hash(user.password_hash, password) is False:
@@ -41,8 +41,8 @@ def verify_password(email, password):
 @basic_auth.error_handler
 def basic_auth_error():
     """Return an appropriate error to the client."""
-    if hasattr(g, "response_for_unconfirmed_user"):
-        return g.response_for_unconfirmed_user
+    if hasattr(g, "response_for_unconfirmed_email_address"):
+        return g.response_for_unconfirmed_email_address
 
     r = jsonify(
         {

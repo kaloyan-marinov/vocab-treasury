@@ -103,6 +103,10 @@ v2.3.0 (2023/03/23)
 
 - add ``backend/scripts/*.py``,
   which are scripts that can be used
-  to require existing users to confirm their email addresses
+  to require users,
+  which were created prior to the application of the
+  `migrations/versions/8ff9b3efa93e_add_an_is_confirmed_column_to_the_user_.py`
+  database migration script,
+  to confirm their email addresses
 
 - require every newly-created user to confirm their email address
