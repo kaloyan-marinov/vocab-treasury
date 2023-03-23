@@ -268,8 +268,11 @@ class Test_01_CreateUser(TestBase):
         )
 
 
-class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
-    """Test the request responsible for confirming a newly-created `User` resource."""
+class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
+    """
+    Test the request responsible for
+    confirming the email address of a newly-created `User` resource.
+    """
 
     def setUp(self):
         self.username = "jd"
@@ -384,7 +387,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             self.username,
             self.email,
             self.password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         valid_token_correct_purpose = (
@@ -533,7 +536,7 @@ class Test_03_GetUsers(TestBasePlusUtilities):
             data_0_1["username"],
             data_0_1["email"],
             data_0_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
             data_0_2["username"],
@@ -639,7 +642,7 @@ class Test_04_GetUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Get the User resource that was created just now.
@@ -778,7 +781,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to edit the User resource, which was created just now,
@@ -850,13 +853,13 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_1["username"],
             data_1["email"],
             data_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_2: UserResource = self.util_create_user(
             data_2["username"],
             data_2["email"],
             data_2["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_3: UserResource = self.util_create_user(
             data_3["username"],
@@ -959,7 +962,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Act.
@@ -1014,7 +1017,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Edit the User resource that was created just now.
@@ -1085,7 +1088,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_0_1["username"],
             data_0_1["email"],
             data_0_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
             data_0_2["username"],
@@ -1157,7 +1160,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to edit a User resource
@@ -1230,13 +1233,13 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_1["username"],
             data_1["email"],
             data_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_2: UserResource = self.util_create_user(
             data_2["username"],
             data_2["email"],
             data_2["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_3: UserResource = self.util_create_user(
             data_3["username"],
@@ -1418,7 +1421,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             data_0_1["username"],
             data_0_1["email"],
             data_0_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
             data_0_2["username"],
@@ -1481,7 +1484,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Delete a User resource.
@@ -1516,7 +1519,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to delete a User resource

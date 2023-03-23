@@ -40,7 +40,7 @@ class TestBasePlusUtilities(TestBase):
         username,
         email,
         password,
-        should_confirm_new_user=False,
+        should_confirm_email_address=False,
     ) -> UserResource:
         data = {
             "username": username,
@@ -60,18 +60,18 @@ class TestBasePlusUtilities(TestBase):
         body = json.loads(body_str)
         user_id = body["id"]
 
-        if should_confirm_new_user:
-            self.util_confirm_user(user_id)
+        if should_confirm_email_address:
+            self.util_confirm_email_address(user_id)
 
         return UserResource(
             user_id,
             username,
             email,
             password,
-            is_confirmed=should_confirm_new_user,
+            is_confirmed=should_confirm_email_address,
         )
 
-    def util_confirm_user(self, user_id):
+    def util_confirm_email_address(self, user_id):
         token_payload = {
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,

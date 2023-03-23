@@ -99,7 +99,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Act.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -162,7 +162,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Act.
         wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
@@ -274,7 +274,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Issue an access token for the user.
         basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"

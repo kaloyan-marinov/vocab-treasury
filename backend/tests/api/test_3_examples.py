@@ -20,7 +20,7 @@ class TestBaseForExampleResources_1(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Issue an access token for the `User` resource, which was created just now.
