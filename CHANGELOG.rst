@@ -94,3 +94,19 @@ v2.2.0 (2023/02/28)
 -------------------
 
 - refactor the backend sub-project into a modular structure
+
+v2.3.0 (2023/03/23)
+-------------------
+
+- introduce the concept of a user confirming their email address,
+  as well as the corresponding workflow in the backend sub-project
+
+- add several scripts within the ``backend/scripts/`` folder;
+  those scripts can be used
+  to require users,
+  which were created prior to the application of the
+  ``migrations/versions/8ff9b3efa93e_add_an_is_confirmed_column_to_the_user_.py``
+  database migration script,
+  to confirm their email addresses
+
+- require every newly-created user to confirm their email address

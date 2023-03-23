@@ -3,7 +3,7 @@ import json
 import unittest
 
 from src import db, create_app
-from src.constants import ACCOUNT_CONFIRMATION
+from src.constants import EMAIL_ADDRESS_CONFIRMATION
 
 
 class TestBase(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestBasePlusUtilities(TestBase):
         username,
         email,
         password,
-        should_confirm_new_user=False,
+        should_confirm_email_address=False,
     ) -> UserResource:
         data = {
             "username": username,
@@ -60,26 +60,28 @@ class TestBasePlusUtilities(TestBase):
         body = json.loads(body_str)
         user_id = body["id"]
 
-        if should_confirm_new_user:
-            self.util_confirm_user(user_id)
+        if should_confirm_email_address:
+            self.util_confirm_email_address(user_id)
 
         return UserResource(
             user_id,
             username,
             email,
             password,
-            is_confirmed=should_confirm_new_user,
+            is_confirmed=should_confirm_email_address,
         )
 
-    def util_confirm_user(self, user_id):
+    def util_confirm_email_address(self, user_id):
         token_payload = {
-            "purpose": ACCOUNT_CONFIRMATION,
+            "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
-        account_confirmation_token = (
-            self.app.token_serializer_for_account_confirmation.dumps(
+        email_address_confirmation_token = (
+            self.app.token_serializer_for_email_address_confirmation.dumps(
                 token_payload
             ).decode("utf-8")
         )
 
-        self.client.post(f"/api/confirm-account/{account_confirmation_token}")
+        self.client.post(
+            f"/api/confirm-email-address/{email_address_confirmation_token}"
+        )

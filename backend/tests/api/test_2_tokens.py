@@ -5,7 +5,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities, UserResource
-from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 
 
 class Test_01_IssueToken(TestBasePlusUtilities):
@@ -59,17 +59,13 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             },
         )
 
-    def test_2_unconfirmed_user(self):
-        # Arrange.
-        # Note that
-        # the User resource identified by `self._user_id` has not been confirmed.
-
+    def test_2_unconfirmed_email_address(self):
         # Act.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
+        basic_auth_credentials = f"{self._u_r.email}:{self._u_r.password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.delete(
-            "/api/users/1",
+            f"/api/users/{self._u_r.id}",
             headers={
                 "Authorization": authorization,
             },
@@ -85,8 +81,9 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -98,7 +95,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Act.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -161,7 +158,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Act.
         wrong_basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
@@ -229,7 +226,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         )
 
     def test_2_valid_token_wrong_purpose(self):
-        for wrong_purpose in (ACCOUNT_CONFIRMATION, PASSWORD_RESET):
+        for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET):
             with self.subTest():
                 # Arrange.
                 token_payload = {
@@ -273,7 +270,7 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         """
 
         # Arrange.
-        __ = self.util_confirm_user(self._u_r.id)
+        __ = self.util_confirm_email_address(self._u_r.id)
 
         # Issue an access token for the user.
         basic_auth_credentials = "john.doe@protonmail.com" + ":" + "123"

@@ -69,9 +69,11 @@ def create_app(name_of_configuration=None):
     we will also have access to the `TimedJSONWebSignatureSerializer` in question.)
     '''
     # fmt: on
-    app.token_serializer_for_account_confirmation = TimedJSONWebSignatureSerializer(
-        app.config["SECRET_KEY"],
-        expires_in=app.config["DAYS_FOR_ACCOUNT_CONFIRMATION"] * 24 * 60 * 60,
+    app.token_serializer_for_email_address_confirmation = (
+        TimedJSONWebSignatureSerializer(
+            app.config["SECRET_KEY"],
+            expires_in=app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"] * 24 * 60 * 60,
+        )
     )
 
     app.token_serializer = TimedJSONWebSignatureSerializer(

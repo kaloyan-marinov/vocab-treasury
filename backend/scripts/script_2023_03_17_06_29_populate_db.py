@@ -141,13 +141,14 @@ if __name__ == "__main__":
 
         # It is (or, at minimum, _should_ be) very much impossible
         # for the database to contain `Example` resources,
-        # which are associated with any unconfirmed `User`
-        # (and much less so with an unconfirmed `User`
+        # which are associated with any `User`
+        # whose email address has not been confirmed
+        # (and much less so with any `User`
         # whose email address is a fake one!).
         # Nevertheless, go on to pretend that
         # several rogue `User`s have somehow managed
         # to create `Example` resources of their own
-        # without having confirmed their accounts beforehand.
+        # without having confirmed their email addresses beforehand.
         logger.info(
             "Create `Example`s for the `User`s with fake (= invalid = non-existent) email addresses."
         )

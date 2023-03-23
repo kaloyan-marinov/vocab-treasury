@@ -278,7 +278,7 @@ and use `localhost` to serve a frontend application.
 
         # Check the inbox of `EMAIL_1`.
         # You will receive an email with instructions
-        # for confirming the newly-created (user) account.
+        # for confirming the newly-created user's email address.
         # Follow those instructions.
 
         $ curl -v \
@@ -308,7 +308,7 @@ and use `localhost` to serve a frontend application.
 
         # Check the inbox of `EMAIL_1`.
         # You will receive an email with instructions
-        # for confirming the newly-created (user) account.
+        # for confirming the newly-created user's email address.
         # Follow those instructions.
 
         ----
@@ -535,6 +535,9 @@ and use `localhost` to serve a frontend application.
 # Future plans
 
 - modularize the frontend
+
+- enable every newly-created user to confirm their email address
+  through the frontend
 
 - if a (confirmed) user requests to change their email address,
   require them to confirm the new email address

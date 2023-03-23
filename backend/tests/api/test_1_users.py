@@ -8,7 +8,7 @@ from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities, UserResource
-from src.constants import ACCOUNT_CONFIRMATION, ACCESS, PASSWORD_RESET
+from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 from src.auth import validate_token
 
 
@@ -107,7 +107,7 @@ class Test_01_CreateUser(TestBase):
           I observed - empirically! - that,
           when the Python interpreter runs
           a unit test - such as the encompassing one! - that creates a User,
-          no account-confirmation email gets sent
+          no email-address-confirmation email gets sent
 
         - the reason for that is as follows:
           https://flask-mail.readthedocs.io/en/latest/#unit-tests-and-suppressing-emails
@@ -268,8 +268,11 @@ class Test_01_CreateUser(TestBase):
         )
 
 
-class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
-    """Test the request responsible for confirming a newly-created `User` resource."""
+class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
+    """
+    Test the request responsible for
+    confirming the email address of a newly-created `User` resource.
+    """
 
     def setUp(self):
         self.username = "jd"
@@ -277,13 +280,13 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
         self.password = "123"
         super().setUp()
 
-    def _issue_valid_account_confirmation_token(self, user_id):
+    def _issue_valid_email_address_confirmation_token(self, user_id):
         token_payload = {
-            "purpose": ACCOUNT_CONFIRMATION,
+            "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
         valid_token_correct_purpose = (
-            self.app.token_serializer_for_account_confirmation.dumps(
+            self.app.token_serializer_for_email_address_confirmation.dumps(
                 token_payload
             ).decode("utf-8")
         )
@@ -292,7 +295,9 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
     def test_1_validate_token(self):
         # Arrange.
         token = "this-value-is-immaterial-for-this-test-case"
-        inadmissible_purpose = f"{ACCOUNT_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+        inadmissible_purpose = (
+            f"{EMAIL_ADDRESS_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
+        )
 
         # Act.
         with self.assertRaises(ValueError) as context_manager:
@@ -303,7 +308,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             str(context_manager.exception),
             (
                 "`purpose` must be one of"
-                " \"to reset account's password\", 'to confirm account',"
+                " \"to reset account's password\", 'to confirm email address',"
                 f" but it is equal to {repr(inadmissible_purpose)} instead"
             ),
         )
@@ -314,13 +319,15 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             self.username, self.email, self.password
         )
 
-        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            u_r.id
+        valid_token_correct_purpose = (
+            self._issue_valid_email_address_confirmation_token(u_r.id)
         )
         invalid_token_correct_purpose = valid_token_correct_purpose[:-1]
 
         # Act.
-        rv = self.client.post(f"/api/confirm-account/{invalid_token_correct_purpose}")
+        rv = self.client.post(
+            f"/api/confirm-email-address/{invalid_token_correct_purpose}"
+        )
 
         # Assert.
         body_str = rv.get_data(as_text=True)
@@ -348,14 +355,14 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                     "user_id": u_r.id,
                 }
                 valid_token_wrong_purpose = (
-                    self.app.token_serializer_for_account_confirmation.dumps(
+                    self.app.token_serializer_for_email_address_confirmation.dumps(
                         token_payload
                     ).decode("utf-8")
                 )
 
                 # Act.
                 rv = self.client.post(
-                    f"/api/confirm-account/{valid_token_wrong_purpose}"
+                    f"/api/confirm-email-address/{valid_token_wrong_purpose}"
                 )
 
                 # Assert.
@@ -369,7 +376,7 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
                         "error": "Bad Request",
                         "message": (
                             "The provided token's `purpose` is"
-                            f" different from {repr(ACCOUNT_CONFIRMATION)}."
+                            f" different from {repr(EMAIL_ADDRESS_CONFIRMATION)}."
                         ),
                     },
                 )
@@ -380,15 +387,17 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             self.username,
             self.email,
             self.password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
-        valid_token_correct_purpose = self._issue_valid_account_confirmation_token(
-            u_r.id
+        valid_token_correct_purpose = (
+            self._issue_valid_email_address_confirmation_token(u_r.id)
         )
 
         # Act.
-        rv = self.client.post(f"/api/confirm-account/{valid_token_correct_purpose}")
+        rv = self.client.post(
+            f"/api/confirm-email-address/{valid_token_correct_purpose}"
+        )
 
         # Assert.
         body_str = rv.get_data(as_text=True)
@@ -399,7 +408,8 @@ class Test_02_ConfirmCreatedUser(TestBasePlusUtilities):
             body,
             {
                 "message": (
-                    "You have confirmed your account successfully. You may now log in."
+                    "You have confirmed your email address successfully."
+                    " You may now log in."
                 )
             },
         )
@@ -466,21 +476,25 @@ class Test_03_GetUsers(TestBasePlusUtilities):
 
     def test_2_empty_database(self):
         """
-        Ensure that, when the database contains only unconfirmed User resources,
-        getting a list of User resources doesn't return any.
+        Ensure that,
+        when none of the `User` resources that are present in the database
+        has confirmed its email address,
+        getting a list of `User` resources will return an empty list.
         """
 
-        # Create one User resource.
+        # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
-        # Get all User resources.
+        # Act.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -506,39 +520,42 @@ class Test_03_GetUsers(TestBasePlusUtilities):
 
     def test_3_nonempty_database(self):
         """
-        Ensure that, when the database contains some User resources,
-        getting a list of User resources returns only those that are confirmed.
+        Ensure that, when the database contains some `User` resources,
+        getting a list of `User` resources returns only those
+        whose email addresses have been confirmed.
         """
 
-        # Create two User resources, but confirm only the first one.
-        data_0_1 = {
+        # Arrange.
+        data_1 = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        data_0_2 = {
+        data_2 = {
             "username": "ms",
             "email": "mary.smith@protonmail.com",
             "password": "456",
         }
 
         __ = self.util_create_user(
-            data_0_1["username"],
-            data_0_1["email"],
-            data_0_1["password"],
-            should_confirm_new_user=True,
+            data_1["username"],
+            data_1["email"],
+            data_1["password"],
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
-            data_0_2["username"],
-            data_0_2["email"],
-            data_0_2["password"],
+            data_2["username"],
+            data_2["email"],
+            data_2["password"],
         )
 
-        # Get all User resources.
+        # Act.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -632,7 +649,7 @@ class Test_04_GetUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Get the User resource that was created just now.
@@ -705,12 +722,12 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_user(self):
+    def test_2_unconfirmed_email_address(self):
         """
-        Ensure that, if a User
+        Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to edit his/her own User resource, but
-            (c) has not been confirmed,
+            (b) attempts to edit his/her own `User` resource, but
+            (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
 
@@ -743,8 +760,9 @@ class Test_05_EditUser(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -770,7 +788,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to edit the User resource, which was created just now,
@@ -842,13 +860,13 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_1["username"],
             data_1["email"],
             data_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_2: UserResource = self.util_create_user(
             data_2["username"],
             data_2["email"],
             data_2["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_3: UserResource = self.util_create_user(
             data_3["username"],
@@ -951,7 +969,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Act.
@@ -1006,7 +1024,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Edit the User resource that was created just now.
@@ -1077,7 +1095,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_0_1["username"],
             data_0_1["email"],
             data_0_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
             data_0_2["username"],
@@ -1149,7 +1167,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to edit a User resource
@@ -1222,13 +1240,13 @@ class Test_05_EditUser(TestBasePlusUtilities):
             data_1["username"],
             data_1["email"],
             data_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_2: UserResource = self.util_create_user(
             data_2["username"],
             data_2["email"],
             data_2["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         u_r_3: UserResource = self.util_create_user(
             data_3["username"],
@@ -1344,12 +1362,12 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_user(self):
+    def test_2_unconfirmed_email_address(self):
         """
-        Ensure that, if a User
+        Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to delete his/her own User resource, but
-            (c) has not been confirmed,
+            (b) attempts to delete his/her own `User` resource, but
+            (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
 
@@ -1380,8 +1398,9 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your account has not been confirmed."
-                    " Please confirm your account and re-issue the same HTTP request."
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
                 ),
             },
         )
@@ -1409,7 +1428,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             data_0_1["username"],
             data_0_1["email"],
             data_0_1["password"],
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
         __ = self.util_create_user(
             data_0_2["username"],
@@ -1472,7 +1491,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Delete a User resource.
@@ -1507,7 +1526,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             username,
             email,
             password,
-            should_confirm_new_user=True,
+            should_confirm_email_address=True,
         )
 
         # Attempt to delete a User resource
@@ -1736,7 +1755,7 @@ class Test_08_ResetPassword(TestBase):
             )
 
     def test_3_valid_token_wrong_purpose(self):
-        for wrong_purpose in (ACCOUNT_CONFIRMATION, ACCESS):
+        for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, ACCESS):
             with self.subTest():
                 with patch(
                     "src.TimedJSONWebSignatureSerializer.loads",
