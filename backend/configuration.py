@@ -9,7 +9,12 @@ load_dotenv(dotenv_path=dotenv_path)
 
 CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND")
 print("CONFIGURATION_4_BACKEND:", CONFIGURATION_4_BACKEND)
-EMAIL_ADDRESS_OF_ADMINISTRATOR = os.environ.get("EMAIL_ADDRESS_OF_ADMINISTRATOR")
+EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING = os.environ.get(
+    "EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING"
+)
+EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING = os.environ.get(
+    "EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING"
+)
 
 if CONFIGURATION_4_BACKEND in {"development", "production"}:
     for env_var_name in (
@@ -27,13 +32,22 @@ if CONFIGURATION_4_BACKEND in {"development", "production"}:
         print(env_var_name)
 
     if (
-        EMAIL_ADDRESS_OF_ADMINISTRATOR is None
+        EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING is None
         and bool(os.environ.get("TESTING")) is False
     ):
         raise ValueError(
-            f"failed to find an environment variable called 'EMAIL_ADDRESS_OF_ADMINISTRATOR'"
+            f"failed to find an environment variable called 'EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING'"
         )
-    print("EMAIL_ADDRESS_OF_ADMINISTRATOR")
+    print("EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING")
+
+    if (
+        EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING is None
+        and bool(os.environ.get("TESTING")) is False
+    ):
+        raise ValueError(
+            f"failed to find an environment variable called 'EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING'"
+        )
+    print("EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING")
 
 
 class Config:
@@ -54,8 +68,11 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     ADMINS = [
-        EMAIL_ADDRESS_OF_ADMINISTRATOR,
+        EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING,
     ]
+    EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING = os.environ.get(
+        "EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING"
+    )
 
     DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION = int(
         os.environ.get("DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION")
