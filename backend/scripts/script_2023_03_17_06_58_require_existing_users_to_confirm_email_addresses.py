@@ -131,16 +131,25 @@ you will be unable to log in to your account.
 To perform the required confirmation,
 launch a terminal instance and issue the following request:
 ```
-$ curl \\
+url_for_confirming_email_address=$(curl \\
+    --silent \\
+    --show-error \\
     -i \\
     -H "Content-Type: application/json" \\
-    -X POST \\
     {url_for(
         'api_blueprint.confirm_email_address',
         token=email_address_confirmation_token,
         _external=True,
         _scheme='https',
-    )}
+    )} \\
+    | grep -Fi 'location:' \\
+    | sed  's/location: //g'); \\
+url_for_confirming_email_address=${{url_for_confirming_email_address%$'\r'}}; \\
+curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    ${{url_for_confirming_email_address}}
 ```
 
 We hope
