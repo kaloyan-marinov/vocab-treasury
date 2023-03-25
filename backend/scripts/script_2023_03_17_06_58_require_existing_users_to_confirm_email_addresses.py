@@ -22,9 +22,15 @@ The following steps describe how to use this script:
 
 import argparse
 import logging
+import os
 import time
 
 from flask import url_for
+
+import sys
+
+for p in sys.path:
+    print(p)
 
 from src import create_app
 from src.models import User
@@ -69,9 +75,12 @@ if __name__ == "__main__":
             f" found '{args.time_to_sleep}' - crashing..."
         )
 
+    CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND")
     app = create_app(
-        name_of_configuration="production",
+        name_of_configuration=CONFIGURATION_4_BACKEND,
     )
+    if CONFIGURATION_4_BACKEND == "development":
+        app.config["SERVER_NAME"] = "localhost:5000"
 
     with app.app_context():
         users = User.query.all()
@@ -108,6 +117,50 @@ if __name__ == "__main__":
             msg_subject = (
                 "[VocabTreasury] ACTION REQUIRED: Please confirm your email address"
             )
+            if CONFIGURATION_4_BACKEND == "production":
+                command_for_confirming_email_address = f"""url_for_confirming_email_address=$( \\
+    curl \\
+        --silent \\
+        --show-error \\
+        -i \\
+        -H "Content-Type: application/json" \\
+        {url_for(
+            'api_blueprint.confirm_email_address',
+            token=email_address_confirmation_token,
+            _external=True,
+            _scheme='https',
+        )} \\
+        | grep -Fi 'location:' \\
+        | sed  's/location: //g' \\
+    ); \\
+       \\
+url_for_confirming_email_address=${{url_for_confirming_email_address%$'\\r'}}; \\
+                                                                            \\
+curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    ${{url_for_confirming_email_address}}"""
+            elif CONFIGURATION_4_BACKEND == "development":
+                command_for_confirming_email_address = f"""curl \\
+    -i \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
+    )}"""
+            else:
+                # TODO: (2023/03/25, 10:50)
+                #       before submitting a pull request for review,
+                #       change this to `pass`
+                #       and precede that with a comment that
+                #       this part of the code is or, at least, should be unreachable
+                raise ValueError(
+                    "The value of the 'CONFIGURATION_FOR_BACKEND' environment variable"
+                    " must be 'production' or 'development';"
+                    f" found '{CONFIGURATION_4_BACKEND}' - crashing ..."
+                )
             msg_body = f"""Dear {u.username},
 
 Thank you for using VocabTreasury.
@@ -131,25 +184,7 @@ you will be unable to log in to your account.
 To perform the required confirmation,
 launch a terminal instance and issue the following request:
 ```
-url_for_confirming_email_address=$(curl \\
-    --silent \\
-    --show-error \\
-    -i \\
-    -H "Content-Type: application/json" \\
-    {url_for(
-        'api_blueprint.confirm_email_address',
-        token=email_address_confirmation_token,
-        _external=True,
-        _scheme='https',
-    )} \\
-    | grep -Fi 'location:' \\
-    | sed  's/location: //g'); \\
-url_for_confirming_email_address=${{url_for_confirming_email_address%$'\r'}}; \\
-curl \\
-    -i \\
-    -H "Content-Type: application/json" \\
-    -X POST \\
-    ${{url_for_confirming_email_address}}
+{command_for_confirming_email_address}
 ```
 
 We hope
