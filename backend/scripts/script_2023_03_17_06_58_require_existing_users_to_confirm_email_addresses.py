@@ -15,11 +15,14 @@ The following steps describe how to use this script:
   ```
   (venv) backend $ PYTHONPATH=. \
     python \
-    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py
+    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py \
+        --time-to-sleep=5
   ```
 """
 
+import argparse
 import logging
+import time
 
 from flask import url_for
 
@@ -42,6 +45,30 @@ logger.addHandler(handler_1)
 
 
 if __name__ == "__main__":
+    arg_parser = argparse.ArgumentParser(
+        __name__,
+    )
+    arg_parser.add_argument(
+        "-t",
+        "--time-to-sleep",
+        required=True,
+        type=int,
+        help=(
+            "Indicates the number of seconds that"
+            " this script should sleep for after having sent an/each email message."
+            " Must be >= 5."
+        ),
+    )
+
+    args = arg_parser.parse_args()
+    logger.debug("args.time_to_sleep = %s", args.time_to_sleep)
+
+    if args.time_to_sleep < 5:
+        raise ValueError(
+            "The value provided to '--time-to-sleep' must be >= 5;"
+            f" found '{args.time_to_sleep}' - crashing..."
+        )
+
     app = create_app(
         name_of_configuration="production",
     )
@@ -124,7 +151,7 @@ that will make your language learning more enjoyable!
 
 Do you have questions about the required email-address confirmation?
 Please get in touch with us by sending a message to the following email address:
-{app.config['ADMINS'][0]}
+{app.config['EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING']}
 
 Sincerely,
 The VocabTreasury Team
@@ -142,3 +169,5 @@ it will be impossible to recover them.
                 msg_subject,
                 msg_body,
             )
+
+            time.sleep(args.time_to_sleep)
