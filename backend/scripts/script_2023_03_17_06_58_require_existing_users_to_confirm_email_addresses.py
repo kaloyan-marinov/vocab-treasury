@@ -21,13 +21,16 @@ The following steps describe how to use this script:
 """
 
 import argparse
+import datetime
 import logging
 import os
 import time
 
+from flask import url_for
+
 from src import create_app
 from src.models import User
-from src.api.users import send_email, build_command_for_confirming_email_address
+from src.api.users import send_email
 from src.constants import EMAIL_ADDRESS_CONFIRMATION
 
 
@@ -107,16 +110,56 @@ if __name__ == "__main__":
             msg_sender = app.config["ADMINS"][0]
             msg_recipients = [u.email]
 
-            msg_subject = (
-                "[VocabTreasury] ACTION REQUIRED: Please confirm your email address"
-            )
-            command_for_confirming_email_address = (
-                build_command_for_confirming_email_address(
-                    app,
-                    email_address_confirmation_token,
-                )
-            )
-            msg_body = f"""Dear {u.username},
+            msg_subject = "[VocabTreasury] Addendum to our ealier message(s)"
+            msg_body = f"""[
+({datetime.datetime.now().strftime('%Y/%m/%d, %H:%M:%S')} UTC) Introduction
+]
+
+You may have received a few email messages from our email address over the last few days.
+The title of each of those messages was 'ACTION REQUIRED: Please confirm your email address'.
+Those email messages were faulty in two aspects:
+(a) they failed to provide adequate background information, and
+(b) they instructed you to use a terminal window in order to issue an HTTP request,
+    but issuing that HTTP request resulted in a failure and thus failed to achieve its intended result.
+
+
+
+[
+To rectify the fault described in (a) above,
+let us provide the following additional background.
+]
+
+If you do not wish to continue using your VocabTreasury account,
+then you do not need to do anything;
+_both_ your account _and_ all your data stored therein will be deleted.
+
+If you do not even remember creating a VocabTreasury account,
+then it is actually possible that somebody else created an account using your email address.
+That could mean that
+somebody has obtained and used your email address without your permission or consent.
+One way that could have happened is via a data breach.
+While it is entirely up to you,
+it is _highly recommended_ that
+you visit haveibeenpwned[dot]com in your web browser
+( or simply click on https://haveibeenpwned.com/ ),
+and go on use that website to check whether
+your personal data has been compromised via a data breach.
+    
+
+
+[
+To rectify the fault described in (b) above:
+
+- please disregard all previous messages
+  that you received from our email address over the last few days;
+
+- if you wish to retain and continue using your VocabTreasury account,
+  please read and act upon the instructions that are provided below.
+]
+
+
+
+Dear {u.username},
 
 Thank you for using VocabTreasury.
 We hope you have found that both helpful and enjoyable.
@@ -137,9 +180,18 @@ you will be unable to log in to your account.
 )
 
 To perform the required confirmation,
-launch a terminal instance and execute the following command:
+launch a terminal instance and issue the following request:
 ```
-{command_for_confirming_email_address}
+curl \\
+    -i \\
+    -L \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
+        _external=True,
+    )}
 ```
 
 We hope

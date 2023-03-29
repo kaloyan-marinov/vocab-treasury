@@ -381,68 +381,6 @@ def request_password_reset():
     return r
 
 
-def build_command_for_confirming_email_address(
-    app,
-    email_address_confirmation_token: str,
-    server_name_in_development: Optional[str] = None,
-) -> str:
-    SERVER_NAME = app.config["SERVER_NAME"]
-
-    if SERVER_NAME == server_name_in_development:
-        # Construct the command for confirming an email address
-        # within a 'development' environment.
-        command_for_confirming_email_address = f"""
-curl \\
-    -i \\
-    -H "Content-Type: application/json" \\
-    -X POST \\
-    {url_for(
-        'api_blueprint.confirm_email_address',
-        token=email_address_confirmation_token,
-    )}"""
-    elif SERVER_NAME == os.environ.get("SERVER_NAME"):
-        # Construct the command for confirming an email address
-        # within a 'production' environment.
-        command_for_confirming_email_address = f"""
-url_for_confirming_email_address=$( \\
-    curl \\
-        --silent \\
-        --show-error \\
-        -i \\
-        -H "Content-Type: application/json" \\
-        {url_for(
-            'api_blueprint.confirm_email_address',
-            token=email_address_confirmation_token,
-            _external=True,
-            _scheme='https',
-        )} \\
-        | grep -Fi 'location:' \\
-        | sed  's/location: //g' \\
-    ); \\
-       \\
-url_for_confirming_email_address=${{url_for_confirming_email_address%$'\\r'}}; \\
-                                                                            \\
-curl \\
-    -i \\
-    -H "Content-Type: application/json" \\
-    -X POST \\
-    ${{url_for_confirming_email_address}}"""
-    else:
-        # TODO: (2023/03/25, 10:50)
-        #       before submitting a pull request for review,
-        #       change this to `pass`
-        #       and precede that with a comment that
-        #       this part of the code is or, at least, should be unreachable
-        raise ValueError(
-            f"The value of `app.config['SERVER_NAME']` environment variable is '{SERVER_NAME}';"
-            " that value cannot be used in"
-            " either a 'development' or 'production' environment"
-            " crashing ..."
-        )
-
-    return command_for_confirming_email_address.lstrip()
-
-
 def send_email_requesting_that_email_address_should_be_confirmed(user):
     token_payload = {
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
@@ -458,10 +396,6 @@ def send_email_requesting_that_email_address_should_be_confirmed(user):
     msg_recipients = [user.email]
 
     msg_subject = "[VocabTreasury] Please confirm your email address"
-    command_for_confirming_email_address = build_command_for_confirming_email_address(
-        current_app,
-        email_address_confirmation_token,
-    )
     msg_body = f"""Dear {user.username},
 
 Thank you for creating a VocabTreasury account.
@@ -472,7 +406,16 @@ in order to be able to log in and start using VocabTreasury.
 To confirm your email address,
 launch a terminal instance and issue the following request:
 ```
-{command_for_confirming_email_address}
+curl \\
+    -i \\
+    -L \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
+        _external=True,
+    )}
 ```
 
 Sincerely,
