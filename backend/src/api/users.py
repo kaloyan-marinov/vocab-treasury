@@ -406,7 +406,7 @@ in order to be able to log in and start using VocabTreasury.
 To confirm your email address,
 launch a terminal instance and issue the following request:
 ```
-curl \\
+$ curl \\
     -i \\
     -L \\
     -H "Content-Type: application/json" \\
@@ -462,7 +462,11 @@ $ curl \\
     -H "Content-Type: application/json" \\
     -X POST \\
     -d '{{"new_password": <your-new-password>}}' \\
-    {url_for('api_blueprint.reset_password', token=password_reset_token, _external=True)}
+    {url_for(
+        'api_blueprint.reset_password',
+        token=password_reset_token,
+        _external=True,
+    )}
 ```
 When issuing that request, please remember
 (a) to replace `<your-new-password>` with your desired new password, and

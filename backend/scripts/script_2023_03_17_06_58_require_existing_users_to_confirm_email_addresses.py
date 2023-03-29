@@ -182,7 +182,7 @@ you will be unable to log in to your account.
 To perform the required confirmation,
 launch a terminal instance and issue the following request:
 ```
-curl \\
+$ curl \\
     -i \\
     -L \\
     -H "Content-Type: application/json" \\
