@@ -27,11 +27,6 @@ import time
 
 from flask import url_for
 
-import sys
-
-for p in sys.path:
-    print(p)
-
 from src import create_app
 from src.models import User
 from src.api.users import send_email
@@ -182,7 +177,7 @@ you will be unable to log in to your account.
 )
 
 To perform the required confirmation,
-launch a terminal instance and issue the following request:
+launch a terminal instance and execute the following command:
 ```
 {command_for_confirming_email_address}
 ```
