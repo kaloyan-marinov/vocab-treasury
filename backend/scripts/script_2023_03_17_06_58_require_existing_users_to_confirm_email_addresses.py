@@ -130,6 +130,7 @@ and consider them superseded
 by the information and instructions within this email message.
 
 
+
 [
 To rectify the fault described in (a) above,
 let us provide the following additional background.
@@ -156,14 +157,12 @@ your personal data has been compromised via a data breach.
 [
 To rectify the fault described in (b) above:
 
-- please disregard all previous messages
-  that you received from our email address over the last few days;
+- please disregard all earlier email messages
+  that you received from our email address;
 
 - if you wish to retain and continue using your VocabTreasury account,
   please read and act upon the instructions that are provided below.
 ]
-
-
 
 Dear {u.username},
 
@@ -204,7 +203,7 @@ We hope
 that you will confirm your email address at your earliest convenience,
 and that you will continue using VocabTreasury in the future.
 We are looking forward to bringing out new features
-that will make your language learning more enjoyable!
+that will make your language learning more effective and enjoyable!
 
 Do you have questions about the required email-address confirmation?
 Please get in touch with us by sending a message to the following email address:

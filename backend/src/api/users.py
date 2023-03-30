@@ -1,8 +1,6 @@
 import os
 import threading
 
-from typing import Optional
-
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
 
@@ -473,6 +471,7 @@ To reset your password, launch a terminal instance and issue the following reque
 ```
 $ curl \\
     -i \\
+    -L \\
     -H "Content-Type: application/json" \\
     -X POST \\
     -d '{{"new_password": <your-new-password>}}' \\
