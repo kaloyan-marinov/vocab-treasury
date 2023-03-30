@@ -438,7 +438,7 @@ The VocabTreasury Team
 PS: If you do not confirm your email address within {current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]} days of receiving this message,
 your account will be deleted.
 If your account is deleted but you do want to use VocabTreasury,
-you can still do so by simply creating a new VocabTreasury account.
+you can still use VocabTreasury by simply creating a new account.
     """
 
     send_email(

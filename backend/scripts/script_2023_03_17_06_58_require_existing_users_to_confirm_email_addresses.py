@@ -110,18 +110,24 @@ if __name__ == "__main__":
             msg_sender = app.config["ADMINS"][0]
             msg_recipients = [u.email]
 
-            msg_subject = "[VocabTreasury] Addendum to our ealier message(s)"
+            msg_subject = (
+                "[VocabTreasury] This call-to-action supersedes our ealier message(s)"
+            )
             msg_body = f"""[
 ({datetime.datetime.now().strftime('%Y/%m/%d, %H:%M:%S')} UTC) Introduction
 ]
 
-You may have received a few email messages from our email address over the last few days.
+You may have received one or several email messages from our email address
+over the last weeks.
 The title of each of those messages was 'ACTION REQUIRED: Please confirm your email address'.
 Those email messages were faulty in two aspects:
 (a) they failed to provide adequate background information, and
 (b) they instructed you to use a terminal window in order to issue an HTTP request,
     but issuing that HTTP request resulted in a failure and thus failed to achieve its intended result.
 
+Please ignore all of those earlier email messages,
+and consider them superseded
+by the information and instructions within this email message.
 
 
 [
@@ -142,7 +148,7 @@ While it is entirely up to you,
 it is _highly recommended_ that
 you visit haveibeenpwned[dot]com in your web browser
 ( or simply click on https://haveibeenpwned.com/ ),
-and go on use that website to check whether
+and go on to use that website to check whether
 your personal data has been compromised via a data breach.
     
 
