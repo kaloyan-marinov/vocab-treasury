@@ -368,6 +368,20 @@ def request_password_reset():
         r.status_code = 400
         return r
 
+    if not user.is_confirmed:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
     send_password_reset_email(user)
 
     r = jsonify(
