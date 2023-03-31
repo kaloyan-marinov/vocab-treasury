@@ -110,3 +110,20 @@ v2.3.0 (2023/03/23)
   to confirm their email addresses
 
 - require every newly-created user to confirm their email address
+
+v2.3.1 (2023/03/31)
+-------------------
+
+- update ``backend/.env.template``
+  by replacing the configuration item called ``EMAIL_ADDRESS_OF_ADMINISTRATOR``
+  with the following ones:
+  ``EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING``
+  and ``EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING``
+
+- make it impossible for a user with an unconfirmed email address
+  to request a password reset
+
+- make the
+  ``backend/scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py```
+  script sleep for a certain amount of time
+  after sending each email message

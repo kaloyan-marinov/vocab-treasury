@@ -1,3 +1,4 @@
+import os
 import threading
 
 from flask import request, jsonify, url_for, current_app
@@ -365,6 +366,20 @@ def request_password_reset():
         r.status_code = 400
         return r
 
+    if not user.is_confirmed:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
     send_password_reset_email(user)
 
     r = jsonify(
@@ -405,6 +420,7 @@ launch a terminal instance and issue the following request:
 ```
 $ curl \\
     -i \\
+    -L \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
@@ -420,7 +436,7 @@ The VocabTreasury Team
 PS: If you do not confirm your email address within {current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]} days of receiving this message,
 your account will be deleted.
 If your account is deleted but you do want to use VocabTreasury,
-you can still do so by simply creating a new VocabTreasury account.
+you can still use VocabTreasury by simply creating a new account.
     """
 
     send_email(
@@ -455,10 +471,15 @@ To reset your password, launch a terminal instance and issue the following reque
 ```
 $ curl \\
     -i \\
+    -L \\
     -H "Content-Type: application/json" \\
     -X POST \\
     -d '{{"new_password": <your-new-password>}}' \\
-    {url_for('api_blueprint.reset_password', token=password_reset_token, _external=True)}
+    {url_for(
+        'api_blueprint.reset_password',
+        token=password_reset_token,
+        _external=True,
+    )}
 ```
 When issuing that request, please remember
 (a) to replace `<your-new-password>` with your desired new password, and

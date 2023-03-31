@@ -15,11 +15,16 @@ The following steps describe how to use this script:
   ```
   (venv) backend $ PYTHONPATH=. \
     python \
-    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py
+    scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py \
+        --time-to-sleep=5
   ```
 """
 
+import argparse
+import datetime
 import logging
+import os
+import time
 
 from flask import url_for
 
@@ -42,9 +47,36 @@ logger.addHandler(handler_1)
 
 
 if __name__ == "__main__":
-    app = create_app(
-        name_of_configuration="production",
+    arg_parser = argparse.ArgumentParser(
+        __name__,
     )
+    arg_parser.add_argument(
+        "-t",
+        "--time-to-sleep",
+        required=True,
+        type=int,
+        help=(
+            "Indicates the number of seconds that"
+            " this script should sleep for after having sent an/each email message."
+            " Must be >= 5."
+        ),
+    )
+
+    args = arg_parser.parse_args()
+    logger.debug("args.time_to_sleep = %s", args.time_to_sleep)
+
+    if args.time_to_sleep < 5:
+        raise ValueError(
+            "The value provided to '--time-to-sleep' must be >= 5;"
+            f" found '{args.time_to_sleep}' - crashing..."
+        )
+
+    CONFIGURATION_4_BACKEND = os.environ.get("CONFIGURATION_4_BACKEND")
+    app = create_app(
+        name_of_configuration=CONFIGURATION_4_BACKEND,
+    )
+    if CONFIGURATION_4_BACKEND == "development":
+        app.config["SERVER_NAME"] = "localhost:5000"
 
     with app.app_context():
         users = User.query.all()
@@ -79,9 +111,63 @@ if __name__ == "__main__":
             msg_recipients = [u.email]
 
             msg_subject = (
-                "[VocabTreasury] ACTION REQUIRED: Please confirm your email address"
+                "[VocabTreasury] This call-to-action supersedes our ealier message(s)"
             )
-            msg_body = f"""Dear {u.username},
+            msg_body = f"""[
+({datetime.datetime.now().strftime('%Y/%m/%d, %H:%M:%S')} UTC) Introduction
+]
+
+You may have received one or several email messages from our email address
+over the last weeks.
+The title of each of those messages was
+'[VocabTreasury] ACTION REQUIRED: Please confirm your email address'.
+Those email messages were faulty in two aspects:
+(a) they failed to provide adequate background information, and
+(b) they instructed you to use a terminal window in order to issue an HTTP request,
+    but issuing that HTTP request resulted in a failure
+    and thus did not achieve the intended result.
+
+Please ignore all of those earlier email messages,
+and consider them superseded
+by the information and instructions within this email message.
+
+
+
+[
+To rectify the fault described in (a) above,
+let us provide the following additional background.
+]
+
+If you do not wish to continue using your VocabTreasury account,
+then you do not need to do anything;
+_both_ your account _and_ all your data stored therein will be deleted.
+
+If you do not remember creating a VocabTreasury account,
+then it is actually possible that
+somebody else created an account using your email address.
+That could mean that
+somebody has obtained and used your email address
+without your permission or consent.
+One way that could have happened is via a data breach.
+While it is entirely up to you,
+it is _highly recommended_ that
+you visit haveibeenpwned[dot]com in your web browser,
+and go on to use that website to check whether
+your personal data has been compromised via a data breach.
+    
+
+
+[
+To rectify the fault described in (b) above:
+
+- please disregard all earlier email messages
+  that you received from our email address;
+
+- if you wish to retain and continue using your VocabTreasury account,
+  please read and act upon the instructions that are provided below.
+]
+
+Dear {u.username},
 
 Thank you for using VocabTreasury.
 We hope you have found that both helpful and enjoyable.
@@ -106,25 +192,25 @@ launch a terminal instance and issue the following request:
 ```
 $ curl \\
     -i \\
+    -L \\
     -H "Content-Type: application/json" \\
     -X POST \\
     {url_for(
         'api_blueprint.confirm_email_address',
         token=email_address_confirmation_token,
         _external=True,
-        _scheme='https',
     )}
 ```
 
-We hope
-that you will confirm your email address at your earliest convenience,
-and that you will continue using VocabTreasury in the future.
+We hope that
+you will confirm your email address at your earliest convenience, and that
+you will continue using VocabTreasury in the future.
 We are looking forward to bringing out new features
-that will make your language learning more enjoyable!
+that will make your language learning more effective and enjoyable!
 
 Do you have questions about the required email-address confirmation?
 Please get in touch with us by sending a message to the following email address:
-{app.config['ADMINS'][0]}
+{app.config['EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING']}
 
 Sincerely,
 The VocabTreasury Team
@@ -142,3 +228,5 @@ it will be impossible to recover them.
                 msg_subject,
                 msg_body,
             )
+
+            time.sleep(args.time_to_sleep)

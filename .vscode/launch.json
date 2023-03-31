@@ -28,6 +28,22 @@
       },
       "jinja": true,
       "justMyCode": false
-    }
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "env": {
+        "CONFIGURATION_4_BACKEND": "development",
+        "PYTHONPATH": "."
+      },
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${file}",
+      "args": [
+        "--time-to-sleep", "5"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
   ]
 }
