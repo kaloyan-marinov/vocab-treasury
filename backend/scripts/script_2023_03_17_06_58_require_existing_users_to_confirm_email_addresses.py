@@ -119,11 +119,13 @@ if __name__ == "__main__":
 
 You may have received one or several email messages from our email address
 over the last weeks.
-The title of each of those messages was 'ACTION REQUIRED: Please confirm your email address'.
+The title of each of those messages was
+'[VocabTreasury] ACTION REQUIRED: Please confirm your email address'.
 Those email messages were faulty in two aspects:
 (a) they failed to provide adequate background information, and
 (b) they instructed you to use a terminal window in order to issue an HTTP request,
-    but issuing that HTTP request resulted in a failure and thus failed to achieve its intended result.
+    but issuing that HTTP request resulted in a failure
+    and thus did not achieve the intended result.
 
 Please ignore all of those earlier email messages,
 and consider them superseded
@@ -140,15 +142,16 @@ If you do not wish to continue using your VocabTreasury account,
 then you do not need to do anything;
 _both_ your account _and_ all your data stored therein will be deleted.
 
-If you do not even remember creating a VocabTreasury account,
-then it is actually possible that somebody else created an account using your email address.
+If you do not remember creating a VocabTreasury account,
+then it is actually possible that
+somebody else created an account using your email address.
 That could mean that
-somebody has obtained and used your email address without your permission or consent.
+somebody has obtained and used your email address
+without your permission or consent.
 One way that could have happened is via a data breach.
 While it is entirely up to you,
 it is _highly recommended_ that
-you visit haveibeenpwned[dot]com in your web browser
-( or simply click on https://haveibeenpwned.com/ ),
+you visit haveibeenpwned[dot]com in your web browser,
 and go on to use that website to check whether
 your personal data has been compromised via a data breach.
     
@@ -199,9 +202,9 @@ $ curl \\
     )}
 ```
 
-We hope
-that you will confirm your email address at your earliest convenience,
-and that you will continue using VocabTreasury in the future.
+We hope that
+you will confirm your email address at your earliest convenience, and that
+you will continue using VocabTreasury in the future.
 We are looking forward to bringing out new features
 that will make your language learning more effective and enjoyable!
 
