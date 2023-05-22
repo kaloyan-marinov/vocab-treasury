@@ -678,7 +678,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         self.data_str = json.dumps(self.data)
         super().setUp()
 
-    def test_1_missing_basic_auth(self):
+    def test_01_missing_basic_auth(self):
         """
         Ensure that it is impossible to edit a User resource
         without providing Basic Auth credentials.
@@ -728,7 +728,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_email_address(self):
+    def test_02_unconfirmed_email_address(self):
         """
         Ensure that, if a `User`
             (a) provides valid authentication,
@@ -773,7 +773,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
-    def test_3_missing_content_type(self):
+    def test_03_missing_content_type(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         without providing a 'Content-Type: application/json' header.
@@ -844,7 +844,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_4_prevent_editing_of_another_user(self):
+    def test_04_prevent_editing_of_another_user(self):
         """
         Ensure that it is impossible to edit a confirmed User resource,
         which does not correspond to
@@ -966,11 +966,70 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user_3.password_hash, "789"),
         )
 
-    def test_5_prevent_editing_of_email(self):
+    def test_05_prevent_editing_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
-        is unable to edit the email address associated with his/her User resource.
+        is unable to edit _both_ the email address _and_ the username and/or password
+        associated with his/her corresponding `User` resource.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_email_address=True,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+
+        data = {
+            "email": "JOHN.DOE@PROTONMAIL.COM",
+            "username": "JD",
+        }
+        data_str = json.dumps(data)
+
+        rv = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=data_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "You are not allowed to edit _both_ your email address _and_ your "
+                    "username and/or password with a single request to this endpoint. "
+                    "To achieve that effect, you have to issue two separate requests "
+                    "to this endpoint."
+                ),
+            },
+        )
+
+    def test_06_edit_email_of_authenticated_user(self):
+        """
+        Ensure that the user,
+        who has been confirmed and is authenticated by the issued request's header,
+        is able to edit the email address
+        assocaited with his/her corresponding `User` resource.
         """
 
         # Arrange.
@@ -1008,24 +1067,23 @@ class Test_05_EditUser(TestBasePlusUtilities):
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
 
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 202)
         self.assertEqual(
             body,
             {
-                "error": "Bad Request",
                 "message": (
-                    "Currently, it is not possible"
-                    " to edit the email address associated with your User resource."
-                    " But it is planned to implement that feature in the future."
+                    "Please check the inbox of your new email address for instructions"
+                    " on how to confirm that address..."
                 ),
             },
         )
 
-    def test_6_edit_the_authenticated_user(self):
+    def test_07_edit_username_and_password_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
-        is able to edit his/her corresponding User resource.
+        is able to edit the username and password
+        assocaited with his/her corresponding `User` resource.
         """
 
         # Arrange.
@@ -1083,7 +1141,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
-    def test_7_prevent_duplication_of_emails(self):
+    def test_08_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that it would end up having the same email as another User resource
@@ -1163,7 +1221,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_8_incorrect_basic_auth(self):
+    def test_09_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
@@ -1224,7 +1282,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_9_prevent_duplication_of_usernames(self):
+    def test_10_prevent_duplication_of_usernames(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that two different User resources would end up having the same username

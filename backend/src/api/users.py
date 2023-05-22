@@ -529,7 +529,7 @@ then simply ignore this email message and your password will remain unchanged.
         msg_sender,
         msg_recipients,
         msg_subject,
-        body=msg_body,
+        msg_body,
     )
 
 
