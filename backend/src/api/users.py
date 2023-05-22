@@ -7,7 +7,7 @@ from flask_mail import Message
 import sqlalchemy
 
 from src import db, flsk_bcrpt, mail
-from src.models import User
+from src.models import User, EmailAddressChange
 from src.auth import basic_auth, token_auth, validate_token
 from src.api import api_bp
 from src.constants import EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET
@@ -92,6 +92,9 @@ def create_user():
 
 @api_bp.route("/confirm-email-address/<token>", methods=["POST"])
 def confirm_email_address(token):
+    # TODO: (2023/05/22, 05:50)
+    #       write a test case that fails,
+    #       indicating the need to enhance this request-handling function
     reject_token, response_or_token_payload = validate_token(
         token, EMAIL_ADDRESS_CONFIRMATION
     )
@@ -191,6 +194,12 @@ def get_user_profile():
 @api_bp.route("/users/<int:user_id>", methods=["PUT"])
 @basic_auth.login_required
 def edit_user(user_id):
+    # TODO: (2023/05/22, 05:29)
+    #       before submitting a pull request for review,
+    #       consider extracting the following code-block
+    #       into a stand-alone utility function
+    #       (which should be able to utilize not only within this module
+    #       but also within `examples.py`)
     if not request.json:
         r = jsonify(
             {
@@ -204,7 +213,8 @@ def edit_user(user_id):
         r.status_code = 400
         return r
 
-    if basic_auth.current_user().id != user_id:
+    curr_user = basic_auth.current_user()
+    if curr_user.id != user_id:
         r = jsonify(
             {
                 "error": "Forbidden",
@@ -220,45 +230,69 @@ def edit_user(user_id):
     username = request.json.get("username")
     password = request.json.get("password")
     email = request.json.get("email")
-
-    if email is not None:
-        # TODO: (2023/03/10, 08:41)
-        #       resolve v-t-i-66
-        #       :=
-        #       require the user to confirm the new email address
-        #       before it actually becomes their _active_ email address
-        #       (from the perspective of the backend application)
-        # fmt: off
-        '''
-        if User.query.filter_by(email=email).first() is not None:
-            r = jsonify(
-                {
-                    "error": "Bad Request",
-                    "message": (
-                        "There already exists a User resource with the same email as"
-                        " the one you provided."
-                    ),
-                }
-            )
-            r.status_code = 400
-            return r
-        '''
-        # fmt: on
+    if (username is not None or password is not None) and (email is not None):
         r = jsonify(
             {
                 "error": "Bad Request",
                 "message": (
-                    "Currently, it is not possible"
-                    " to edit the email address associated with your User resource."
-                    " But it is planned to implement that feature in the future."
+                    "You are not allowed to edit _both_ your email address"
+                    " _and_ your username and/or password"
+                    " with a single request to this endpoint."
+                    " To achieve that effect,"
+                    " you have to issue two separate requests to this endpoint."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+    elif email is not None:
+        return _edit_email_address(curr_user, email)
+    else:
+        return _edit_username_and_or_password(curr_user, username, password)
+
+
+def _edit_email_address(user, new_email_address):
+    if User.query.filter_by(email=new_email_address).first() is not None:
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    "There already exists a User resource with the same email as"
+                    " the one you provided."
                 ),
             }
         )
         r.status_code = 400
         return r
 
-    if username is not None:
-        if User.query.filter_by(username=username).first() is not None:
+    e_a_c = EmailAddressChange(
+        user_id=user.id,
+        old=basic_auth.current_user().email,
+        new=new_email_address,
+    )
+    db.session.add(e_a_c)
+    db.session.commit()
+
+    send_email_requesting_that_change_of_email_address_should_be_confirmed(
+        user,
+        new_email_address,
+    )
+
+    r = jsonify(
+        {
+            "message": (
+                "Please check the inbox of your new email address for instructions"
+                " on how to confirm that address..."
+            ),
+        }
+    )
+    r.status_code = 202
+    return r
+
+
+def _edit_username_and_or_password(user, new_username, new_password):
+    if new_username is not None:
+        if User.query.filter_by(username=new_username).first() is not None:
             r = jsonify(
                 {
                     "error": "Bad Request",
@@ -271,25 +305,18 @@ def edit_user(user_id):
             r.status_code = 400
             return r
 
-    u = User.query.get(user_id)
-    if username is not None:
-        u.username = username
-    # fmt: off
-    # The following code-block is commented out, because it is unreachable.
-    # Its unreachability is due to
-    # the statements within the body of the preceding `if email is not None` statement.
-    '''
-    if email is not None:
-        u.email = email
-    '''
-    # fmt: on
-    if password is not None:
-        u.password_hash = flsk_bcrpt.generate_password_hash(password).decode("utf-8")
+    if new_username is not None:
+        user.username = new_username
 
-    db.session.add(u)
+    if new_password is not None:
+        user.password_hash = flsk_bcrpt.generate_password_hash(new_password).decode(
+            "utf-8"
+        )
+
+    db.session.add(user)
     db.session.commit()
 
-    return u.to_dict()
+    return user.to_dict()
 
 
 @api_bp.route("/users/<int:user_id>", methods=["DELETE"])
@@ -503,6 +530,59 @@ then simply ignore this email message and your password will remain unchanged.
         msg_recipients,
         msg_subject,
         body=msg_body,
+    )
+
+
+def send_email_requesting_that_change_of_email_address_should_be_confirmed(
+    user,
+    new_email_address,
+):
+    token_payload = {
+        "purpose": EMAIL_ADDRESS_CONFIRMATION,
+        "user_id": user.id,
+    }
+    email_address_confirmation_token = (
+        current_app.token_serializer_for_email_address_confirmation.dumps(
+            token_payload
+        ).decode("utf-8")
+    )
+
+    msg_sender = current_app.config["ADMINS"][0]
+    msg_recipients = [new_email_address]
+
+    msg_subject = "[VocabTreasury] Please confirm your new email address"
+    msg_body = f"""Dear {user.username},
+
+You have requested that
+the email address associated with your VocabTreasury account should be edited.
+
+In order for your (account-editing) request to be processed,
+launch a terminal instance and issue the following (HTTP) request:
+```
+$ curl \\
+    -i \\
+    -L \\
+    -H "Content-Type: application/json" \\
+    -X POST \\
+    {url_for(
+        'api_blueprint.confirm_email_address',
+        token=email_address_confirmation_token,
+        _external=True,
+    )}
+```
+
+Sincerely,
+The VocabTreasury Team
+
+PS: If you do not follow the instructions within this message,
+the email address associated with your VocabTreasury account will remain unchanged.
+    """
+
+    send_email(
+        msg_sender,
+        msg_recipients,
+        msg_subject,
+        msg_body,
     )
 
 
