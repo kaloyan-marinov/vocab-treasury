@@ -116,3 +116,6 @@ class EmailAddressChange(db.Model):
         nullable=False,
         default=datetime.datetime.utcnow,
     )
+
+    def __repr__(self):
+        return f"EmailAddressChange({self.id})"

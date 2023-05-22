@@ -986,50 +986,73 @@ class Test_05_EditUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        # Act.
-        basic_auth_credentials = f"{email}:{password}"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Basic " + b_a_c
-
-        data = {
-            "email": "JOHN.DOE@PROTONMAIL.COM",
-            "username": "JD",
-        }
-        data_str = json.dumps(data)
-
-        rv = self.client.put(
-            f"/api/users/{u_r.id}",
-            data=data_str,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-
-        # Assert.
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
+        for data in (
             {
-                "error": "Bad Request",
-                "message": (
-                    "You are not allowed to edit _both_ your email address _and_ your "
-                    "username and/or password with a single request to this endpoint. "
-                    "To achieve that effect, you have to issue two separate requests "
-                    "to this endpoint."
-                ),
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "username": "JD",
             },
-        )
+            {
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "password": "abc",
+            },
+            {
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "username": "JD",
+                "password": "abc",
+            },
+        ):
+            with self.subTest():
+                # Act.
+                basic_auth_credentials = f"{email}:{password}"
+                b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode(
+                    "utf-8"
+                )
+                authorization = "Basic " + b_a_c
+
+                data_str = json.dumps(data)
+
+                rv = self.client.put(
+                    f"/api/users/{u_r.id}",
+                    data=data_str,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": authorization,
+                    },
+                )
+
+                # Assert.
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Bad Request",
+                        "message": (
+                            "You are not allowed to edit _both_ your email address _and_ your "
+                            "username and/or password with a single request to this endpoint. "
+                            "To achieve that effect, you have to issue two separate requests "
+                            "to this endpoint."
+                        ),
+                    },
+                )
+
+                # (Reach directly into the application's persistence layer to)
+                # Ensure that the User resource, which was targeted, did not get edited.
+                user = User.query.get(u_r.id)
+                self.assertEqual(user.username, u_r.username)
+                self.assertTrue(
+                    flsk_bcrpt.check_password_hash(user.password_hash, u_r.password),
+                )
+                self.assertEqual(user.email, u_r.email)
 
     def test_06_edit_email_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
         is able to edit the email address
-        assocaited with his/her corresponding `User` resource.
+        associated with his/her corresponding `User` resource.
         """
 
         # Arrange.
@@ -1078,12 +1101,17 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the User resource, which was targeted, did not get edited yet.
+        user = User.query.get(u_r.id)
+        self.assertEqual(user.email, u_r.email)
+
     def test_07_edit_username_and_password_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
         is able to edit the username and password
-        assocaited with his/her corresponding `User` resource.
+        associated with his/her corresponding `User` resource.
         """
 
         # Arrange.
