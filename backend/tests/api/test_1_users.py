@@ -678,6 +678,18 @@ class Test_05_EditUser(TestBasePlusUtilities):
         self.data_str = json.dumps(self.data)
         super().setUp()
 
+    def _issue_valid_email_address_confirmation_token(self, user_id):
+        token_payload = {
+            "purpose": EMAIL_ADDRESS_CONFIRMATION,
+            "user_id": user_id,
+        }
+        valid_token_correct_purpose = (
+            self.app.token_serializer_for_email_address_confirmation.dumps(
+                token_payload
+            ).decode("utf-8")
+        )
+        return valid_token_correct_purpose
+
     def test_01_missing_basic_auth(self):
         """
         Ensure that it is impossible to edit a User resource
@@ -1105,6 +1117,23 @@ class Test_05_EditUser(TestBasePlusUtilities):
         # Ensure that the User resource, which was targeted, did not get edited yet.
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, u_r.email)
+
+        # Act.
+        valid_token_correct_purpose = (
+            self._issue_valid_email_address_confirmation_token(u_r.id)
+        )
+
+        rv = self.client.post(
+            f"/api/confirm-email-address/{valid_token_correct_purpose}"
+        )
+
+        # Assert.
+        self.assertEqual(rv.status_code, 200)
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that the User resource, which was targeted, got edited successfully.
+        user = User.query.get(u_r.id)
+        self.assertEqual(user.email, data["email"])
 
     def test_07_edit_username_and_password_of_authenticated_user(self):
         """

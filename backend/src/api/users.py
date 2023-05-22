@@ -92,9 +92,6 @@ def create_user():
 
 @api_bp.route("/confirm-email-address/<token>", methods=["POST"])
 def confirm_email_address(token):
-    # TODO: (2023/05/22, 05:50)
-    #       write a test case that fails,
-    #       indicating the need to enhance this request-handling function
     reject_token, response_or_token_payload = validate_token(
         token, EMAIL_ADDRESS_CONFIRMATION
     )
