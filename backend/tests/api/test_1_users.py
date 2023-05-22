@@ -1083,10 +1083,6 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
-    @unittest.skip(
-        "as long as the 'TODO: (2023/03/10, 08:41)' has not been handled,"
-        " this test case has to be skipped"
-    )
     def test_7_prevent_duplication_of_emails(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
