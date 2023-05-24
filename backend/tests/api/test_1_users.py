@@ -1,12 +1,12 @@
 import json
 from unittest.mock import patch
 import base64
-import unittest
 
 from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
+from flask_sqlalchemy import BaseQuery
 
-from src import flsk_bcrpt, User
+from src import flsk_bcrpt, User, EmailAddressChange
 from tests import TestBase, TestBasePlusUtilities, UserResource
 from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
 from src.auth import validate_token
@@ -1281,7 +1281,75 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_09_incorrect_basic_auth(self):
+    def test_09_consecutive_email_edits(self):
+        """
+        Ensure that, if a confirmed user
+            (1) requests an email change,
+            (2) does not follow the instructions in the message from (1),
+            (3) requests another email change,
+        then no trace of (1) will remain in the application's persistence layer.
+        """
+
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_email_address=True,
+        )
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Bearer " + b_a_c
+
+        data_1 = {
+            "email": "john.doe.1@protonmail.com",
+        }
+        data_1_str = json.dumps(data_1)
+
+        rv_1 = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=data_1_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_1.status_code, 202)
+
+        data_2 = {"email": "john.doe.2@protonmail.com"}
+        data_2_str = json.dumps(data_2)
+
+        rv_2 = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=data_2_str,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_2.status_code, 202)
+
+        # Assert.
+        user = User.query.get(u_r.id)
+        self.assertEqual(user.email, u_r.email)
+
+        email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
+            user_id=u_r.id
+        )
+
+        num_of_email_address_changes = email_address_changes.count()
+        self.assertEqual(num_of_email_address_changes, 1)
+
+        e_a_c = email_address_changes.first()
+        self.assertEqual(e_a_c.new, data_2["email"])
+
+    def test_10_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
@@ -1300,7 +1368,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         # Act.
-        basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
+        basic_auth_credentials = f"{email}:something-different-from-{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
@@ -1342,7 +1410,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_10_prevent_duplication_of_usernames(self):
+    def test_11_prevent_duplication_of_usernames(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that two different User resources would end up having the same username
