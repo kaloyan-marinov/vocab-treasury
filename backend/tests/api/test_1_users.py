@@ -387,7 +387,6 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
             self.username,
             self.email,
             self.password,
-            should_confirm_email_address=True,
         )
 
         valid_token_correct_purpose = (
