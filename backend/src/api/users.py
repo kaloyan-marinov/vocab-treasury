@@ -92,6 +92,14 @@ def create_user():
 
 @api_bp.route("/confirm-email-address/<token>", methods=["POST"])
 def confirm_email_address(token):
+    """
+    Handle an email-address confirmation
+    either from a newly-registered user
+    whose email address on record has not yet been confirmed,
+    or from an existing user
+    whose email address on record has been confirmed
+    but who wishes to change their email address on record.
+    """
     reject_token, response_or_token_payload = validate_token(
         token, EMAIL_ADDRESS_CONFIRMATION
     )
@@ -115,7 +123,21 @@ def confirm_email_address(token):
     user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
 
-    user.is_confirmed = True
+    if user.is_confirmed is False:
+        # This is the case where `user` is a newly-registered user
+        # whose email address on record has not yet been confirmed.
+        user.is_confirmed = True
+    else:
+        # This is the case where `user` is an existing user
+        # whose email address on record has been confirmed
+        # but who wishes to change their email address on record.
+        e_a_c = (
+            EmailAddressChange.query.filter_by(user_id=user.id)
+            .order_by(EmailAddressChange.id.desc())
+            .first()
+        )
+        assert user.email == e_a_c.old
+        user.email = e_a_c.new
     db.session.add(user)
     db.session.commit()
 
@@ -262,6 +284,9 @@ def _edit_email_address(user, new_email_address):
         r.status_code = 400
         return r
 
+    # TODO: (2023/05/24, 06:11)
+    #       prevent a 2nd `EmailAddressChange` object from being created
+    #       before the previous one has been confirmed
     e_a_c = EmailAddressChange(
         user_id=user.id,
         old=basic_auth.current_user().email,

@@ -748,7 +748,11 @@ class Test_05_EditUser(TestBasePlusUtilities):
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
-
+        # TODO: (2023/05/24, 06:40)
+        #       write another test case that
+        #       is similar to this one
+        #       but attempts to edit the email address
+        #       and asserts that no `EmailAddressChange` object has been created.
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
