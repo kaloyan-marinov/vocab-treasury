@@ -1302,19 +1302,21 @@ class Test_05_EditUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        data_1 = {
+            "email": "john.doe.1@protonmail.com",
+        }
+        data_2 = {
+            "email": "john.doe.2@protonmail.com",
+        }
+
         # Act.
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Bearer " + b_a_c
 
-        data_1 = {
-            "email": "john.doe.1@protonmail.com",
-        }
-        data_1_str = json.dumps(data_1)
-
         rv_1 = self.client.put(
             f"/api/users/{u_r.id}",
-            data=data_1_str,
+            data=json.dumps(data_1),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": authorization,
@@ -1322,12 +1324,9 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
         self.assertEqual(rv_1.status_code, 202)
 
-        data_2 = {"email": "john.doe.2@protonmail.com"}
-        data_2_str = json.dumps(data_2)
-
         rv_2 = self.client.put(
             f"/api/users/{u_r.id}",
-            data=data_2_str,
+            data=json.dumps(data_2),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": authorization,
@@ -1349,7 +1348,86 @@ class Test_05_EditUser(TestBasePlusUtilities):
         e_a_c = email_address_changes.first()
         self.assertEqual(e_a_c.new, data_2["email"])
 
-    def test_10_incorrect_basic_auth(self):
+    def test_10_consecutive_email_edits(self):
+        """
+        Ensure that, if a confirmed user
+            (1) requests an email change,
+            (2) does not follow the instructions in the message from (1),
+            (3) requests another email change,
+            (4) follows the instructions in the message from (1),
+        then their email address on record will not get edited
+        in the application's persistence layer.
+        """
+        # TODO: (2023/05/25, 07:17)
+        #       (a) consolidate "# Arrange. (part 1)" and "# Arrange. (part 2)"
+        #       (b) think about simplifying the mocking that is done in this test case
+        # Arrange. (part 1)
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_email_address=True,
+        )
+
+        data_1 = {
+            "email": "john.doe.1@protonmail.com",
+        }
+        data_2 = {
+            "email": "john.doe.2@protonmail.com",
+        }
+
+        token_1 = self._issue_valid_email_address_confirmation_token(u_r.id)
+        token_2 = self._issue_valid_email_address_confirmation_token(u_r.id)
+
+        # Arrange. (part 2)
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Bearer " + b_a_c
+
+        with patch(
+            "src.TimedJSONWebSignatureSerializer.dumps",
+        ) as serializer_dumps_mock:
+            serializer_dumps_mock.return_value = token_1.encode("utf-8")
+
+            rv_1 = self.client.put(
+                f"/api/users/{u_r.id}",
+                data=json.dumps(data_1),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
+            )
+            self.assertEqual(rv_1.status_code, 202)
+
+        with patch(
+            "src.TimedJSONWebSignatureSerializer.dumps",
+        ) as serializer_dumps_mock:
+            serializer_dumps_mock.return_value = token_2.encode("utf-8")
+
+            rv_2 = self.client.put(
+                f"/api/users/{u_r.id}",
+                data=json.dumps(data_2),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
+            )
+            self.assertEqual(rv_2.status_code, 202)
+
+        # Act.
+        rv = self.client.post(f"/api/confirm-email-address/{token_1}")
+
+        # Assert.
+        user = User.query.get(u_r.id)
+        self.assertEqual(user.email, u_r.email)
+
+        self.assertEqual(rv.status_code, 401)
+
+    def test_11_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
@@ -1410,7 +1488,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_11_prevent_duplication_of_usernames(self):
+    def test_12_prevent_duplication_of_usernames(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that two different User resources would end up having the same username

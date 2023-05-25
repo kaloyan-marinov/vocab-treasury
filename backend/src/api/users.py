@@ -131,12 +131,6 @@ def confirm_email_address(token):
         # This is the case where `user` is an existing user
         # whose email address on record has been confirmed
         # but who wishes to change their email address on record.
-        # TODO: (2023/05/24, 07:17)
-        #       fix the following bug:
-        #           1) a confirmed user requests an email change
-        #           2) the same user requests another email change
-        #           3) the same user follows the instructions in the message from 1)
-        #              which updates their email address on record to the one from 2)
         e_a_c = (
             EmailAddressChange.query.filter_by(user_id=user.id)
             .order_by(EmailAddressChange.id.desc())
