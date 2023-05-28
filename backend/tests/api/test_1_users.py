@@ -1127,7 +1127,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
 
         # Act.
         valid_token_correct_purpose = (
-            self._issue_valid_email_address_confirmation_token(u_r.id)
+            self._issue_valid_email_address_confirmation_token(
+                u_r.id,
+                email_address_change_id=1,
+            )
         )
 
         rv = self.client.post(
@@ -1294,7 +1297,6 @@ class Test_05_EditUser(TestBasePlusUtilities):
         then no trace of (1) will remain in the application's persistence layer.
         """
         # TODO: (2023/05/26, 08:17)
-        #       (a) get `test_06_edit_email_of_authenticated_user` to PASS
         #
         #       (b) restore this test case to a PASSing state
         #           - and update its docstring!
