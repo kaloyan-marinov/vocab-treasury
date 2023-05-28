@@ -131,30 +131,37 @@ def confirm_email_address(token):
         # This is the case where `user` is an existing user
         # whose email address on record has been confirmed
         # but who wishes to change their email address on record.
-        e_a_c = (
-            EmailAddressChange.query.filter_by(user_id=user.id)
-            .order_by(EmailAddressChange.id.desc())
-            .first()
+        initiated_email_address_changes = EmailAddressChange.query.filter_by(
+            user_id=user.id,
+            old=user.email,
         )
-        if response_or_token_payload["email_address_change_id"] != e_a_c.id:
+
+        most_recent_e_a_c = initiated_email_address_changes.order_by(
+            EmailAddressChange.id.desc()
+        ).first()
+        if response_or_token_payload["email_address_change_id"] != most_recent_e_a_c.id:
             r = jsonify(
                 {
                     "error": "Unauthorized",
                     "message": (
-                        "You have submitted multiple consecutive requests for"
-                        " the email address associated with your account to be edited,"
-                        " without following up on the instructions that you received"
-                        " for any of those requests;"
+                        "You have initiated a request,"
+                        " or several consecutive such requests,"
+                        " for editing the email address associated with your account;"
                         " you may only follow up on the instructions"
-                        " that you received for the most recent request."
+                        " that you received for the most recently initiated request."
                     ),
                 }
             )
             r.status_code = 401
             return r
-        assert user.email == e_a_c.old
-        user.email = e_a_c.new
-    db.session.add(user)
+
+        assert user.email == most_recent_e_a_c.old
+        user.email = most_recent_e_a_c.new
+        db.session.add(user)
+
+        initiated_email_address_changes.filter(
+            EmailAddressChange.id != most_recent_e_a_c.id
+        ).delete()
     db.session.commit()
 
     r = jsonify(

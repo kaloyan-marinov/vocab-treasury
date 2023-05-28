@@ -1294,12 +1294,12 @@ class Test_05_EditUser(TestBasePlusUtilities):
             (1) requests an email change,
             (2) does not follow the instructions in the message from (1),
             (3) requests another email change,
-        then no trace of (1) will remain in the application's persistence layer.
+            (4) follows the instructions in the message from (2),
+        then, in the application's persistence layer,
+        the email address on record (for the user in question) will get edited
+        but no trace of (1) will remain.
         """
         # TODO: (2023/05/26, 08:17)
-        #
-        #       (b) restore this test case to a PASSing state
-        #           - and update its docstring!
         #
         #       (c) split the "email-address-related" test cases
         #           introduced in this feature branch
@@ -1314,7 +1314,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         #           _and_
         #           whose instruction(-set)s were not followed up on
 
-        # Arrange.
+        # Arrange. (part 1)
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -1333,7 +1333,11 @@ class Test_05_EditUser(TestBasePlusUtilities):
             "email": "john.doe.2@protonmail.com",
         }
 
-        # Act.
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
+        )
+
+        # Arrange. (part 2)
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Bearer " + b_a_c
@@ -1358,20 +1362,22 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
         self.assertEqual(rv_2.status_code, 202)
 
+        # Act.
+        rv = self.client.post(f"/api/confirm-email-address/{token_2}")
+
         # Assert.
         user = User.query.get(u_r.id)
-        self.assertEqual(user.email, u_r.email)
+        self.assertEqual(user.email, data_2["email"])
 
         email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
             user_id=u_r.id
         )
 
-        self.assertEqual(2 + 2, 1)
-
         num_of_email_address_changes = email_address_changes.count()
         self.assertEqual(num_of_email_address_changes, 1)
 
         e_a_c = email_address_changes.first()
+        self.assertEqual(e_a_c.id, 2)
         self.assertEqual(e_a_c.new, data_2["email"])
 
     def test_10_consecutive_email_edits(self):
