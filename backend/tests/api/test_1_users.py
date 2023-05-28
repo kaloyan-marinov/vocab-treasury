@@ -677,11 +677,15 @@ class Test_05_EditUser(TestBasePlusUtilities):
         self.data_str = json.dumps(self.data)
         super().setUp()
 
-    def _issue_valid_email_address_confirmation_token(self, user_id):
+    def _issue_valid_email_address_confirmation_token(
+        self, user_id, email_address_change_id=None
+    ):
         token_payload = {
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
+        if email_address_change_id is not None:
+            token_payload["email_address_change_id"] = email_address_change_id
         valid_token_correct_purpose = (
             self.app.token_serializer_for_email_address_confirmation.dumps(
                 token_payload
@@ -1289,6 +1293,24 @@ class Test_05_EditUser(TestBasePlusUtilities):
             (3) requests another email change,
         then no trace of (1) will remain in the application's persistence layer.
         """
+        # TODO: (2023/05/26, 08:17)
+        #       (a) get `test_06_edit_email_of_authenticated_user` to PASS
+        #
+        #       (b) restore this test case to a PASSing state
+        #           - and update its docstring!
+        #
+        #       (c) split the "email-address-related" test cases
+        #           introduced in this feature branch
+        #           off into their own `test_2_users_emails.py` module
+        #
+        #       (d) write a "sibling" test to `test_10_consecutive_email_edits`
+        #           but provide `token_2` in the "sibling" test
+        #           +
+        #           enhance the handler for `POST /confirm-email-address/<token>` requests
+        #           so as to purge/delete all `EmailChangeRequest`s
+        #           whose `old` attributes have the same value
+        #           _and_
+        #           whose instruction(-set)s were not followed up on
 
         # Arrange.
         username = "jd"
@@ -1342,6 +1364,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
             user_id=u_r.id
         )
 
+        self.assertEqual(2 + 2, 1)
+
         num_of_email_address_changes = email_address_changes.count()
         self.assertEqual(num_of_email_address_changes, 1)
 
@@ -1380,8 +1404,12 @@ class Test_05_EditUser(TestBasePlusUtilities):
             "email": "john.doe.2@protonmail.com",
         }
 
-        token_1 = self._issue_valid_email_address_confirmation_token(u_r.id)
-        token_2 = self._issue_valid_email_address_confirmation_token(u_r.id)
+        token_1 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=1
+        )
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
+        )
 
         # Arrange. (part 2)
         basic_auth_credentials = f"{email}:{password}"

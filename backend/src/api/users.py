@@ -136,6 +136,22 @@ def confirm_email_address(token):
             .order_by(EmailAddressChange.id.desc())
             .first()
         )
+        if response_or_token_payload["email_address_change_id"] != e_a_c.id:
+            r = jsonify(
+                {
+                    "error": "Unauthorized",
+                    "message": (
+                        "You have submitted multiple consecutive requests for"
+                        " the email address associated with your account to be edited,"
+                        " without following up on the instructions that you received"
+                        " for any of those requests;"
+                        " you may only follow up on the instructions"
+                        " that you received for the most recent request."
+                    ),
+                }
+            )
+            r.status_code = 401
+            return r
         assert user.email == e_a_c.old
         user.email = e_a_c.new
     db.session.add(user)
@@ -265,12 +281,12 @@ def edit_user(user_id):
         r.status_code = 400
         return r
     elif email is not None:
-        return _edit_email_address(curr_user, email)
+        return _initiate_change_of_email_address(curr_user, email)
     else:
         return _edit_username_and_or_password(curr_user, username, password)
 
 
-def _edit_email_address(user, new_email_address):
+def _initiate_change_of_email_address(user, new_email_address):
     if User.query.filter_by(email=new_email_address).first() is not None:
         r = jsonify(
             {
@@ -284,25 +300,17 @@ def _edit_email_address(user, new_email_address):
         r.status_code = 400
         return r
 
-    e_a_c = (
-        EmailAddressChange.query.filter_by(user_id=user.id)
-        .order_by(EmailAddressChange.id.desc())
-        .first()
+    e_a_c = EmailAddressChange(
+        user_id=user.id,
+        old=basic_auth.current_user().email,
+        new=new_email_address,
     )
-    if e_a_c is not None and e_a_c.old == user.email:
-        e_a_c.new = new_email_address
-    else:
-        e_a_c = EmailAddressChange(
-            user_id=user.id,
-            old=user.email,
-            new=new_email_address,
-        )
     db.session.add(e_a_c)
     db.session.commit()
 
     send_email_requesting_that_change_of_email_address_should_be_confirmed(
         user,
-        new_email_address,
+        e_a_c,
     )
 
     r = jsonify(
@@ -561,12 +569,13 @@ then simply ignore this email message and your password will remain unchanged.
 
 
 def send_email_requesting_that_change_of_email_address_should_be_confirmed(
-    user,
-    new_email_address,
+    user: User,
+    email_address_change: EmailAddressChange,
 ):
     token_payload = {
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
+        "email_address_change_id": email_address_change.id,
     }
     email_address_confirmation_token = (
         current_app.token_serializer_for_email_address_confirmation.dumps(
@@ -575,7 +584,7 @@ def send_email_requesting_that_change_of_email_address_should_be_confirmed(
     )
 
     msg_sender = current_app.config["ADMINS"][0]
-    msg_recipients = [new_email_address]
+    msg_recipients = [email_address_change.new]
 
     msg_subject = "[VocabTreasury] Please confirm your new email address"
     msg_body = f"""Dear {user.username},
