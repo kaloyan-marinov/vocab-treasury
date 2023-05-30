@@ -106,7 +106,60 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_02_edit_email_of_authenticated_user(self):
+    def test_02_prevent_unconfirmed_user_from_initiating_email_edit(self):
+        """
+        Ensure that, if a `User`
+            (a) provides valid authentication,
+            (b) attempts to edit his/her email address, but
+            (c) has not confirmed his/her email address,
+        then the response should be a 400.
+        """
+        # Arrange.
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+        u_r: UserResource = self.util_create_user(username, email, password)
+
+        data = {"email": "john.doe.2@protonmail.com"}
+
+        # Act.
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Basic " + b_a_c
+        rv = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=json.dumps(data),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+
+        # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your email address has not been confirmed."
+                    " Please confirm your email address"
+                    " and re-issue the same HTTP request."
+                ),
+            },
+        )
+
+        # (Reach directly into the application's persistence layer to)
+        # Ensure that no `EmailAddressChange` object has been created.
+        num_of_email_address_changes = EmailAddressChange.query.filter_by(
+            user_id=u_r.id,
+        ).count()
+        self.assertEqual(num_of_email_address_changes, 0)
+
+    def test_03_edit_email_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
@@ -185,7 +238,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, data["email"])
 
-    def test_03_consecutive_email_edits(self):
+    def test_04_consecutive_email_edits(self):
         """
         Ensure that, if a confirmed user
             (1) requests an email change,
@@ -268,7 +321,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, u_r.email)
 
-    def test_04_consecutive_email_edits(self):
+    def test_05_consecutive_email_edits(self):
         """
         Ensure that, if a confirmed user
             (1) requests an email change,

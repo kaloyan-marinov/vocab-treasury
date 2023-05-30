@@ -730,27 +730,22 @@ class Test_05_EditUser(TestBasePlusUtilities):
         """
         Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to edit his/her own `User` resource, but
+            (b) attempts to edit his/her username and password, but
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
-        # TODO: (2023/05/24, 06:40)
-        #       write another test case that
-        #       is similar to this one
-        #       but attempts to edit the email address
-        #       and asserts that no `EmailAddressChange` object has been created.
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        __ = self.util_create_user(username, email, password)
+        u_r: UserResource = self.util_create_user(username, email, password)
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
-            "/api/users/1",
+            f"/api/users/{u_r.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
