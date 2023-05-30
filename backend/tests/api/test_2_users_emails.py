@@ -191,94 +191,6 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             (1) requests an email change,
             (2) does not follow the instructions in the message from (1),
             (3) requests another email change,
-            (4) follows the instructions in the message from (2),
-        then, in the application's persistence layer,
-        the email address on record (for the user in question) will get edited
-        but no trace of (1) will remain.
-        """
-        # TODO: (2023/05/26, 08:17)
-        #
-        #       (d) write a "sibling" test to `test_10_consecutive_email_edits`
-        #           but provide `token_2` in the "sibling" test
-        #           +
-        #           enhance the handler for `POST /confirm-email-address/<token>` requests
-        #           so as to purge/delete all `EmailChangeRequest`s
-        #           whose `old` attributes have the same value
-        #           _and_
-        #           whose instruction(-set)s were not followed up on
-
-        # Arrange. (part 1)
-        username = "jd"
-        email = "john.doe@protonmail.com"
-        password = "123"
-
-        u_r: UserResource = self.util_create_user(
-            username,
-            email,
-            password,
-            should_confirm_email_address=True,
-        )
-
-        data_1 = {
-            "email": "john.doe.1@protonmail.com",
-        }
-        data_2 = {
-            "email": "john.doe.2@protonmail.com",
-        }
-
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
-
-        # Arrange. (part 2)
-        basic_auth_credentials = f"{email}:{password}"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Bearer " + b_a_c
-
-        rv_1 = self.client.put(
-            f"/api/users/{u_r.id}",
-            data=json.dumps(data_1),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-        self.assertEqual(rv_1.status_code, 202)
-
-        rv_2 = self.client.put(
-            f"/api/users/{u_r.id}",
-            data=json.dumps(data_2),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-        self.assertEqual(rv_2.status_code, 202)
-
-        # Act.
-        rv = self.client.post(f"/api/confirm-email-address/{token_2}")
-
-        # Assert.
-        user = User.query.get(u_r.id)
-        self.assertEqual(user.email, data_2["email"])
-
-        email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
-            user_id=u_r.id
-        )
-
-        num_of_email_address_changes = email_address_changes.count()
-        self.assertEqual(num_of_email_address_changes, 1)
-
-        e_a_c = email_address_changes.first()
-        self.assertEqual(e_a_c.id, 2)
-        self.assertEqual(e_a_c.new, data_2["email"])
-
-    def test_04_consecutive_email_edits(self):
-        """
-        Ensure that, if a confirmed user
-            (1) requests an email change,
-            (2) does not follow the instructions in the message from (1),
-            (3) requests another email change,
             (4) follows the instructions in the message from (1),
         then their email address on record will not get edited
         in the application's persistence layer.
@@ -351,7 +263,87 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         rv = self.client.post(f"/api/confirm-email-address/{token_1}")
 
         # Assert.
+        self.assertEqual(rv.status_code, 401)
+
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, u_r.email)
 
-        self.assertEqual(rv.status_code, 401)
+    def test_04_consecutive_email_edits(self):
+        """
+        Ensure that, if a confirmed user
+            (1) requests an email change,
+            (2) does not follow the instructions in the message from (1),
+            (3) requests another email change,
+            (4) follows the instructions in the message from (2),
+        then, in the application's persistence layer,
+        the email address on record (for the user in question) will get edited
+        but no trace of (1) will remain.
+        """
+
+        # Arrange. (part 1)
+        username = "jd"
+        email = "john.doe@protonmail.com"
+        password = "123"
+
+        u_r: UserResource = self.util_create_user(
+            username,
+            email,
+            password,
+            should_confirm_email_address=True,
+        )
+
+        data_1 = {
+            "email": "john.doe.1@protonmail.com",
+        }
+        data_2 = {
+            "email": "john.doe.2@protonmail.com",
+        }
+
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
+        )
+
+        # Arrange. (part 2)
+        basic_auth_credentials = f"{email}:{password}"
+        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
+        authorization = "Bearer " + b_a_c
+
+        rv_1 = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=json.dumps(data_1),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_1.status_code, 202)
+
+        rv_2 = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=json.dumps(data_2),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_2.status_code, 202)
+
+        # Act.
+        rv = self.client.post(f"/api/confirm-email-address/{token_2}")
+
+        # Assert.
+        self.assertEqual(rv.status_code, 200)
+
+        user = User.query.get(u_r.id)
+        self.assertEqual(user.email, data_2["email"])
+
+        email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
+            user_id=u_r.id
+        )
+
+        num_of_email_address_changes = email_address_changes.count()
+        self.assertEqual(num_of_email_address_changes, 1)
+
+        e_a_c = email_address_changes.first()
+        self.assertEqual(e_a_c.id, 2)
+        self.assertEqual(e_a_c.new, data_2["email"])
