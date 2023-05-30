@@ -249,9 +249,9 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         in the application's persistence layer.
         """
         # TODO: (2023/05/25, 07:17)
-        #       (a) consolidate "# Arrange. (part 1)" and "# Arrange. (part 2)"
         #       (b) think about simplifying the mocking that is done in this test case
-        # Arrange. (part 1)
+        # Arrange.
+        #   (1) create a user + prepare for initiating 2 email-address changes
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -270,18 +270,14 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             "email": "john.doe.2@protonmail.com",
         }
 
-        token_1 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=1
-        )
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
-
-        # Arrange. (part 2)
+        #   (2) initiate 2 email-address changes
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Bearer " + b_a_c
 
+        token_1 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=1
+        )
         with patch(
             "src.TimedJSONWebSignatureSerializer.dumps",
         ) as serializer_dumps_mock:
@@ -297,6 +293,9 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             )
             self.assertEqual(rv_1.status_code, 202)
 
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
+        )
         with patch(
             "src.TimedJSONWebSignatureSerializer.dumps",
         ) as serializer_dumps_mock:
@@ -333,7 +332,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         but no trace of (1) will remain.
         """
 
-        # Arrange. (part 1)
+        # Arrange.
+        #   (1) create a user + prepare for initiating 2 email-address changes
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
@@ -352,11 +352,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             "email": "john.doe.2@protonmail.com",
         }
 
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
-
-        # Arrange. (part 2)
+        #   (2) initiate 2 email-address changes
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Bearer " + b_a_c
@@ -371,15 +367,23 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         )
         self.assertEqual(rv_1.status_code, 202)
 
-        rv_2 = self.client.put(
-            f"/api/users/{u_r.id}",
-            data=json.dumps(data_2),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
         )
-        self.assertEqual(rv_2.status_code, 202)
+        with patch(
+            "src.TimedJSONWebSignatureSerializer.dumps",
+        ) as serializer_dumps_mock:
+            serializer_dumps_mock.return_value = token_2.encode("utf-8")
+
+            rv_2 = self.client.put(
+                f"/api/users/{u_r.id}",
+                data=json.dumps(data_2),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": authorization,
+                },
+            )
+            self.assertEqual(rv_2.status_code, 202)
 
         # Act.
         rv = self.client.post(f"/api/confirm-email-address/{token_2}")
