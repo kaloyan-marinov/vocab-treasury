@@ -248,8 +248,6 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         then their email address on record will not get edited
         in the application's persistence layer.
         """
-        # TODO: (2023/05/25, 07:17)
-        #       (b) think about simplifying the mocking that is done in this test case
         # Arrange.
         #   (1) create a user + prepare for initiating 2 email-address changes
         username = "jd"
@@ -278,10 +276,16 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_1 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=1
         )
+        token_2 = self._issue_valid_email_address_confirmation_token(
+            u_r.id, email_address_change_id=2
+        )
         with patch(
             "src.TimedJSONWebSignatureSerializer.dumps",
         ) as serializer_dumps_mock:
-            serializer_dumps_mock.return_value = token_1.encode("utf-8")
+            serializer_dumps_mock.side_effect = (
+                token_1.encode("utf-8"),
+                token_2.encode("utf-8"),
+            )
 
             rv_1 = self.client.put(
                 f"/api/users/{u_r.id}",
@@ -292,14 +296,6 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
                 },
             )
             self.assertEqual(rv_1.status_code, 202)
-
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.dumps",
-        ) as serializer_dumps_mock:
-            serializer_dumps_mock.return_value = token_2.encode("utf-8")
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",
