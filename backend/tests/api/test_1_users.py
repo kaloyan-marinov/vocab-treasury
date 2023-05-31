@@ -1,7 +1,6 @@
 import json
 from unittest.mock import patch
 import base64
-import unittest
 
 from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
@@ -387,7 +386,6 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
             self.username,
             self.email,
             self.password,
-            should_confirm_email_address=True,
         )
 
         valid_token_correct_purpose = (
@@ -678,7 +676,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         self.data_str = json.dumps(self.data)
         super().setUp()
 
-    def test_1_missing_basic_auth(self):
+    def test_01_missing_basic_auth(self):
         """
         Ensure that it is impossible to edit a User resource
         without providing Basic Auth credentials.
@@ -728,27 +726,26 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_2_unconfirmed_email_address(self):
+    def test_02_unconfirmed_email_address(self):
         """
         Ensure that, if a `User`
             (a) provides valid authentication,
-            (b) attempts to edit his/her own `User` resource, but
+            (b) attempts to edit his/her username and password, but
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
-
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
-        __ = self.util_create_user(username, email, password)
+        u_r: UserResource = self.util_create_user(username, email, password)
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
-            "/api/users/1",
+            f"/api/users/{u_r.id}",
             data=self.data_str,
             headers={
                 "Content-Type": "application/json",
@@ -773,7 +770,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
-    def test_3_missing_content_type(self):
+    def test_03_missing_content_type(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         without providing a 'Content-Type: application/json' header.
@@ -844,7 +841,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user.password_hash, "123"),
         )
 
-    def test_4_prevent_editing_of_another_user(self):
+    def test_04_prevent_editing_of_another_user(self):
         """
         Ensure that it is impossible to edit a confirmed User resource,
         which does not correspond to
@@ -966,11 +963,12 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(user_3.password_hash, "789"),
         )
 
-    def test_5_prevent_editing_of_email(self):
+    def test_05_prevent_editing_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
-        is unable to edit the email address associated with his/her User resource.
+        is unable to edit _both_ the email address _and_ the username and/or password
+        associated with his/her corresponding `User` resource.
         """
 
         # Arrange.
@@ -985,47 +983,73 @@ class Test_05_EditUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        # Act.
-        basic_auth_credentials = f"{email}:{password}"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Basic " + b_a_c
-
-        data = {
-            "email": "JOHN.DOE@PROTONMAIL.COM",
-        }
-        data_str = json.dumps(data)
-
-        rv = self.client.put(
-            f"/api/users/{u_r.id}",
-            data=data_str,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-
-        # Assert.
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
+        for data in (
             {
-                "error": "Bad Request",
-                "message": (
-                    "Currently, it is not possible"
-                    " to edit the email address associated with your User resource."
-                    " But it is planned to implement that feature in the future."
-                ),
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "username": "JD",
             },
-        )
+            {
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "password": "abc",
+            },
+            {
+                "email": "JOHN.DOE@PROTONMAIL.COM",
+                "username": "JD",
+                "password": "abc",
+            },
+        ):
+            with self.subTest():
+                # Act.
+                basic_auth_credentials = f"{email}:{password}"
+                b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode(
+                    "utf-8"
+                )
+                authorization = "Basic " + b_a_c
 
-    def test_6_edit_the_authenticated_user(self):
+                data_str = json.dumps(data)
+
+                rv = self.client.put(
+                    f"/api/users/{u_r.id}",
+                    data=data_str,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": authorization,
+                    },
+                )
+
+                # Assert.
+                body_str = rv.get_data(as_text=True)
+                body = json.loads(body_str)
+
+                self.assertEqual(rv.status_code, 400)
+                self.assertEqual(
+                    body,
+                    {
+                        "error": "Bad Request",
+                        "message": (
+                            "You are not allowed to edit _both_ your email address _and_ your "
+                            "username and/or password with a single request to this endpoint. "
+                            "To achieve that effect, you have to issue two separate requests "
+                            "to this endpoint."
+                        ),
+                    },
+                )
+
+                # (Reach directly into the application's persistence layer to)
+                # Ensure that the User resource, which was targeted, did not get edited.
+                user = User.query.get(u_r.id)
+                self.assertEqual(user.username, u_r.username)
+                self.assertTrue(
+                    flsk_bcrpt.check_password_hash(user.password_hash, u_r.password),
+                )
+                self.assertEqual(user.email, u_r.email)
+
+    def test_06_edit_username_and_password_of_authenticated_user(self):
         """
         Ensure that the user,
         who has been confirmed and is authenticated by the issued request's header,
-        is able to edit his/her corresponding User resource.
+        is able to edit the username and password
+        associated with his/her corresponding `User` resource.
         """
 
         # Arrange.
@@ -1083,91 +1107,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(edited_u.password_hash, "!@#"),
         )
 
-    @unittest.skip(
-        "as long as the 'TODO: (2023/03/10, 08:41)' has not been handled,"
-        " this test case has to be skipped"
-    )
-    def test_7_prevent_duplication_of_emails(self):
-        """
-        Ensure that it is impossible to edit a confirmed User resource in such a way
-        that it would end up having the same email as another User resource
-        - regardless of whether the latter User resource is confirmed or not.
-        """
-
-        # Create two User resources, but confirm only the first one.
-        data_0_1 = {
-            "username": "jd",
-            "email": "john.doe@protonmail.com",
-            "password": "123",
-        }
-        data_0_2 = {
-            "username": "ms",
-            "email": "mary.smith@protonmail.com",
-            "password": "456",
-        }
-
-        __ = self.util_create_user(
-            data_0_1["username"],
-            data_0_1["email"],
-            data_0_1["password"],
-            should_confirm_email_address=True,
-        )
-        __ = self.util_create_user(
-            data_0_2["username"],
-            data_0_2["email"],
-            data_0_2["password"],
-        )
-
-        # Attempt to edit the 1st User resource in such a way that
-        # its email should end up being identical to the 2nd User resource's email.
-        basic_auth_credentials = "john.doe@protonmail.com:123"
-        b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
-        authorization = "Basic " + b_a_c
-
-        data = {"email": "mary.smith@protonmail.com"}
-        data_str = json.dumps(data)
-
-        rv = self.client.put(
-            "/api/users/1",
-            data=data_str,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": authorization,
-            },
-        )
-
-        body_str = rv.get_data(as_text=True)
-        body = json.loads(body_str)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(
-            body,
-            {
-                "error": "Bad Request",
-                "message": (
-                    "There already exists a User resource with the same email as the"
-                    " one you provided."
-                ),
-            },
-        )
-
-        # (Reach directly into the application's persistence layer to)
-        # Ensure that the User resource, which was targeted, did not get edited.
-        users = User.query.all()
-        self.assertEqual(len(users), 2)
-        targeted_u = User.query.get(1)
-        self.assertEqual(
-            {a: getattr(targeted_u, a) for a in ["id", "username", "email"]},
-            {
-                "id": 1,
-                "username": "jd",
-                "email": "john.doe@protonmail.com",
-            },
-        )
-        self.assertTrue(
-            flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
-        )
-
-    def test_8_incorrect_basic_auth(self):
+    def test_07_incorrect_basic_auth(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
         by providing an incorrect set of Basic Auth credentials.
@@ -1186,7 +1126,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         )
 
         # Act.
-        basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
+        basic_auth_credentials = f"{email}:something-different-from-{password}"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
         rv = self.client.put(
@@ -1228,7 +1168,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             flsk_bcrpt.check_password_hash(targeted_u.password_hash, "123"),
         )
 
-    def test_9_prevent_duplication_of_usernames(self):
+    def test_08_prevent_duplication_of_usernames(self):
         """
         Ensure that it is impossible to edit a confirmed User resource in such a way
         that two different User resources would end up having the same username

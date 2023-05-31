@@ -95,3 +95,27 @@ class Example(PaginatedAPIMixin, db.Model):
 
     def __repr__(self):
         return f"Example({self.id}, {self.new_word})"
+
+
+class EmailAddressChange(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False,
+    )
+
+    # old_email
+    old = db.Column(db.String(128), nullable=False)
+    # new_email
+    new = db.Column(db.String(128), nullable=False)
+
+    created = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.datetime.utcnow,
+    )
+
+    def __repr__(self):
+        return f"EmailAddressChange({self.id})"

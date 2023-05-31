@@ -24,7 +24,7 @@ flsk_bcrpt = Bcrypt()
 
 
 # Import the models so that they get registered with SQLAlchemy.
-from src.models import User, Example  # noqa
+from src.models import User, Example, EmailAddressChange  # noqa
 
 
 def create_app(name_of_configuration=None):

@@ -539,9 +539,6 @@ and use `localhost` to serve a frontend application.
 - enable every newly-created user to confirm their email address
   through the frontend
 
-- if a (confirmed) user requests to change their email address,
-  require them to confirm the new email address
-
 - allow each user to export their personal data in JSON format
 
 - make it possible for users to upload audio files
