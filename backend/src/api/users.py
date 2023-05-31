@@ -98,7 +98,8 @@ def confirm_email_address(token):
     whose email address on record has not yet been confirmed,
     or from an existing user
     whose email address on record has been confirmed
-    but who wishes to change their email address on record.
+    but who is following up
+    on an initiated request (of theirs) for an email-address change.
     """
     reject_token, response_or_token_payload = validate_token(
         token, EMAIL_ADDRESS_CONFIRMATION
@@ -130,7 +131,8 @@ def confirm_email_address(token):
     else:
         # This is the case where `user` is an existing user
         # whose email address on record has been confirmed
-        # but who wishes to change their email address on record.
+        # but who is following up
+        # on an initiated request (of theirs) for an email-address change.
         initiated_email_address_changes = EmailAddressChange.query.filter_by(
             user_id=user.id,
             old=user.email,
@@ -310,7 +312,7 @@ def _initiate_change_of_email_address(user, new_email_address):
 
     e_a_c = EmailAddressChange(
         user_id=user.id,
-        old=basic_auth.current_user().email,
+        old=user.email,
         new=new_email_address,
     )
     db.session.add(e_a_c)
@@ -348,7 +350,6 @@ def _edit_username_and_or_password(user, new_username, new_password):
             r.status_code = 400
             return r
 
-    if new_username is not None:
         user.username = new_username
 
     if new_password is not None:
