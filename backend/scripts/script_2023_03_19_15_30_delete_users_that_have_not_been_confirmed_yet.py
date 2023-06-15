@@ -75,15 +75,6 @@ if __name__ == "__main__":
         users = User.query.filter(
             (User.is_confirmed == None) | (User.is_confirmed == False)
         )
-        # fmt: off
-        '''
-        print(f"{users.count() = }")
-         user_17 = User.query.get(17)
-        print(f"{user_17 = }")
-        print(f"{user_17.is_confirmed = }")
-        print(type(user_17.is_confirmed))
-        '''
-        # fmt: on
 
         for u in users:
             logger.info("processing %s", repr(u))
