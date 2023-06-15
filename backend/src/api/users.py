@@ -384,12 +384,14 @@ def delete_user(user_id):
     try:
         db.session.commit()
     except sqlalchemy.exc.IntegrityError:
+        db.session.rollback()
+
         r = jsonify(
             {
                 "error": "Bad Request",
                 "message": (
                     "Your User resource cannot be deleted at this time,"
-                    " because there exists at least one Example resource"
+                    " because there exists at least one resource"
                     " that is associated with your User resource."
                 ),
             }
