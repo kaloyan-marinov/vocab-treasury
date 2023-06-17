@@ -1478,7 +1478,7 @@ class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
     """
     Test the request responsible for deleting a specific `User` resource
     in the specific case where
-    there exist `Example` resources
+    there exist resources (in other database models)
     that are associated with the targeted `User` resource.
     """
 
@@ -1496,27 +1496,7 @@ class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
             user_data_1["password"],
         )
 
-    @unittest.skip(
-        "as long as the 'TODO: (2023/03/20, 07:21)' has not been handled,"
-        " this test case has to be skipped"
-    )
     def test_1_prevent_deletion(self):
-        # TODO: (2023/03/20, 07:21)
-        #       resolve v-t-i-69
-        #       :=
-        #       get this test to pass
-        #       (
-        #       when running the backend application in development mode
-        #       against a MySQL database,
-        #       the backend does prevent the deletion of a `User` resource,
-        #       associated with which there exists at least one `Example` resource
-        #
-        #       however,
-        #       running this test,
-        #       which is backed by an in-memory SQLite database,
-        #       does not prevent the deletion of an analogous `User` resource
-        #       )
-
         # Arrange.
         source_language = "Finnish"
         new_word = "kieli"
@@ -1544,9 +1524,23 @@ class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
 
         # Assert.
         body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
 
         self.assertEqual(rv.status_code, 400)
-        self.assertEqual(body_str, "")
+        self.assertEqual(
+            body,
+            {
+                "error": "Bad Request",
+                "message": (
+                    "Your User resource cannot be deleted at this time,"
+                    " because there exists at least one resource"
+                    " that is associated with your User resource."
+                ),
+            },
+        )
 
-        examples = Example.query.filter_by(user_id=self._u_r_1.id).all()
-        self.assertEqual(len(examples), 1)
+        users = User.query.filter_by(id=self._u_r_1.id)
+        self.assertEqual(users.count(), 1)
+
+        examples = Example.query.filter_by(user_id=self._u_r_1.id)
+        self.assertEqual(examples.count(), 1)

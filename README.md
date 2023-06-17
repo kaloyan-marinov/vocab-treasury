@@ -154,13 +154,14 @@ and use `localhost` to serve a frontend application.
         # Verify that repeating the previous step now returns the following:
 
         mysql> SHOW TABLES;
-        +--------------------+
-        | Tables_in_db-4-v-t |
-        +--------------------+
-        | alembic_version    |
-        | example            |
-        | user               |
-        +--------------------+
+        +----------------------+
+        | Tables_in_db-4-v-t   |
+        +----------------------+
+        | alembic_version      |
+        | email_address_change |
+        | example              |
+        | user                 |
+        +----------------------+
         3 rows in set (0.00 sec)
 
         
@@ -168,20 +169,21 @@ and use `localhost` to serve a frontend application.
         # Also, verify that the following commands generate the indicated outputs:
         
         mysql> SHOW CREATE TABLE user;
-        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-        | Table | Create Table                                                                                                                                                                                                                                                                                                                                                                              |
-        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | Table | Create Table                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
         | user  | CREATE TABLE `user` (
           `id` int NOT NULL AUTO_INCREMENT,
           `username` varchar(32) COLLATE utf8mb4_bin NOT NULL,
           `email` varchar(128) COLLATE utf8mb4_bin NOT NULL,
           `password_hash` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+          `is_confirmed` tinyint(1) DEFAULT NULL,
           PRIMARY KEY (`id`),
           UNIQUE KEY `email` (`email`),
           UNIQUE KEY `username` (`username`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin |
-        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-        1 row in set (0.01 sec)
+        +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        1 row in set (0.00 sec)
 
         mysql> SHOW CREATE TABLE example;
         +---------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -200,8 +202,24 @@ and use `localhost` to serve a frontend application.
           CONSTRAINT `example_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin |
         +---------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-        1 row in set (0.00 sec)
-        ```
+        1 row in set (0.01 sec)
+
+        mysql> SHOW CREATE TABLE email_address_change;
+        +----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | Table                | Create Table                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        +----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        | email_address_change | CREATE TABLE `email_address_change` (
+          `id` int NOT NULL AUTO_INCREMENT,
+          `user_id` int NOT NULL,
+          `old` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+          `new` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+          `created` datetime NOT NULL,
+          PRIMARY KEY (`id`),
+          KEY `user_id` (`user_id`),
+          CONSTRAINT `email_address_change_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin |
+        +----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+        1 row in set (0.01 sec)
 
     - create a pre-commit Git hook that runs the `black` formatter for Python code:
         ```
@@ -290,7 +308,7 @@ and use `localhost` to serve a frontend application.
 
         ---
 
-        $ export EMAIL_2=<another-real-email-address-that-you-have-access-to>
+        $ export EMAIL_2_1=<another-real-email-address-that-you-have-access-to>
 
         $ curl -v \
             -X POST \
@@ -298,7 +316,7 @@ and use `localhost` to serve a frontend application.
             -d \
                 "{ \
                     \"username\": \"ms\", \
-                    \"email\": \"${EMAIL_2}\", \
+                    \"email\": \"${EMAIL_2_1}\", \
                     \"password\": \"456\"\
                 }" \
             localhost:5000/api/users \
@@ -306,7 +324,7 @@ and use `localhost` to serve a frontend application.
 
         201
 
-        # Check the inbox of `EMAIL_1`.
+        # Check the inbox of `EMAIL_2_1`.
         # You will receive an email with instructions
         # for confirming the newly-created user's email address.
         # Follow those instructions.
@@ -372,10 +390,24 @@ and use `localhost` to serve a frontend application.
 
         200
 
+
+
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u ${EMAIL_2}:456 \
+            -u ${EMAIL_2_1}:wrong-password \
+            -d "{ \
+                    \"username\": \"MS\" \
+                }" \
+            localhost:5000/api/users/2 \
+            | json_pp
+
+        401
+
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u ${EMAIL_2_1}:456 \
             -d "{ \
                     \"username\": \"JD\" \
                 }" \
@@ -384,29 +416,36 @@ and use `localhost` to serve a frontend application.
 
         400
 
-        # $ curl -v \
-        #     -X PUT \
-        #     -H "Content-Type: application/json" \
-        #     -u ${EMAIL_2}:456 \
-        #     -d "{ \
-        #             \"email\": \"${EMAIL_1}\" \
-        #         }" \
-        #     localhost:5000/api/users/2 \
-        #     | json_pp
-        # 
-        # 400
+        $ curl -v \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -u ${EMAIL_2_1}:456 \
+            -d "{ \
+                    \"email\": \"${EMAIL_1}\" \
+                }" \
+            localhost:5000/api/users/2 \
+            | json_pp
+        
+        400
+
+        $ export EMAIL_2_2=MARY.SMITH@PROTONMAIL.COM
 
         $ curl -v \
             -X PUT \
             -H "Content-Type: application/json" \
-            -u ${EMAIL_2}:wrong-password \
+            -u ${EMAIL_2_1}:456 \
             -d "{ \
-                    \"username\": \"MS\" \
+                    \"email\": \"${EMAIL_2_2}\" \
                 }" \
             localhost:5000/api/users/2 \
             | json_pp
+        
+        202
 
-        401
+        # Check the inbox of `EMAIL_2_2`.
+        # You will receive an email with instructions
+        # for confirming the new email address.
+        # Follow those instructions.
 
         ---
 
@@ -442,7 +481,7 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X DELETE \
-            -u ${EMAIL_2}:wrong-password \
+            -u ${EMAIL_2_2}:wrong-password \
             localhost:5000/api/users/2 \
             | json_pp
 
@@ -452,8 +491,9 @@ and use `localhost` to serve a frontend application.
 
         $ curl -v \
             -X POST \
-            -u ${EMAIL_2}:456 \
-            localhost:5000/api/tokens
+            -u ${EMAIL_2_2}:456 \
+            localhost:5000/api/tokens \
+            | json_pp
 
         200
 
@@ -500,6 +540,12 @@ and use `localhost` to serve a frontend application.
             | json_pp
         
         200
+
+        $ curl -v \
+            -X DELETE \
+            -u ${EMAIL_2_2}:456 \
+            localhost:5000/api/users/2 \
+            | json_pp
         ```
 
 4. set up the frontend:

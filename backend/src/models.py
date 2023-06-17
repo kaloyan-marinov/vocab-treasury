@@ -60,6 +60,17 @@ class User(PaginatedAPIMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     is_confirmed = db.Column(db.Boolean)
 
+    examples = db.relationship(
+        "Example",
+        lazy="dynamic",
+        backref="user",
+    )
+    email_address_changes = db.relationship(
+        "EmailAddressChange",
+        lazy="dynamic",
+        backref="user",
+    )
+
     def to_dict(self):
         """Export `self` to a dict, which omits any and all sensitive information."""
         return {"id": self.id, "username": self.username}

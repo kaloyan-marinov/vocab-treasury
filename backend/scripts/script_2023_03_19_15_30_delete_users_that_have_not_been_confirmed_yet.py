@@ -72,7 +72,9 @@ if __name__ == "__main__":
     )
 
     with app.app_context():
-        users = User.query.filter_by(is_confirmed=False)
+        users = User.query.filter(
+            (User.is_confirmed == None) | (User.is_confirmed == False)
+        )
 
         for u in users:
             logger.info("processing %s", repr(u))
