@@ -64,13 +64,11 @@ class User(PaginatedAPIMixin, db.Model):
         "Example",
         lazy="dynamic",
         backref="user",
-        # cascade="all, delete, delete-orphan",
     )
     email_address_changes = db.relationship(
         "EmailAddressChange",
         lazy="dynamic",
         backref="user",
-        # cascade="all, delete, delete-orphan",
     )
 
     def to_dict(self):

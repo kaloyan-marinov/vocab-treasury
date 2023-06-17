@@ -1478,7 +1478,7 @@ class Test_06_DeleteUserHavingResources(TestBaseForExampleResources_2):
     """
     Test the request responsible for deleting a specific `User` resource
     in the specific case where
-    there exist `Example` resources
+    there exist resources (in other database models)
     that are associated with the targeted `User` resource.
     """
 
