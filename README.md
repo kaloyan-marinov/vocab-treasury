@@ -546,8 +546,6 @@ and use `localhost` to serve a frontend application.
             -u ${EMAIL_2_2}:456 \
             localhost:5000/api/users/2 \
             | json_pp
-        
-
         ```
 
 4. set up the frontend:
