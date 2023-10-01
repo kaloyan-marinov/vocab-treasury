@@ -94,11 +94,11 @@ jobs:
         name: Run tests 
         run: |
           cd frontend
-          npm test -- \
-            --watchAll=false \
-            --coverage \
-            --collectCoverageFrom="./src/**" \
-              > lines-with-the-coverage-across-All-files.txt
+          CI=true \
+            npm test -- \
+              --coverage \
+              --collectCoverageFrom="./src/**" \
+                > lines-with-the-coverage-across-All-files.txt
           read -r -a arr <<< $(grep "All files" lines-with-the-coverage-across-All-files.txt)
           echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
