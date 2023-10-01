@@ -1,3 +1,7 @@
-uses: actions/hello-world-javascript-action@main
+uses: workflows_run-test-suite-frontend
+
+on:
+  push:
+
 with:
   who-to-greet: 'John Doe'
