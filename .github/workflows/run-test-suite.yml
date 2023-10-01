@@ -67,7 +67,7 @@ jobs:
       - name: Report coverage percentage
         run: |
           echo "coverage percentage:" \
-              " ${{ needs.jobs_run-test-suite-for-backend.outputs.coverage-percentage }}"
+            " ${{ needs.jobs_run-test-suite-for-backend.outputs.coverage-percentage }}"
 
   jobs_run-test-suite-for-frontend:
 
@@ -99,7 +99,7 @@ jobs:
             --collectCoverageFrom="./src/**" \
               > lines-with-the-coverage-across-All-files.txt
           read -r -a arr <<< $(grep "All files" lines-with-the-coverage-across-All-files.txt)
-          echo "coverage-percentage=${arr[3]}%" >> $GITHUB_OUTPUT
+          echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
   jobs_report-coverage-percentage-of-test-suite-for-frontend:
