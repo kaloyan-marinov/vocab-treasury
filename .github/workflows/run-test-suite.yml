@@ -92,4 +92,5 @@ jobs:
           cd frontend
           npm test -- \
             --watchAll=false \
-            --coverage
+            --coverage \
+            --collectCoverageFrom="./src/**"

@@ -580,7 +580,8 @@ and use `localhost` to serve a frontend application.
         ```
         frontend $ npm test -- \
             --watchAll=false \
-            --coverage
+            --coverage \
+            --collectCoverageFrom="./src/**"
         ```
 
       or, both with coverage and in watch mode:
