@@ -68,3 +68,12 @@ jobs:
         run: |
           echo "coverage percentage:" \
               " ${{ needs.jobs_run-test-suite-for-backend.outputs.coverage-percentage }}"
+
+  jobs_run-test-suite-for-frontend:
+
+    runs-on: ubuntu-20.04
+
+    - name: Experiment with the 'hello-world-javascript-action'
+      uses: actions/hello-world-javascript-action@main
+      with:
+        who-to-greet: 'John Doe'
