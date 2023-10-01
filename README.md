@@ -576,7 +576,14 @@ and use `localhost` to serve a frontend application.
             --watchAll=false
         ```
 
-      or, in watch mode:
+      or, even better:
+        ```
+        frontend $ npm test -- \
+            --watchAll=false \
+            --coverage
+        ```
+
+      or, both with coverage and in watch mode:
         ```
         frontend $ npm test -- \
             --watchAll \

@@ -91,4 +91,5 @@ jobs:
         run: |
           cd frontend
           npm test -- \
-            --watchAll=false
+            --watchAll=false \
+            --coverage
