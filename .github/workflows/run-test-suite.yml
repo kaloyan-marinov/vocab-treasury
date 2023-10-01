@@ -73,7 +73,8 @@ jobs:
 
     runs-on: ubuntu-20.04
 
-    - name: Experiment with the 'hello-world-javascript-action'
-      uses: actions/hello-world-javascript-action@main
-      with:
-        who-to-greet: 'John Doe'
+    steps:
+      - name: Experiment with the 'hello-world-javascript-action'
+        uses: actions/hello-world-javascript-action@main
+        with:
+          who-to-greet: 'John Doe'
