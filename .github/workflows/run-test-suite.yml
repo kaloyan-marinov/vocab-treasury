@@ -74,14 +74,18 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+      - name: Check out repository onto runner
+        uses: actions/checkout@v3
 
-      - name: Set up node 
+      - name: Set up Node.js 
         uses: actions/setup-node@v1
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend
+          npm install
 
       - name: Run tests 
-        run: npm test
+        run: |
+          cd frontend
+          npm test
