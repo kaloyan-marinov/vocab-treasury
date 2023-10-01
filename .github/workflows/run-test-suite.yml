@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     outputs:
-      coverage-percentage: ${{ steps.run_tests.outputs.coverage-percentage }}
+      coverage-percentage: ${{ steps.run-tests.outputs.coverage-percentage }}
 
     steps:
       - name: Check out repository onto runner
@@ -99,7 +99,7 @@ jobs:
             --collectCoverageFrom="./src/**" \
               > lines-with-the-coverage-across-All-files.txt
           read -r -a arr <<< $(grep "All files" lines-with-the-coverage-across-All-files.txt)
-          echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
+          echo "coverage-percentage=${arr[3]}%" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
   jobs_report-coverage-percentage-of-test-suite-for-frontend:
@@ -113,4 +113,4 @@ jobs:
       - name: Report coverage percentage
         run: |
           echo "coverage percentage:" \
-            " ${{ needs.job_run-test-suite-for-frontend.outputs.coverage-percentage }}%"
+            " ${{ needs.jobs_run-test-suite-for-backend.outputs.coverage-percentage }}%"
