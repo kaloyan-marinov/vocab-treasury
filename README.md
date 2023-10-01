@@ -569,7 +569,14 @@ and use `localhost` to serve a frontend application.
         frontend $ npm audit fix
         ```
     
-    - ensure that running the tests results in a PASS:
+    - ensure that running the tests results in a PASS by issuing one of the following:
+      either:
+        ```
+        frontend $ npm test -- \
+            --watchAll=false
+        ```
+
+      or, in watch mode:
         ```
         frontend $ npm test -- \
             --watchAll \
