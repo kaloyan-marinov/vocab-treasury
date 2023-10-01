@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     outputs:
-      coverage-percentage: ${{ steps.run-tests.outputs.coverage-percentage }}
+      coverage-percentage: ${{ steps.run-tests-for-frontend.outputs.coverage-percentage }}
 
     steps:
       - name: Check out repository onto runner
@@ -90,7 +90,8 @@ jobs:
           cd frontend
           npm install
 
-      - name: Run tests 
+      - id: run-tests-for-frontend
+        name: Run tests 
         run: |
           cd frontend
           npm test -- \
