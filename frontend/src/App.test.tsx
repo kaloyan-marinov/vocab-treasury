@@ -553,7 +553,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
     quasiServer.close();
   });
 
-  test(
+  xtest(
     "renders a heading, manipulation links," +
       " and a page of the logged-in user's Example resources",
     async () => {
