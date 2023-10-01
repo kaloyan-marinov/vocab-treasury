@@ -73,6 +73,9 @@ jobs:
 
     runs-on: ubuntu-20.04
 
+    outputs:
+      coverage-percentage: ${{ steps.run_tests.outputs.coverage-percentage }}
+
     steps:
       - name: Check out repository onto runner
         uses: actions/checkout@v3
@@ -93,4 +96,21 @@ jobs:
           npm test -- \
             --watchAll=false \
             --coverage \
-            --collectCoverageFrom="./src/**"
+            --collectCoverageFrom="./src/**" \
+              > lines-with-the-coverage-across-All-files.txt
+          read -r -a arr <<< $(grep "All files" lines-with-the-coverage-across-All-files.txt)
+          echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
+  # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
+
+  jobs_report-coverage-percentage-of-test-suite-for-frontend:
+
+    runs-on: ubuntu-latest
+
+    needs: jobs_run-test-suite-for-frontend
+
+    steps:
+
+      - name: Report coverage percentage
+        run: |
+          echo "coverage percentage:" \
+            " ${{ needs.job_run-test-suite-for-frontend.outputs.coverage-percentage }}%"
