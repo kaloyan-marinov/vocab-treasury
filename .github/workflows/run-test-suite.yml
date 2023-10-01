@@ -74,7 +74,14 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Experiment with the 'hello-world-javascript-action'
-        uses: actions/hello-world-javascript-action@main
-        with:
-          who-to-greet: 'John Doe'
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up node 
+        uses: actions/setup-node@v1
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests 
+        run: npm test
