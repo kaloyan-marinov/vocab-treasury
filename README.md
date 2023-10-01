@@ -546,6 +546,8 @@ and use `localhost` to serve a frontend application.
             -u ${EMAIL_2_2}:456 \
             localhost:5000/api/users/2 \
             | json_pp
+        
+        400
         ```
 
 4. set up the frontend:
@@ -557,6 +559,11 @@ and use `localhost` to serve a frontend application.
     
     - install the Node.js dependencies
         ```
+        frontend $ node --version
+        v18.18.0
+        frontend $ npm --version
+        9.8.1
+
         frontend $ npm install
 
         frontend $ npm audit fix
