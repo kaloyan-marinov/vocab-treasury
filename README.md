@@ -546,6 +546,8 @@ and use `localhost` to serve a frontend application.
             -u ${EMAIL_2_2}:456 \
             localhost:5000/api/users/2 \
             | json_pp
+        
+        400
         ```
 
 4. set up the frontend:
@@ -557,12 +559,32 @@ and use `localhost` to serve a frontend application.
     
     - install the Node.js dependencies
         ```
+        frontend $ node --version
+        v18.18.0
+        frontend $ npm --version
+        9.8.1
+
         frontend $ npm install
 
         frontend $ npm audit fix
         ```
     
-    - ensure that running the tests results in a PASS:
+    - ensure that running the tests results in a PASS by issuing one of the following:
+      either:
+        ```
+        frontend $ npm test -- \
+            --watchAll=false
+        ```
+
+      or, even better:
+        ```
+        frontend $ npm test -- \
+            --watchAll=false \
+            --coverage \
+            --collectCoverageFrom="./src/**"
+        ```
+
+      or, both with coverage and in watch mode:
         ```
         frontend $ npm test -- \
             --watchAll \
