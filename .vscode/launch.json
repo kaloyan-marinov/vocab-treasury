@@ -45,5 +45,18 @@
       "console": "integratedTerminal",
       "justMyCode": true
     },
+    {
+      "name": "Debug CRA Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "runtimeExecutable": "${workspaceRoot}/frontend/node_modules/.bin/react-scripts",
+      "args": ["test", "--runInBand", "--no-cache", "--watchAll=false"],
+      // "protocol": "inspector",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": { "CI": "true" } //,
+      // "disableOptimisticBPs": true
+    }
   ]
 }
