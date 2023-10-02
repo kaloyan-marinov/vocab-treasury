@@ -18,14 +18,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": [
+      "jest"
+    ]
   },
   "include": [
     "src"
   ],
   "exclude": [
     "**/__tests__/**",
-    "**/?*test.*",
     "**/?*spec.*"
   ]
 }
