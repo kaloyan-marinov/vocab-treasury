@@ -14,14 +14,17 @@ on:
   #     - main
   # pull_request_target:
 
+  # Make it possible to run the workflow manually (from GitHub's web UI).
+  workflow_dispatch:
+
 jobs:
 
-  jobs_run-test-suite-for-backend:
+  run-tests-for-backend:
 
     runs-on: ubuntu-20.04
 
     outputs:
-      coverage-percentage: ${{ steps.run-tests.outputs.coverage-percentage }}
+      coverage-percentage: ${{ steps.run-tests-for-b-e.outputs.coverage-percentage }}
 
     steps:
       - name: Check out repository onto runner
@@ -38,7 +41,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - id: run-tests
+      - id: run-tests-for-b-e
         name: Run tests
         run: |
           cd backend
@@ -56,25 +59,25 @@ jobs:
           echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
-  jobs_report-coverage-percentage-of-test-suite-for-backend:
+  report-coverage-for-backend:
 
     runs-on: ubuntu-latest
 
-    needs: jobs_run-test-suite-for-backend
+    needs: run-tests-for-backend
 
     steps:
 
       - name: Report coverage percentage
         run: |
           echo "coverage percentage:" \
-            " ${{ needs.jobs_run-test-suite-for-backend.outputs.coverage-percentage }}"
+            " ${{ needs.run-tests-for-backend.outputs.coverage-percentage }}"
 
-  jobs_run-test-suite-for-frontend:
+  run-test-suite-for-frontend:
 
     runs-on: ubuntu-20.04
 
     outputs:
-      coverage-percentage: ${{ steps.run-tests-for-frontend.outputs.coverage-percentage }}
+      coverage-percentage: ${{ steps.run-tests-for-f-e.outputs.coverage-percentage }}
 
     steps:
       - name: Check out repository onto runner
@@ -90,28 +93,28 @@ jobs:
           cd frontend
           npm install
 
-      - id: run-tests-for-frontend
+      - id: run-tests-for-f-e
         name: Run tests 
         run: |
           cd frontend
-          npm test -- \
-            --watchAll=false \
-            --coverage \
-            --collectCoverageFrom="./src/**" \
-              > lines-with-the-coverage-across-All-files.txt
+          CI=true \
+            npm test -- \
+              --coverage \
+              --collectCoverageFrom="./src/**" \
+                > lines-with-the-coverage-across-All-files.txt
           read -r -a arr <<< $(grep "All files" lines-with-the-coverage-across-All-files.txt)
           echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
-  jobs_report-coverage-percentage-of-test-suite-for-frontend:
+  report-coverage-for-frontend:
 
     runs-on: ubuntu-latest
 
-    needs: jobs_run-test-suite-for-frontend
+    needs: run-test-suite-for-frontend
 
     steps:
 
       - name: Report coverage percentage
         run: |
           echo "coverage percentage:" \
-            " ${{ needs.jobs_run-test-suite-for-frontend.outputs.coverage-percentage }}%"
+            " ${{ needs.run-test-suite-for-frontend.outputs.coverage-percentage }}%"
