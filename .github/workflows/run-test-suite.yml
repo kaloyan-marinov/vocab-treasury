@@ -14,6 +14,9 @@ on:
   #     - main
   # pull_request_target:
 
+  # Make it possible to run the workflow manually (from GitHub's web UI).
+  workflow_dispatch:
+
 jobs:
 
   run-tests-for-backend:
