@@ -2238,6 +2238,28 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       /* Arrange. */
       const examplesMockCopy = [...examplesMock];
 
+      // Describe the shape of the "req.body".
+      interface PutRequestBody {
+        source_language: string | null;
+        new_word: string | null;
+        content: string | null;
+        content_translation: string | null;
+      }
+
+      // Describe the shape of the mocked response body.
+      interface PutResponseBody {
+        id: number;
+        source_language: string;
+        new_word: string;
+        content: string;
+        content_translation: string;
+      }
+
+      // Describe the shape of the "req.params".
+      interface PutRequestParams {
+        id: string;
+      }
+
       quasiServer.use(
         rest.get("/api/examples", (req, res, ctx) => {
           const perPage: number = 2;
@@ -2249,40 +2271,37 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
           );
         }),
 
-        rest.put("/api/examples/:id", (req, res, ctx) => {
-          const exampleId: number = parseInt(req.params.id);
-          const exampleIndex: number = examplesMockCopy.findIndex(
-            (e: IExampleFromBackend) => e.id === exampleId
-          );
+        rest.put<PutRequestBody, PutResponseBody, PutRequestParams>(
+          "/api/examples/:id",
+          (req, res, ctx) => {
+            const exampleId: number = parseInt(req.params.id);
+            const exampleIndex: number = examplesMockCopy.findIndex(
+              (e: IExampleFromBackend) => e.id === exampleId
+            );
 
-          const editedExample: IExampleFromBackend = {
-            ...examplesMockCopy[exampleIndex],
-          };
-          /*
-          at present, the next statement generates the following TypeScript error/warning:
-          Property 'source_language' does not exist on type 'DefaultRequestBody'.ts(2339)
+            const editedExample: IExampleFromBackend = {
+              ...examplesMockCopy[exampleIndex],
+            };
+            const { source_language, new_word, content, content_translation } =
+              req.body;
+            if (source_language !== null) {
+              editedExample.source_language = source_language;
+            }
+            if (new_word !== null) {
+              editedExample.new_word = new_word;
+            }
+            if (content !== null) {
+              editedExample.content = content;
+            }
+            if (content_translation !== null) {
+              editedExample.content_translation = content_translation;
+            }
 
-          TODO: find out how to prevent that TypeScript error/warning from being generated
-          */
-          const { source_language, new_word, content, content_translation } =
-            req.body;
-          if (source_language !== null) {
-            editedExample.source_language = source_language;
-          }
-          if (new_word !== null) {
-            editedExample.new_word = new_word;
-          }
-          if (content !== null) {
-            editedExample.content = content;
-          }
-          if (content_translation !== null) {
-            editedExample.content_translation = content_translation;
-          }
+            examplesMockCopy[exampleIndex] = editedExample;
 
-          examplesMockCopy[exampleIndex] = editedExample;
-
-          return res(ctx.status(200), ctx.json(editedExample));
-        })
+            return res(ctx.status(200), ctx.json(editedExample));
+          }
+        )
       );
 
       const enhancer = applyMiddleware(thunkMiddleware);

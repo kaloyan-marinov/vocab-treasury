@@ -24,9 +24,21 @@
     // Controls if suggestions should be accepted 'Enter' - in addition to 'Tab'.
     // Helps to avoid ambiguity between inserting new lines or accepting suggestions.
     "editor.acceptSuggestionOnEnter": "off",
-    
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
-    }
+    },
+    
+    "jestrunner.jestCommand": "npm run test --",
+    "jestrunner.debugOptions": {
+        "runtimeExecutable": "${workspaceRoot}/frontend/node_modules/.bin/react-scripts",
+        "runtimeArgs": [
+            "test",
+            "${fileBasename}",
+            "--runInBand",
+            "--no-cache",
+            "--watchAll=false",
+            "--color"
+        ]
+    },
 }
