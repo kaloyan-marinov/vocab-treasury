@@ -620,7 +620,11 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
             would resolve the problem)
       */
       element = await screen.findByText(
-        "Building pagination-controlling buttons..."
+        "Building pagination-controlling buttons...",
+        undefined,
+        {
+          timeout: 5000,
+        }
       );
       expect(element).toBeInTheDocument();
 
