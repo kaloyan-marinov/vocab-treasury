@@ -584,7 +584,8 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       );
 
       /* Assert. */
-      /* - items that appear above the table of Example resources */
+      /* - after the component's rendering: */
+      /*    (a) items that appear above the table of Example resources */
       let element: HTMLElement;
       for (const expectedText of [
         "auth-jd's Own VocabTreasury",
@@ -595,14 +596,14 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
         expect(element).toBeInTheDocument();
       }
 
-      /* - pagination-controlling buttons */
+      /*    (b) elements for controlling pagination of Example resources */
       console.log(`${new Date().toISOString()} - 1st run of screen.debug()`);
       screen.debug();
 
       element = screen.getByText("Building pagination-controlling buttons...");
       expect(element).toBeInTheDocument();
 
-      /* - table headers */
+      /*    (c) table headers */
       for (const columnName of [
         "ID",
         "SOURCE LANGUAGE",
