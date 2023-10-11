@@ -595,6 +595,13 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
         expect(element).toBeInTheDocument();
       }
 
+      /* - pagination-controlling buttons */
+      console.log(`${new Date().toISOString()} - 1st run of screen.debug()`);
+      screen.debug();
+
+      element = screen.getByText("Building pagination-controlling buttons...");
+      expect(element).toBeInTheDocument();
+
       /* - table headers */
       for (const columnName of [
         "ID",
@@ -607,30 +614,13 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
         expect(tableCellElement).toBeInTheDocument();
       }
 
-      /* - after the component's 2nd re-rendering */
-      /*
-      Very occasionally (say 1 time out of 10),
-      this test fails at the following statement;
-      the other times this test passes.
-
-      TODO: resolve the problem
-            (perhaps changing this test
-            from rendering <OwnVocabTreasury> alone
-            to rendering <App> plus triggering events like a real user would
-            would resolve the problem)
-      */
-      element = await screen.findByText(
-        "Building pagination-controlling buttons...",
-        undefined,
-        {
-          timeout: 5000,
-        }
-      );
-      expect(element).toBeInTheDocument();
-
-      /* - after the component's 3rd re-rendering: */
+      /* - after the component's re-rendering: */
       /*    (a) [representations of] Example resources */
       element = await screen.findByText("1");
+
+      console.log(`${new Date().toISOString()} - 2nd run of screen.debug()`);
+      screen.debug();
+
       expect(element).toBeInTheDocument();
 
       for (const textFromExample1 of [
