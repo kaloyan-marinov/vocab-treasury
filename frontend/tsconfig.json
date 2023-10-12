@@ -21,7 +21,8 @@
     "jsx": "react-jsx",
     "types": [
       "jest"
-    ]
+    ],
+    "sourceMap": true
   },
   "include": [
     "src"

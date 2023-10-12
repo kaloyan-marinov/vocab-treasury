@@ -46,6 +46,28 @@
       "justMyCode": true
     },
     {
+      "name": "Node.js: React",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "runtimeExecutable": "npm",
+      "args": [
+        "run",
+        "start"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch Brave against localhost",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/frontend/src",
+
+      "runtimeExecutable": "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+      "runtimeArgs": [ "--remote-debugging-port=9222" ]
+    },
+    {
       "name": "Debug CRA Tests",
       "type": "node",
       "request": "launch",

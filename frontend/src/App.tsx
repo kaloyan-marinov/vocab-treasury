@@ -784,10 +784,14 @@ export const OwnVocabTreasury = () => {
 
   let paginationControllingButtons: JSX.Element;
   if (examplesMeta.page === null) {
+    console.log("    examplesMeta.page === null");
+
     paginationControllingButtons = (
       <div>Building pagination-controlling buttons...</div>
     );
   } else {
+    console.log("    examplesMeta.page !== null");
+
     /*
     TODO: find out why
           this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
