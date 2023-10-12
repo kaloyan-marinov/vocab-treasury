@@ -630,8 +630,6 @@ and use `localhost` to serve a frontend application.
 
 # Future plans
 
-- modularize the frontend
-
 - enable every newly-created user to confirm their email address
   through the frontend
 
