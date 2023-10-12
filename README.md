@@ -12,7 +12,9 @@ The rest of this repository's documentation is organized as follows.
 
 2. [How to set up the project locally](#how-to-set-up-the-project-locally)
 
-3. [Future plans](#future-plans)
+3. [How to use VS Code to debug the project locally](#how-to-use-vs-code-to-debug-the-project-locally)
+
+4. [Future plans](#future-plans)
 
 # Introduction
 
@@ -599,6 +601,32 @@ and use `localhost` to serve a frontend application.
         ```
     
     - launch a web browser, and enter `localhost:3000` into its address bar
+
+# How to use VS Code to debug the project locally
+
+1. to debug the backend
+
+    - navigate to VS Code's "RUN AND DEBUG" menu
+    
+    - select the `[old way] Python: Flask` launch configuration and run it
+
+2. to debug the frontend
+
+    - (
+      follow the instructions in the "3. set up the backend" sub-section in
+      [the previous section](#how-to-set-up-the-project-locally) in order to
+      )
+      set up and start the backend
+
+    - within VS Code, place breakpoints in the frontend's source code
+    
+    - navigate to VS Code's "RUN AND DEBUG" menu
+
+    - select the `Launch Brave against localhost` launch configuration and run it
+
+    - use the started instance of the Brave browser
+      to interact with the frontend
+      in a way that hits the placed breakpoints
 
 # Future plans
 
