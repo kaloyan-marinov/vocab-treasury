@@ -8,21 +8,20 @@ import { combineReducers } from "redux";
 
 import { v4 as uuidv4 } from "uuid";
 
+import { IStateAlerts } from "./types";
+import { INITIAL_STATE_ALERTS } from "./constants";
+
+import {
+  alertsCreate,
+  alertsReducer,
+  IActionAlertsCreate,
+} from "./features/alerts/alertsSlice";
+
 export enum RequestStatus {
   IDLE = "idle",
   LOADING = "loading",
   FAILED = "failed",
   SUCCEEDED = "succeeded",
-}
-
-export interface IAlert {
-  id: string;
-  message: string;
-}
-
-export interface IStateAlerts {
-  ids: string[];
-  entities: { [id: string]: IAlert };
 }
 
 export interface IProfile {
@@ -94,11 +93,6 @@ export interface IState {
   examples: IStateExamples;
 }
 
-export const initialStateAlerts: IStateAlerts = {
-  ids: [],
-  entities: {},
-};
-
 export const VOCAB_TREASURY_APP_TOKEN = "token-4-vocab-treasury";
 
 export const initialStateAuth: IStateAuth = {
@@ -129,8 +123,8 @@ export const initialStateExamples: IStateExamples = {
   entities: {},
 };
 
-export const initialState: IState = {
-  alerts: initialStateAlerts,
+export const INITIAL_STATE: IState = {
+  alerts: INITIAL_STATE_ALERTS,
   auth: initialStateAuth,
   examples: initialStateExamples,
 };
@@ -150,44 +144,6 @@ export const selectExamplesLinks = (state: IState) => state.examples.links;
 export const selectExamplesIds = (state: IState) => state.examples.ids;
 export const selectExamplesEntities = (state: IState) =>
   state.examples.entities;
-
-/* "alerts/*" action creators */
-export enum ActionTypesAlerts {
-  CREATE = "alerts/create",
-  REMOVE = "alerts/remove",
-}
-
-export interface IActionAlertsCreate {
-  type: typeof ActionTypesAlerts.CREATE;
-  payload: IAlert;
-}
-
-export interface IActionAlertsRemove {
-  type: typeof ActionTypesAlerts.REMOVE;
-  payload: {
-    id: string;
-  };
-}
-
-export const alertsCreate = (
-  id: string,
-  message: string
-): IActionAlertsCreate => ({
-  type: ActionTypesAlerts.CREATE,
-  payload: {
-    id,
-    message,
-  },
-});
-
-export const alertsRemove = (id: string): IActionAlertsRemove => ({
-  type: ActionTypesAlerts.REMOVE,
-  payload: {
-    id,
-  },
-});
-
-export type ActionAlerts = IActionAlertsCreate | IActionAlertsRemove;
 
 /* "auth/createUser/" action creators */
 export enum ActionTypesCreateUser {
@@ -984,57 +940,6 @@ export const logOut = (message: string) => {
 };
 
 /* Define slice reducers. */
-export const alertsReducer = (
-  state: IStateAlerts = initialStateAlerts,
-  action: ActionAlerts
-): IStateAlerts => {
-  switch (action.type) {
-    case ActionTypesAlerts.CREATE: {
-      const alert: IAlert = action.payload;
-
-      // For the sake of keeping track of mistakes,
-      // the commented-out code-block below contains a mistake.
-      /*
-      const newState: IStateAlerts = { ...state };
-      newState.ids.push(alert.id);
-      newState.entities[alert.id] = alert;
-      */
-
-      // The following code-block fixes the commented-out code-block's mistake.
-      const newAlertsIds: string[] = [alert.id, ...state.ids];
-
-      const newAlertsEntities = { ...state.entities };
-      newAlertsEntities[alert.id] = alert;
-
-      return {
-        ...state,
-        ids: newAlertsIds,
-        entities: newAlertsEntities,
-      };
-    }
-
-    case ActionTypesAlerts.REMOVE: {
-      const alertIdToRemove: string = action.payload.id;
-
-      const newAlertsIds = state.ids.filter(
-        (aId: string) => aId !== alertIdToRemove
-      );
-
-      const newAlertsEntities = { ...state.entities };
-      delete newAlertsEntities[alertIdToRemove];
-
-      return {
-        ...state,
-        ids: newAlertsIds,
-        entities: newAlertsEntities,
-      };
-    }
-
-    default:
-      return state;
-  }
-};
-
 export const authReducer = (
   state: IStateAuth = initialStateAuth,
   action:

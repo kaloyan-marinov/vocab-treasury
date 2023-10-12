@@ -1,15 +1,11 @@
+import { IAlert } from "./types";
+
 // 1
 import {
-  IAlert,
   IState,
-  initialState,
+  INITIAL_STATE,
   selectAlertsIds,
   selectAlertsEntities,
-  ActionTypesAlerts,
-  IActionAlertsCreate,
-  IActionAlertsRemove,
-  alertsCreate,
-  alertsRemove,
   RequestStatus,
   createUserPending,
   createUserRejected,
@@ -30,14 +26,7 @@ import configureMockStore, { MockStoreEnhanced } from "redux-mock-store";
 import { createUser } from "./store";
 
 // 3
-import {
-  IStateAlerts,
-  initialStateAlerts,
-  alertsReducer,
-  IStateAuth,
-  initialStateAuth,
-  authReducer,
-} from "./store";
+import { IStateAuth, initialStateAuth, authReducer } from "./store";
 
 import {
   ActionTypesIssueJWSToken,
@@ -312,29 +301,6 @@ describe("selector functions", () => {
 });
 
 describe("action creators", () => {
-  test("alertsCreate", () => {
-    const action = alertsCreate("alert-id-17", "PLEASE LOG IN.");
-
-    expect(action).toEqual({
-      type: "alerts/create",
-      payload: {
-        id: "alert-id-17",
-        message: "PLEASE LOG IN.",
-      },
-    });
-  });
-
-  test("alertsRemove", () => {
-    const action = alertsRemove("alert-id-17");
-
-    expect(action).toEqual({
-      type: "alerts/remove",
-      payload: {
-        id: "alert-id-17",
-      },
-    });
-  });
-
   test("createUserPending", () => {
     const action = createUserPending();
 
@@ -722,59 +688,6 @@ describe("action creators", () => {
 });
 
 describe("slice reducers", () => {
-  describe("alertsReducer", () => {
-    test("alerts/create", () => {
-      const initState: IStateAlerts = {
-        ...initialStateAlerts,
-      };
-      const action: IActionAlertsCreate = {
-        type: ActionTypesAlerts.CREATE,
-        payload: {
-          id: "alert-id-17",
-          message: "PLEASE LOG IN.",
-        },
-      };
-
-      const newState: IStateAlerts = alertsReducer(initState, action);
-
-      expect(newState).toEqual({
-        ids: ["alert-id-17"],
-        entities: {
-          "alert-id-17": {
-            id: "alert-id-17",
-            message: "PLEASE LOG IN.",
-          },
-        },
-      });
-    });
-
-    test("alerts/remove", () => {
-      const initState: IStateAlerts = {
-        ...initialStateAlerts,
-        ids: ["alert-id-17"],
-        entities: {
-          "alert-id-17": {
-            id: "alert-id-17",
-            message: "PLEASE LOG IN.",
-          },
-        },
-      };
-      const action: IActionAlertsRemove = {
-        type: ActionTypesAlerts.REMOVE,
-        payload: {
-          id: "alert-id-17",
-        },
-      };
-
-      const newState: IStateAlerts = alertsReducer(initState, action);
-
-      expect(newState).toEqual({
-        ids: [],
-        entities: {},
-      });
-    });
-  });
-
   describe("authReducer", () => {
     test("auth/createUser/pending", () => {
       const initState: IStateAuth = {
@@ -1786,7 +1699,7 @@ describe(
     });
 
     beforeEach(() => {
-      initState = { ...initialState };
+      initState = { ...INITIAL_STATE };
       storeMock = createStoreMock(initState);
     });
 

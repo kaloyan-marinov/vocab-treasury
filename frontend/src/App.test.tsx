@@ -14,10 +14,9 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router, Route } from "react-router-dom";
 
-import { IState, initialState, rootReducer } from "./store";
+import { IState, INITIAL_STATE, rootReducer } from "./store";
 import {
   NavigationBar,
-  Alerts,
   Home,
   About,
   Register,
@@ -27,6 +26,7 @@ import {
   RecordNewExample,
   SingleExample,
 } from "./App";
+import { Alerts } from "./features/alerts/Alerts";
 
 // 2
 import {
@@ -130,9 +130,9 @@ describe("<NavigationBar>", () => {
   test("renders all of a logged-in user's navigation links", () => {
     /* Arrange. */
     const initState = {
-      ...initialState,
+      ...INITIAL_STATE,
       auth: {
-        ...initialState.auth,
+        ...INITIAL_STATE.auth,
         hasValidToken: true,
       },
     };
@@ -168,9 +168,9 @@ describe("<NavigationBar>", () => {
     async () => {
       /* Arrange. */
       const initState = {
-        ...initialState,
+        ...INITIAL_STATE,
         auth: {
-          ...initialState.auth,
+          ...INITIAL_STATE.auth,
           hasValidToken: true,
         },
       };
@@ -198,79 +198,6 @@ describe("<NavigationBar>", () => {
   );
 });
 
-describe("<Alerts>", () => {
-  test("renders the alerts, which are present in the Redux state", () => {
-    /* Arrange. */
-    const initState: IState = {
-      ...initialState,
-      alerts: {
-        ids: ["alert-id-17"],
-        entities: {
-          "alert-id-17": {
-            id: "alert-id-17",
-            message: "PLEASE LOG IN.",
-          },
-        },
-      },
-    };
-    const realStore = createStore(rootReducer, initState);
-
-    /* Act. */
-    render(
-      <Provider store={realStore}>
-        <Alerts />
-      </Provider>
-    );
-
-    /* Assert. */
-    const buttonElement = screen.getByRole("button", { name: "Clear alert" });
-    expect(buttonElement).toBeInTheDocument();
-
-    screen.getByText("PLEASE LOG IN.");
-  });
-
-  test("re-renders the alerts after the user has cleared one of them", () => {
-    /* Arrange. */
-    const initState: IState = {
-      ...initialState,
-      alerts: {
-        ids: ["alert-id-17", "alert-id-34"],
-        entities: {
-          "alert-id-17": {
-            id: "alert-id-17",
-            message: "YOU HAVE BEEN LOGGED OUT.",
-          },
-          "alert-id-34": {
-            id: "alert-id-34",
-            message: "PLEASE LOG BACK IN.",
-          },
-        },
-      },
-    };
-    const realStore = createStore(rootReducer, initState);
-
-    render(
-      <Provider store={realStore}>
-        <Alerts />
-      </Provider>
-    );
-
-    /* Act. */
-    const buttons = screen.getAllByRole("button", { name: "Clear alert" });
-    expect(buttons.length).toEqual(2);
-
-    fireEvent.click(buttons[0]);
-
-    /* Assert. */
-    const nullValue: HTMLElement | null = screen.queryByText(
-      "YOU HAVE BEEN LOGGED OUT."
-    );
-    expect(nullValue).not.toBeInTheDocument();
-
-    screen.getByText("PLEASE LOG BACK IN.");
-  });
-});
-
 describe("<About>", () => {
   test("renders an 'About VocabTreasury...' message", () => {
     render(<About />);
@@ -283,9 +210,9 @@ describe("<Register>", () => {
   test("redirects any logged-in user to /home", () => {
     /* Arrange. */
     const initState: IState = {
-      ...initialState,
+      ...INITIAL_STATE,
       auth: {
-        ...initialState.auth,
+        ...INITIAL_STATE.auth,
         hasValidToken: true,
       },
     };
@@ -511,9 +438,9 @@ describe("<Account>", () => {
   test("renders the logged-in user's profile details", () => {
     /* Arrange. */
     const initState = {
-      ...initialState,
+      ...INITIAL_STATE,
       auth: {
-        ...initialState.auth,
+        ...INITIAL_STATE.auth,
         loggedInUserProfile: {
           id: 17,
           username: "auth-jd",
@@ -559,9 +486,9 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
     async () => {
       /* Arrange. */
       const initState: IState = {
-        ...initialState,
+        ...INITIAL_STATE,
         auth: {
-          ...initialState.auth,
+          ...INITIAL_STATE.auth,
           loggedInUserProfile: {
             id: 17,
             username: "auth-jd",
@@ -693,9 +620,9 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       );
 
       const initState: IState = {
-        ...initialState,
+        ...INITIAL_STATE,
         auth: {
-          ...initialState.auth,
+          ...INITIAL_STATE.auth,
           loggedInUserProfile: {
             id: 17,
             username: "auth-jd",
@@ -825,9 +752,9 @@ describe("<SingleExample>", () => {
       } = convertToPaginationInFrontend(paginationFromBackend);
 
       const initState: IState = {
-        ...initialState,
+        ...INITIAL_STATE,
         examples: {
-          ...initialState.examples,
+          ...INITIAL_STATE.examples,
           meta,
           links,
           ids,
@@ -1251,7 +1178,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
     async () => {
       /* Arrange. */
       const initState = {
-        ...initialState,
+        ...INITIAL_STATE,
       };
 
       const enhancer = applyMiddleware(thunkMiddleware);
@@ -1305,9 +1232,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStoreAfterReload = createStore(
         rootReducer,
         {
-          ...initialState,
+          ...INITIAL_STATE,
           auth: {
-            ...initialState.auth,
+            ...INITIAL_STATE.auth,
             token: realStore.getState().auth.token,
           },
         },
