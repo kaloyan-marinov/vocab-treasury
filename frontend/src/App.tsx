@@ -16,19 +16,18 @@ import {
   IActionAlertsCreate,
   alertsCreate,
 } from "./features/alerts/alertsSlice";
+import { Register } from "./features/auth/Register";
+
+import { PrivateRoute } from "./features/auth/PrivateRoute";
 
 import {
   IState,
-  ActionCreateUser,
-  createUser,
   ActionIssueJWSToken,
   issueJWSToken,
   ActionFetchProfile,
   fetchProfile,
   logOut,
   selectHasValidToken,
-  RequestStatus,
-  selectAuthRequestStatus,
   IProfile,
   selectLoggedInUserProfile,
   IExample,
@@ -196,142 +195,6 @@ export const About = () => {
   );
 };
 
-export const Register = () => {
-  console.log(`${new Date().toISOString()} - React is rendering <Register>`);
-
-  const [formData, setFormData] = React.useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
-  console.log(`    hasValidToken: ${hasValidToken}`);
-
-  const dispatch: ThunkDispatch<
-    IState,
-    unknown,
-    IActionAlertsCreate | ActionCreateUser
-  > = useDispatch();
-
-  if (hasValidToken === true) {
-    const nextURL: string = "/home";
-    console.log(
-      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
-    );
-    return <Redirect to={nextURL} />;
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const id: string = uuidv4();
-    if (
-      formData.username === "" ||
-      formData.email === "" ||
-      formData.password === "" ||
-      formData.confirmPassword === ""
-    ) {
-      dispatch(alertsCreate(id, "ALL FORM FIELDS MUST BE FILLED OUT"));
-    } else if (formData.password !== formData.confirmPassword) {
-      dispatch(alertsCreate(id, "THE PROVIDED PASSWORDS DON'T MATCH"));
-    } else {
-      try {
-        await dispatch(
-          createUser(formData.username, formData.email, formData.password)
-        );
-        dispatch(alertsCreate(id, "REGISTRATION SUCCESSFUL"));
-      } catch (thunkActionError) {
-        dispatch(alertsCreate(id, thunkActionError));
-      }
-    }
-  };
-
-  return (
-    <React.Fragment>
-      {"<Register>"}
-      <div>
-        <form
-          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <fieldset>
-            <legend>[legend-tag: JOIN TODAY]</legend>
-            <div>
-              <label htmlFor="<R>-username">USERNAME</label>
-              <input
-                id="<R>-username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-email">EMAIL</label>
-              <input
-                id="<R>-email"
-                name="email"
-                type="text"
-                value={formData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-password">PASSWORD</label>
-              <input
-                id="<R>-password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-confirmPassword">CONFIRM PASSWORD</label>
-              <input
-                id="<R>-confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-          </fieldset>
-          <div>
-            <input
-              id="<R>-submit"
-              name="submit"
-              type="submit"
-              value="CREATE MY ACCOUNT"
-            />
-          </div>
-        </form>
-      </div>
-      <div>
-        <small>
-          ALREADY HAVE AN ACCOUNT? <Link to="/login">CLICK HERE TO LOG IN</Link>
-        </small>
-      </div>
-    </React.Fragment>
-  );
-};
-
 export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
 
@@ -435,46 +298,6 @@ export const Login = () => {
       </div>
     </React.Fragment>
   );
-};
-
-export const PrivateRoute = (props: any) => {
-  console.log(
-    `${new Date().toISOString()} - React is rendering <PrivateRoute>`
-  );
-
-  console.log("    its children are as follows:");
-  const childrenCount: number = React.Children.count(props.children);
-  React.Children.forEach(props.children, (child, ind) => {
-    console.log(
-      `    child #${ind + 1} (out of ${childrenCount}): <${child.type.name}>`
-    );
-  });
-
-  const { children, ...rest } = props;
-
-  const authRequestStatus: RequestStatus = useSelector(selectAuthRequestStatus);
-  console.log(`    authRequestStatus: ${authRequestStatus}`);
-
-  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
-  console.log(`    hasValidToken: ${hasValidToken}`);
-
-  if (authRequestStatus === RequestStatus.LOADING) {
-    console.log(`    authRequestStatus: ${RequestStatus.LOADING}`);
-    return React.Children.map(props.children, (child) => (
-      <div>{`<${child.type.name}>`} - Loading...</div>
-    ));
-  } else if (!hasValidToken) {
-    const nextURL: string = "/login";
-    console.log(
-      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
-    );
-    return <Redirect to={nextURL} />;
-  } else {
-    console.log(
-      `    hasValidToken: ${hasValidToken} > rendering the above-listed children`
-    );
-    return <Route {...rest}>{children}</Route>;
-  }
 };
 
 export const RequestPasswordReset = () => {
