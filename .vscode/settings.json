@@ -33,16 +33,11 @@
         "editor.formatOnSave": true
     },
     
-    "jestrunner.jestCommand": "npm run test --",
-    "jestrunner.debugOptions": {
-        "runtimeExecutable": "${workspaceRoot}/frontend/node_modules/.bin/react-scripts",
-        "runtimeArgs": [
-            "test",
-            "${fileBasename}",
-            "--runInBand",
-            "--no-cache",
-            "--watchAll=false",
-            "--color"
-        ]
-    },
+    "jest.rootPath": "frontend",
+    "jest.jestCommandLine": "npm run test --",
+    "jest.autoRun": {
+        "watch": true, 
+        "onStartup": ["all-tests"],
+        "onSave": "test-file"
+     }
 }

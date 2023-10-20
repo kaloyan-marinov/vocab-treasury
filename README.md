@@ -628,6 +628,26 @@ and use `localhost` to serve a frontend application.
       to interact with the frontend
       in a way that hits the placed breakpoints
 
+3. to debug a single test from the test suite for the frontend sub-project
+
+    - open the Command Palette in VS Code
+
+    - type "Jest: Start All Runners" and hit [Enter], which will
+      display a beaker icon in the left sidebar of VS Code
+      and run the entire test suite for the frontend sub-project
+
+    - in order to run or debug a single specific test:
+      click on the beaker icon,
+      click on the test of interest,
+      and use the "Run Test" or "Debug Test" button
+    
+    - note that
+      the last step opens the "TEST RESULTS" tab in VS Code's integrated terminal
+      but, in order to see
+      what the executed test writes to Standard Output (= to the console),
+      you have to go to the "TERMINAL" tab instead
+      and click on the appropriate terminal instance
+
 # Future plans
 
 - enable every newly-created user to confirm their email address
