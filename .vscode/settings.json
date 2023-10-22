@@ -35,9 +35,5 @@
     
     "jest.rootPath": "frontend",
     "jest.jestCommandLine": "npm run test --",
-    "jest.autoRun": {
-        "watch": true, 
-        "onStartup": ["all-tests"],
-        "onSave": "test-file"
-     }
+    "jest.autoRun": "off"
 }
