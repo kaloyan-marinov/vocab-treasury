@@ -1337,6 +1337,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
         rest.get("/api/examples", requestHandlers.mockFetchExamples),
         rest.post("/api/examples", requestHandlers.mockCreateExample),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
         rest.get("/api/examples", requestHandlers.mockFetchExamples)
       );
 
@@ -1377,14 +1378,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       fireEvent.click(submitButtonElement);
 
       /* Assert. */
-      const element: HTMLElement = await screen.findByText(
-        "EXAMPLE CREATION SUCCESSFUL"
-      );
+      let element: HTMLElement;
+
+      element = await screen.findByText("EXAMPLE CREATION SUCCESSFUL");
       expect(element).toBeInTheDocument();
 
       await waitFor(() => {
         expect(history.location.pathname).toEqual("/own-vocabtreasury");
       });
+
+      element = await screen.findByText("test-word");
+      expect(element).toBeInTheDocument();
+
+      element = await screen.findByText("test-example");
+      expect(element).toBeInTheDocument();
     }
   );
 
