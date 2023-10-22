@@ -155,6 +155,30 @@ const mockFetchExamples = (
   );
 };
 
+const mockCreateExample = (
+  req: RestRequest<DefaultRequestBody, RequestParams>,
+  res: ResponseComposition<any>,
+  ctx: RestContext
+) => {
+  const source_language = (req!.body as Record<string, any>).source_language;
+  const new_word = (req!.body as Record<string, any>).new_word;
+  const content = (req!.body as Record<string, any>).content;
+  const content_translation = (req!.body as Record<string, any>)
+    .content_translation;
+
+  const newExample: IExampleFromBackend = {
+    id: examplesMock.length + 1,
+    source_language,
+    new_word,
+    content,
+    content_translation,
+  };
+
+  // this.mockEntries = [...this.mockEntries, newExample];
+
+  return res.once(ctx.status(201), ctx.json(newExample));
+};
+
 export const requestHandlers = {
   mockMultipleFailures,
   mockSingleFailure,
@@ -165,4 +189,5 @@ export const requestHandlers = {
   mockRequestPasswordReset,
 
   mockFetchExamples,
+  mockCreateExample,
 };

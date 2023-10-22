@@ -1332,6 +1332,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.post("/api/examples", requestHandlers.mockCreateExample),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
