@@ -66,6 +66,8 @@ import { examplesMock } from "./dataMocks";
 
 import { requestHandlers } from "./testHelpers";
 
+// jest.setTimeout(5 * 60 * 1000);
+
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
     render(<Home />);
@@ -345,6 +347,10 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
 
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
+
       /* Act. */
       render(
         <Provider store={realStore}>
@@ -451,18 +457,6 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       */
 
       /* Arrange. */
-      quasiServer.use(
-        rest.get("/api/examples", (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Unauthorized",
-              message: "[mocked] Expired access token.",
-            })
-          );
-        })
-      );
-
       const initState: IState = {
         ...INITIAL_STATE,
         auth: {
@@ -680,79 +674,19 @@ describe("<SingleExample>", () => {
 
 /* Describe what requests should be mocked. */
 const requestHandlersToMock = [
-  rest.post("/api/users", requestHandlers.mockCreateUser),
-  rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
-  rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
-  rest.get(
-    "/api/examples",
-    (
-      req: RestRequest<DefaultRequestBody, RequestParams>,
-      res: ResponseComposition<any>,
-      ctx: RestContext
-    ) => {
-      const perPage: number = 2;
-      const page = parseInt(req.url.searchParams.get("page") || "1");
+  rest.post("/api/users", requestHandlers.mockMultipleFailures),
 
-      const newWord = req.url.searchParams.get("new_word");
-      const content = req.url.searchParams.get("content");
-      const contentTranslation = req.url.searchParams.get(
-        "content_translation"
-      );
+  rest.post("/api/tokens", requestHandlers.mockMultipleFailures),
 
-      const possiblyFilteredExamples: IExampleFromBackend[] =
-        examplesMock.filter((e: IExampleFromBackend) => {
-          let isMatch: boolean = true;
+  rest.get("/api/user-profile", requestHandlers.mockMultipleFailures),
 
-          if (newWord !== null) {
-            isMatch =
-              isMatch &&
-              e.new_word.toLowerCase().search(newWord.toLowerCase()) !== -1;
-          }
-          if (content !== null) {
-            isMatch =
-              isMatch &&
-              e.content.toLowerCase().search(content.toLowerCase()) !== -1;
-          }
-          if (contentTranslation !== null) {
-            isMatch =
-              isMatch &&
-              e.content_translation
-                .toLowerCase()
-                .search(contentTranslation.toLowerCase()) !== -1;
-          }
-
-          return isMatch;
-        });
-
-      return res(
-        ctx.status(200),
-        ctx.json(
-          mockPaginationFromBackend(
-            possiblyFilteredExamples,
-            perPage,
-            page,
-            newWord,
-            content,
-            contentTranslation
-          )
-        )
-      );
-    }
+  rest.post(
+    "/api/request-password-reset",
+    requestHandlers.mockMultipleFailures
   ),
 
-  rest.post("/api/examples", (req, res, ctx) => {
-    return res(ctx.status(201), ctx.json(exampleMock));
-  }),
-
-  rest.post("/api/request-password-reset", (req, res, ctx) => {
-    return res(
-      ctx.status(202),
-      ctx.json({
-        message:
-          "Sending an email with instructions for resetting your password...",
-      })
-    );
-  }),
+  rest.get("/api/examples", requestHandlers.mockMultipleFailures),
+  rest.post("/api/examples", requestHandlers.mockMultipleFailures),
 ];
 
 /* Create an MSW "request-interception layer". */
@@ -784,6 +718,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+      );
 
       render(
         <Provider store={realStore}>
@@ -825,18 +764,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was determined to be invalid",
     async () => {
       /* Arrange. */
-      quasiServer.use(
-        rest.post("/api/tokens", (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Bad Request",
-              message: "[mocked] Incorrect email and/or password.",
-            })
-          );
-        })
-      );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
@@ -886,10 +813,26 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         ...INITIAL_STATE,
       };
 
+      /*
+      TODO: (2023/10/20, 07:44)
+
+            before submitting a pull request for review,
+            eliminate duplication by moving `initState`, `enhancer`, and `history`
+            to a module-level `beforeEach`
+      */
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, initState, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockSingleFailure),
+
+        rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+      );
 
       render(
         <Provider store={realStore}>
@@ -900,6 +843,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       );
 
       /* Arrange. */
+      let temp: HTMLElement;
+      temp = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
+      expect(temp).toBeInTheDocument();
+
       const logInAnchor = screen.getByText("Log in");
       fireEvent.click(logInAnchor);
 
@@ -917,8 +864,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         name: "LOG INTO MY ACCOUNT",
       });
       fireEvent.click(submitButtonElement);
-
-      let temp: HTMLElement;
 
       temp = await screen.findByText("Log out");
       expect(temp).toBeInTheDocument();
@@ -1016,6 +961,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -1105,6 +1054,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -1165,6 +1121,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -1215,6 +1178,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
 
       render(
         <Provider store={realStore}>
@@ -1283,6 +1254,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
 
       render(
         <Provider store={realStore}>
@@ -1570,6 +1549,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
 
       render(
         <Provider store={realStore}>
@@ -2144,6 +2131,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -2207,32 +2202,18 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user gets logged out",
     async () => {
       /* Arrange. */
-      quasiServer.use(
-        rest.get("/api/examples", (req, res, ctx) => {
-          const perPage: number = 2;
-          const page = parseInt(req.url.searchParams.get("page") || "1");
-
-          return res.once(
-            ctx.status(200),
-            ctx.json(mockPaginationFromBackend(examplesMock, perPage, page))
-          );
-        }),
-
-        rest.get("/api/examples", (req, res, ctx) => {
-          return res.once(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Unauthorized",
-              message: "[mocked] Expired access token.",
-            })
-          );
-        })
-      );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+
+        rest.get("/api/examples", requestHandlers.mockSingleFailure)
+      );
 
       render(
         <Provider store={realStore}>
@@ -2332,15 +2313,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
     async () => {
       /* Arrange. */
       quasiServer.use(
-        rest.get("/api/user-profile", (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Unauthorized",
-              message: "[mocked] Expired access token.",
-            })
-          );
-        })
+        rest.get("/api/user-profile", requestHandlers.mockSingleFailure),
+        rest.post(
+          "/api/request-password-reset",
+          requestHandlers.mockRequestPasswordReset
+        )
       );
 
       const enhancer = applyMiddleware(thunkMiddleware);
@@ -2393,6 +2370,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+      );
 
       render(
         <Provider store={realStore}>

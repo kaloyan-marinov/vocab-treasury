@@ -20,6 +20,14 @@ export const exampleMock: IExampleFromBackend = {
 };
 
 /* Mock the pagination of Example resources. */
+/*
+TODO: (2023/10/22, 10:08)
+
+      before submitting a PR for review,
+      rename the "constants" in this file to written in uppercase with underscores
+      and
+      rename this file to `mockPiecesOfData`
+*/
 export const examplesMock: IExampleFromBackend[] = Array.from({
   length: 11,
 }).map((_, index) => {
@@ -115,26 +123,3 @@ export const mockPaginationFromBackend = (
     items,
   };
 };
-
-/*
-console.log();
-console.log(mockPaginationFromBackend(1));
-
-console.log();
-console.log(mockPaginationFromBackend(2));
-
-console.log();
-console.log(mockPaginationFromBackend(3));
-
-console.log();
-console.log(mockPaginationFromBackend(4));
-
-console.log();
-console.log(mockPaginationFromBackend(5));
-
-console.log();
-console.log(mockPaginationFromBackend(6));
-
-console.log();
-console.log(mockPaginationFromBackend(7));
-*/
