@@ -68,8 +68,6 @@ import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
 
 // jest.setTimeout(5 * 60 * 1000);
 
-// jest.setTimeout(5 * 60 * 1000);
-
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
     render(<Home />);
@@ -1410,9 +1408,19 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was determined to be invalid",
     async () => {
       /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
         rest.post("/api/examples", (req, res, ctx) => {
-          return res(
+          return res.once(
             ctx.status(400),
             ctx.json({
               error: "[mocked] Bad Request",
@@ -1421,11 +1429,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
           );
         })
       );
-
-      const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -1478,9 +1481,19 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user's access token has expired",
     async () => {
       /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
         rest.post("/api/examples", (req, res, ctx) => {
-          return res(
+          return res.once(
             ctx.status(401),
             ctx.json({
               error: "[mocked] Unauthorized",
@@ -1489,11 +1502,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
           );
         })
       );
-
-      const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
