@@ -64,7 +64,9 @@ import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
 // 5
 import { examplesMock } from "./dataMocks";
 
-import { requestHandlers } from "./testHelpers";
+import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
+
+// jest.setTimeout(5 * 60 * 1000);
 
 // jest.setTimeout(5 * 60 * 1000);
 
@@ -347,9 +349,8 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
 
       const history = createMemoryHistory();
 
-      quasiServer.use(
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
-      );
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+      quasiServer.use(rest.get("/api/examples", rhf.createMockFetchExamples()));
 
       /* Act. */
       render(
@@ -687,6 +688,8 @@ const requestHandlersToMock = [
 
   rest.get("/api/examples", requestHandlers.mockMultipleFailures),
   rest.post("/api/examples", requestHandlers.mockMultipleFailures),
+  rest.put("/api/examples/:id", requestHandlers.mockMultipleFailures),
+  rest.delete("/api/examples/:id", requestHandlers.mockMultipleFailures),
 ];
 
 /* Create an MSW "request-interception layer". */
@@ -1054,11 +1057,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -1121,11 +1125,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -1179,12 +1184,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -1255,12 +1261,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -1332,13 +1339,14 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.post("/api/examples", requestHandlers.mockCreateExample),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.post("/api/examples", rhf.createMockCreateExample()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -1565,12 +1573,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -2146,12 +2155,13 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
-        rest.get("/api/examples", requestHandlers.mockFetchExamples)
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       render(
@@ -2222,10 +2232,11 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       quasiServer.use(
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-        rest.get("/api/examples", requestHandlers.mockFetchExamples),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
 
         rest.get("/api/examples", requestHandlers.mockSingleFailure)
       );

@@ -102,82 +102,110 @@ const mockRequestPasswordReset = (
   );
 };
 
-const mockFetchExamples = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
-  res: ResponseComposition<any>,
-  ctx: RestContext
-) => {
-  const perPage: number = 2;
-  const page = parseInt(req.url.searchParams.get("page") || "1");
+export class RequestHandlingFacilitator {
+  /*
+  An instance of this class makes it possible
+  to create mock handlers for HTTP requests.
 
-  const newWord = req.url.searchParams.get("new_word");
-  const content = req.url.searchParams.get("content");
-  const contentTranslation = req.url.searchParams.get("content_translation");
+  The mock handlers, which are created by a common instance of this class,
+  are not "lone-standing";
+  rather, such mock handlers depend on one another
+  via the (common) state stored within the (class) instance.
+  */
 
-  const possiblyFilteredExamples: IExampleFromBackend[] = examplesMock.filter(
-    (e: IExampleFromBackend) => {
-      let isMatch: boolean = true;
+  mockExamples: IExampleFromBackend[];
 
-      if (newWord !== null) {
-        isMatch =
-          isMatch &&
-          e.new_word.toLowerCase().search(newWord.toLowerCase()) !== -1;
-      }
-      if (content !== null) {
-        isMatch =
-          isMatch &&
-          e.content.toLowerCase().search(content.toLowerCase()) !== -1;
-      }
-      if (contentTranslation !== null) {
-        isMatch =
-          isMatch &&
-          e.content_translation
-            .toLowerCase()
-            .search(contentTranslation.toLowerCase()) !== -1;
-      }
+  constructor() {
+    this.mockExamples = [...examplesMock];
+  }
 
-      return isMatch;
-    }
-  );
+  createMockFetchExamples() {
+    const mockFetchExamples = (
+      req: RestRequest<DefaultRequestBody, RequestParams>,
+      res: ResponseComposition<any>,
+      ctx: RestContext
+    ) => {
+      const perPage: number = 2;
+      const page = parseInt(req.url.searchParams.get("page") || "1");
 
-  return res.once(
-    ctx.status(200),
-    ctx.json(
-      mockPaginationFromBackend(
-        possiblyFilteredExamples,
-        perPage,
-        page,
-        newWord,
+      const newWord = req.url.searchParams.get("new_word");
+      const content = req.url.searchParams.get("content");
+      const contentTranslation = req.url.searchParams.get(
+        "content_translation"
+      );
+
+      const possiblyFilteredExamples: IExampleFromBackend[] =
+        this.mockExamples.filter((e: IExampleFromBackend) => {
+          let isMatch: boolean = true;
+
+          if (newWord !== null) {
+            isMatch =
+              isMatch &&
+              e.new_word.toLowerCase().search(newWord.toLowerCase()) !== -1;
+          }
+          if (content !== null) {
+            isMatch =
+              isMatch &&
+              e.content.toLowerCase().search(content.toLowerCase()) !== -1;
+          }
+          if (contentTranslation !== null) {
+            isMatch =
+              isMatch &&
+              e.content_translation
+                .toLowerCase()
+                .search(contentTranslation.toLowerCase()) !== -1;
+          }
+
+          return isMatch;
+        });
+
+      return res.once(
+        ctx.status(200),
+        ctx.json(
+          mockPaginationFromBackend(
+            possiblyFilteredExamples,
+            perPage,
+            page,
+            newWord,
+            content,
+            contentTranslation
+          )
+        )
+      );
+    };
+
+    return mockFetchExamples;
+  }
+
+  createMockCreateExample() {
+    const mockCreateExample = (
+      req: RestRequest<DefaultRequestBody, RequestParams>,
+      res: ResponseComposition<any>,
+      ctx: RestContext
+    ) => {
+      const source_language = (req!.body as Record<string, any>)
+        .source_language;
+      const new_word = (req!.body as Record<string, any>).new_word;
+      const content = (req!.body as Record<string, any>).content;
+      const content_translation = (req!.body as Record<string, any>)
+        .content_translation;
+
+      const newExample: IExampleFromBackend = {
+        id: this.mockExamples.length + 1,
+        source_language,
+        new_word,
         content,
-        contentTranslation
-      )
-    )
-  );
-};
+        content_translation,
+      };
 
-const mockCreateExample = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
-  res: ResponseComposition<any>,
-  ctx: RestContext
-) => {
-  const source_language = (req!.body as Record<string, any>).source_language;
-  const new_word = (req!.body as Record<string, any>).new_word;
-  const content = (req!.body as Record<string, any>).content;
-  const content_translation = (req!.body as Record<string, any>)
-    .content_translation;
+      this.mockExamples = [...this.mockExamples, newExample];
 
-  const newExample: IExampleFromBackend = {
-    id: examplesMock.length + 1,
-    source_language,
-    new_word,
-    content,
-    content_translation,
-  };
+      return res.once(ctx.status(201), ctx.json(newExample));
+    };
 
-  // this.mockEntries = [...this.mockEntries, newExample];
-
-  return res.once(ctx.status(201), ctx.json(newExample));
-};
+    return mockCreateExample;
+  }
+}
 
 export const requestHandlers = {
   mockMultipleFailures,
@@ -187,7 +215,4 @@ export const requestHandlers = {
   mockIssueJWSToken,
   mockFetchUserProfile,
   mockRequestPasswordReset,
-
-  mockFetchExamples,
-  mockCreateExample,
 };
