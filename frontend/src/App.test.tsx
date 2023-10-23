@@ -66,7 +66,7 @@ import { examplesMock } from "./dataMocks";
 
 import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
 
-// jest.setTimeout(5 * 60 * 1000);
+jest.setTimeout(5 * 60 * 1000);
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -1659,38 +1659,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should be navigated back to the same page [of examples]",
     async () => {
       /* Arrange. */
-      const examplesMockCopy = [...examplesMock];
-
-      quasiServer.use(
-        rest.get("/api/examples", (req, res, ctx) => {
-          const perPage: number = 2;
-          const page = parseInt(req.url.searchParams.get("page") || "1");
-
-          return res(
-            ctx.status(200),
-            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
-          );
-        }),
-
-        rest.delete("/api/examples/:id", (req, res, ctx) => {
-          const exampleId: number = parseInt(req.params.id);
-          const exampleIndex: number = examplesMockCopy.findIndex(
-            (e: IExampleFromBackend) => e.id === exampleId
-          );
-
-          examplesMockCopy.splice(exampleIndex, 1);
-
-          console.log("after deletion, examplesMockCopy:");
-          console.log(examplesMockCopy);
-
-          return res(ctx.status(204));
-        })
-      );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
+        rest.delete("/api/examples/:id", rhf.createMockDeleteExample()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
+      );
 
       render(
         <Provider store={realStore}>
@@ -1739,35 +1721,47 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should be navigated back to the last page [of examples]",
     async () => {
       /* Arrange. */
-      const examplesMockCopy = [...examplesMock];
+      // const examplesMockCopy = [...examplesMock];
 
-      quasiServer.use(
-        rest.get("/api/examples", (req, res, ctx) => {
-          const perPage: number = 2;
-          const page = parseInt(req.url.searchParams.get("page") || "1");
+      // quasiServer.use(
+      //   rest.get("/api/examples", (req, res, ctx) => {
+      //     const perPage: number = 2;
+      //     const page = parseInt(req.url.searchParams.get("page") || "1");
 
-          return res(
-            ctx.status(200),
-            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
-          );
-        }),
+      //     return res(
+      //       ctx.status(200),
+      //       ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
+      //     );
+      //   }),
 
-        rest.delete("/api/examples/:id", (req, res, ctx) => {
-          const exampleId: number = parseInt(req.params.id);
-          const exampleIndex: number = examplesMockCopy.findIndex(
-            (e: IExampleFromBackend) => e.id === exampleId
-          );
+      //   rest.delete("/api/examples/:id", (req, res, ctx) => {
+      //     const exampleId: number = parseInt(req.params.id);
+      //     const exampleIndex: number = examplesMockCopy.findIndex(
+      //       (e: IExampleFromBackend) => e.id === exampleId
+      //     );
 
-          examplesMockCopy.splice(exampleIndex, 1);
+      //     examplesMockCopy.splice(exampleIndex, 1);
 
-          return res(ctx.status(204));
-        })
-      );
+      //     return res(ctx.status(204));
+      //   })
+      // );
 
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
+        rest.delete("/api/examples/:id", rhf.createMockDeleteExample()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
+      );
 
       render(
         <Provider store={realStore}>
@@ -1800,7 +1794,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       let element: HTMLElement;
-      element = await screen.findByText("Current page: 5");
+      element = await screen.findByText("Current page: 4");
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("lause numero-9");

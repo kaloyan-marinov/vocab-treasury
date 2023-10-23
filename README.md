@@ -640,6 +640,14 @@ and use `localhost` to serve a frontend application.
       click on the beaker icon,
       click on the test of interest,
       and use the "Run Test" or "Debug Test" button
+
+    - (
+      if you clicked on the "Debug Test" button,
+      you might have click on the `vscode-jest-tests.vs2` pane
+      (in the "TERMINAL" tab) within VS Code's integrated terminal
+      _and_
+      press [Enter]
+      )
     
     - note that
       the last step opens the "TEST RESULTS" tab in VS Code's integrated terminal

@@ -205,6 +205,24 @@ export class RequestHandlingFacilitator {
 
     return mockCreateExample;
   }
+
+  createMockDeleteExample() {
+    const mockDeleteExample = (
+      req: RestRequest<DefaultRequestBody, RequestParams>,
+      res: ResponseComposition<any>,
+      ctx: RestContext
+    ) => {
+      const exampleId: number = parseInt(req.params.id);
+
+      this.mockExamples = this.mockExamples.filter(
+        (example: IExampleFromBackend) => example.id !== exampleId
+      );
+
+      return res.once(ctx.status(204));
+    };
+
+    return mockDeleteExample;
+  }
 }
 
 export const requestHandlers = {
