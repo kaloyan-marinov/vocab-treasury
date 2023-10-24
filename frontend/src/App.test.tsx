@@ -66,7 +66,8 @@ import { examplesMock } from "./dataMocks";
 
 import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
 
-jest.setTimeout(5 * 60 * 1000);
+const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
+jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -1671,6 +1672,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         rest.get("/api/examples", rhf.createMockFetchExamples()),
 
         rest.delete("/api/examples/:id", rhf.createMockDeleteExample()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
         rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
@@ -1700,7 +1702,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       let element: HTMLElement;
-      element = await screen.findByText("Current page: 1");
+      element = await screen.findByText("Current page: 1", undefined, {
+        timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
+      });
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("lause numero-2");
@@ -1721,31 +1725,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should be navigated back to the last page [of examples]",
     async () => {
       /* Arrange. */
-      // const examplesMockCopy = [...examplesMock];
-
-      // quasiServer.use(
-      //   rest.get("/api/examples", (req, res, ctx) => {
-      //     const perPage: number = 2;
-      //     const page = parseInt(req.url.searchParams.get("page") || "1");
-
-      //     return res(
-      //       ctx.status(200),
-      //       ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
-      //     );
-      //   }),
-
-      //   rest.delete("/api/examples/:id", (req, res, ctx) => {
-      //     const exampleId: number = parseInt(req.params.id);
-      //     const exampleIndex: number = examplesMockCopy.findIndex(
-      //       (e: IExampleFromBackend) => e.id === exampleId
-      //     );
-
-      //     examplesMockCopy.splice(exampleIndex, 1);
-
-      //     return res(ctx.status(204));
-      //   })
-      // );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
@@ -1760,6 +1739,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         rest.get("/api/examples", rhf.createMockFetchExamples()),
 
         rest.delete("/api/examples/:id", rhf.createMockDeleteExample()),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
         rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
@@ -1794,7 +1774,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       let element: HTMLElement;
-      element = await screen.findByText("Current page: 4");
+      element = await screen.findByText("Current page: 5", undefined, {
+        timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
+      });
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("lause numero-9");
