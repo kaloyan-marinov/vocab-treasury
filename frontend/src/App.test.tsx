@@ -64,9 +64,15 @@ import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
 // 5
 import { examplesMock } from "./dataMocks";
 
-import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
+import {
+  requestHandlers,
+  RequestHandlingFacilitator,
+  PutRequestBody,
+  PutResponseBody,
+  PutRequestParams,
+} from "./testHelpers";
 
-const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
+// const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 describe("<Home>", () => {
@@ -1833,22 +1839,19 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " and then the user clicks on 'Delete this example'," +
       " the user gets logged out",
     async () => {
-      quasiServer.use(
-        rest.delete("/api/examples/:id", (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Unauthorized",
-              message: "[mocked] Expired access token.",
-            })
-          );
-        })
-      );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
+        rest.delete("/api/examples/:id", requestHandlers.mockSingleFailure)
+      );
 
       render(
         <Provider store={realStore}>
@@ -1896,72 +1899,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " and the edited example should be displayed there",
     async () => {
       /* Arrange. */
-      const examplesMockCopy = [...examplesMock];
 
-      // Describe the shape of the "req.body".
-      interface PutRequestBody {
-        source_language: string | null;
-        new_word: string | null;
-        content: string | null;
-        content_translation: string | null;
-      }
-
-      // Describe the shape of the mocked response body.
-      interface PutResponseBody {
-        id: number;
-        source_language: string;
-        new_word: string;
-        content: string;
-        content_translation: string;
-      }
-
-      // Describe the shape of the "req.params".
-      interface PutRequestParams {
-        id: string;
-      }
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
 
       quasiServer.use(
-        rest.get("/api/examples", (req, res, ctx) => {
-          const perPage: number = 2;
-          const page = parseInt(req.url.searchParams.get("page") || "1");
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-          return res(
-            ctx.status(200),
-            ctx.json(mockPaginationFromBackend(examplesMockCopy, perPage, page))
-          );
-        }),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
 
         rest.put<PutRequestBody, PutResponseBody, PutRequestParams>(
           "/api/examples/:id",
-          (req, res, ctx) => {
-            const exampleId: number = parseInt(req.params.id);
-            const exampleIndex: number = examplesMockCopy.findIndex(
-              (e: IExampleFromBackend) => e.id === exampleId
-            );
-
-            const editedExample: IExampleFromBackend = {
-              ...examplesMockCopy[exampleIndex],
-            };
-            const { source_language, new_word, content, content_translation } =
-              req.body;
-            if (source_language !== null) {
-              editedExample.source_language = source_language;
-            }
-            if (new_word !== null) {
-              editedExample.new_word = new_word;
-            }
-            if (content !== null) {
-              editedExample.content = content;
-            }
-            if (content_translation !== null) {
-              editedExample.content_translation = content_translation;
-            }
-
-            examplesMockCopy[exampleIndex] = editedExample;
-
-            return res(ctx.status(200), ctx.json(editedExample));
-          }
-        )
+          rhf.createMockEditExample()
+        ),
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+        rest.get("/api/examples", rhf.createMockFetchExamples())
       );
 
       const enhancer = applyMiddleware(thunkMiddleware);
