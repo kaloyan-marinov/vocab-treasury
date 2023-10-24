@@ -67,7 +67,7 @@ import { examplesMock } from "./dataMocks";
 import { requestHandlers, RequestHandlingFacilitator } from "./testHelpers";
 
 const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
-jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
+// jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 describe("<Home>", () => {
   test("renders a 'Welcome to VocabTreasury!' message", () => {
@@ -1702,9 +1702,28 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       let element: HTMLElement;
+      /*
+      It is worth emphasizing that:
+      (a) when you run this test,
+          it will PASS, but
+      (b) when you use the Jest extension to debug this test,
+          it will FAIL at the next statement.
+      
+      The reason for (b) is that,
+      as per https://testing-library.com/docs/dom-testing-library/api-async ,
+      "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
+      is 1000ms."
+
+      If you wish to use the Jest extension to debug this test
+      without it FAILing due to the default timeout,
+      please change the following statement to:
+      ```
       element = await screen.findByText("Current page: 1", undefined, {
         timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
       });
+      ```
+      */
+      element = await screen.findByText("Current page: 1");
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("lause numero-2");
@@ -1774,9 +1793,28 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       let element: HTMLElement;
+      /*
+      It is worth emphasizing that:
+      (a) when you run this test,
+          it will PASS, but
+      (b) when you use the Jest extension to debug this test,
+          it will FAIL at the next statement.
+      
+      The reason for (b) is that,
+      as per https://testing-library.com/docs/dom-testing-library/api-async ,
+      "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
+      is 1000ms."
+
+      If you wish to use the Jest extension to debug this test
+      without it FAILing due to the default timeout,
+      please change the following statement to:
+      ```
       element = await screen.findByText("Current page: 5", undefined, {
         timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
       });
+      ```
+      */
+      element = await screen.findByText("Current page: 5");
       expect(element).toBeInTheDocument();
 
       element = screen.getByText("lause numero-9");
