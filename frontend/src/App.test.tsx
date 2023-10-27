@@ -1899,6 +1899,10 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " and the edited example should be displayed there",
     async () => {
       /* Arrange. */
+      const enhancer = applyMiddleware(thunkMiddleware);
+      const realStore = createStore(rootReducer, enhancer);
+
+      const history = createMemoryHistory();
 
       const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
 
@@ -1914,11 +1918,6 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         rest.get("/api/examples", rhf.createMockFetchExamples()),
         rest.get("/api/examples", rhf.createMockFetchExamples())
       );
-
-      const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -2009,6 +2008,16 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples())
+
+        // rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
+      );
+
       render(
         <Provider store={realStore}>
           <Router history={history}>
@@ -2062,22 +2071,20 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the user should get logged out",
     async () => {
       /* Arrange. */
-      quasiServer.use(
-        rest.put("/api/examples/:id", (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              error: "[mocked] Unauthorized",
-              message: "[mocked] Expired access token.",
-            })
-          );
-        })
-      );
-
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
 
       const history = createMemoryHistory();
+
+      const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+
+      quasiServer.use(
+        rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+        rest.get("/api/examples", rhf.createMockFetchExamples()),
+
+        rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
+      );
 
       render(
         <Provider store={realStore}>
