@@ -31,3 +31,7 @@ export const styleForBorder = { border: "1px solid black" };
 
 export const styleForTable = { width: "100%" };
 Object.assign(styleForTable, styleForBorder);
+
+// The source for the next definition is
+// https://reactgo.com/horizontally-center-elements-css/
+export const styleForCenter = { display: "flex", justifyContent: "center" };
