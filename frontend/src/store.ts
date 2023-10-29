@@ -8,7 +8,17 @@ import { combineReducers } from "redux";
 
 import { v4 as uuidv4 } from "uuid";
 
-import { IStateAlerts, RequestStatus, IStateAuth } from "./types";
+import {
+  IStateAlerts,
+  RequestStatus,
+  IStateAuth,
+  IExampleFromBackend,
+  IExample,
+  IPaginationMetaFromBackend,
+  IPaginationMeta,
+  IPaginationLinks,
+  IStateExamples,
+} from "./types";
 import {
   INITIAL_STATE_ALERTS,
   INITIAL_STATE_AUTH,
@@ -27,55 +37,11 @@ import {
   authReducer,
 } from "./features/auth/authSlice";
 
-export interface IExampleFromBackend {
-  id: number;
-  source_language: string;
-  new_word: string;
-  content: string;
-  content_translation: string /* can be "" */;
-}
-
-export interface IExample {
-  id: number;
-  sourceLanguage: string;
-  newWord: string;
-  content: string;
-  contentTranslation: string /* can be "" */;
-}
-
-export interface IPaginationMetaFromBackend {
-  total_items: number;
-  per_page: number;
-  total_pages: number;
-  page: number;
-}
-
-export interface IPaginationMeta {
-  totalItems: number | null;
-  perPage: number | null;
-  totalPages: number | null;
-  page: number | null;
-}
-
-export interface IPaginationLinks {
-  self: string | null;
-  next: string | null;
-  prev: string | null;
-  first: string | null;
-  last: string | null;
-}
-
-export interface IStateExamples {
-  requestStatus: RequestStatus;
-  requestError: string | null;
-  meta: IPaginationMeta;
-  links: IPaginationLinks;
-  ids: number[];
-  entities: {
-    [exampleId: string]: IExample;
-  };
-}
-
+/*
+TODO: (2023/10/29, 14:44)
+      before submitting a pull request for review,
+      relocate the following symbol to `frontend/src/types.ts`
+*/
 export interface IState {
   alerts: IStateAlerts;
   auth: IStateAuth;

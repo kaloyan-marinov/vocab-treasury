@@ -6,7 +6,7 @@ import {
   RestRequest,
 } from "msw";
 
-import { IExampleFromBackend } from "./store";
+import { IExampleFromBackend } from "./types";
 import {
   profileMock,
   examplesMock,

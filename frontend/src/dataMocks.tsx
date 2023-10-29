@@ -3,7 +3,7 @@ import {
   IPaginationMetaFromBackend,
   IPaginationLinks,
   IExampleFromBackend,
-} from "./store";
+} from "./types";
 
 export const profileMock: IProfile = {
   id: 17,

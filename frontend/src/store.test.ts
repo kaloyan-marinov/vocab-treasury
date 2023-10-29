@@ -1,4 +1,14 @@
-import { IAlert, RequestStatus, IProfile } from "./types";
+import {
+  IAlert,
+  RequestStatus,
+  IProfile,
+  IPaginationMeta,
+  IPaginationLinks,
+  IExample,
+  IPaginationMetaFromBackend,
+  IExampleFromBackend,
+  IStateExamples,
+} from "./types";
 import { INITIAL_STATE_AUTH } from "./constants";
 
 // 1
@@ -27,11 +37,8 @@ import {
 
 import {
   initialStateExamples,
-  IPaginationMeta,
   selectExamplesMeta,
-  IPaginationLinks,
   selectExamplesLinks,
-  IExample,
   selectExamplesIds,
   selectExamplesEntities,
 } from "./store";
@@ -39,15 +46,10 @@ import {
 import { fetchExamplesPending, fetchExamplesRejected } from "./store";
 
 import { mockPaginationFromBackend } from "./dataMocks";
-import {
-  IPaginationMetaFromBackend,
-  IExampleFromBackend,
-  fetchExamplesFulfilled,
-} from "./store";
+import { fetchExamplesFulfilled } from "./store";
 
 import {
   examplesReducer,
-  IStateExamples,
   ActionTypesFetchExamples,
   IActionFetchExamplesPending,
   IActionFetchExamplesRejected,
