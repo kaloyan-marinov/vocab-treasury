@@ -2,11 +2,8 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Route, Redirect } from "react-router-dom";
 
-import {
-  RequestStatus,
-  selectAuthRequestStatus,
-  selectHasValidToken,
-} from "../../store";
+import { RequestStatus } from "../../types";
+import { selectAuthRequestStatus, selectHasValidToken } from "../../store";
 
 export const PrivateRoute = (props: any) => {
   console.log(

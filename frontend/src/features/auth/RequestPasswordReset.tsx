@@ -4,13 +4,9 @@ import { ThunkDispatch } from "redux-thunk";
 import { Redirect } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  IState,
-  ActionRequestPasswordReset,
-  requestPasswordReset,
-  selectHasValidToken,
-} from "../../store";
+import { IState, selectHasValidToken } from "../../store";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
+import { ActionRequestPasswordReset, requestPasswordReset } from "./authSlice";
 
 export const RequestPasswordReset = () => {
   console.log(

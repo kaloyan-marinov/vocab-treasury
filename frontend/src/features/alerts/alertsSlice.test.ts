@@ -42,6 +42,15 @@ describe("reducer", () => {
   });
 
   test("alerts/create", () => {
+    /*
+    TODO: (2023/10/29, 10:30)
+
+          before submitting a pull request for review,
+          eliminate the duplication between
+          the variable defined in the next statement
+          and
+          the `initStAlerts` defined in the `beforeEach`
+    */
     const initState: IStateAlerts = {
       ...INITIAL_STATE_ALERTS,
     };

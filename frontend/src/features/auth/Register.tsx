@@ -4,13 +4,9 @@ import { ThunkDispatch } from "redux-thunk";
 import { Redirect, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  IState,
-  ActionCreateUser,
-  createUser,
-  selectHasValidToken,
-} from "../../store";
+import { IState, selectHasValidToken } from "../../store";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
+import { ActionCreateUser, createUser } from "./authSlice";
 
 export const Register = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Register>`);

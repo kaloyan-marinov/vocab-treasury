@@ -1,5 +1,5 @@
+import { IProfile } from "./types";
 import {
-  IProfile,
   IPaginationMetaFromBackend,
   IPaginationLinks,
   IExampleFromBackend,

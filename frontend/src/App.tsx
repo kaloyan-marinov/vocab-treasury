@@ -16,18 +16,20 @@ import {
   IActionAlertsCreate,
   alertsCreate,
 } from "./features/alerts/alertsSlice";
+
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
+import { fetchProfile } from "./features/auth/authSlice";
+
+import { IProfile } from "./types";
 
 import { PrivateRoute } from "./features/auth/PrivateRoute";
 
 import {
   IState,
-  fetchProfile,
   logOut,
   selectHasValidToken,
-  IProfile,
   selectLoggedInUserProfile,
   IExample,
   selectExamplesIds,
