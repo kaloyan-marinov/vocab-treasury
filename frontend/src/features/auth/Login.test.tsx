@@ -169,7 +169,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const history = createMemoryHistory();
 
       quasiServer.use(
-        rest.post("/api/tokens", requestHandlers.mockMultipleFailures)
+        rest.post("/api/tokens", requestHandlers.mockSingleFailure)
       );
 
       render(
@@ -199,7 +199,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Assert. */
       const element: HTMLElement = await screen.findByText(
-        "[mocked] Incorrect email and/or password."
+        "[mocked] Authentication in the Basic Auth format is required."
       );
       expect(element).toBeInTheDocument();
     }

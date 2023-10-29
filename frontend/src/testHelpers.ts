@@ -33,8 +33,8 @@ const mockMultipleFailures = (
   return res(
     ctx.status(401),
     ctx.json({
-      error: "[mocked] Bad Request",
-      message: "[mocked] Incorrect email and/or password.",
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
     })
   );
 };
