@@ -18,6 +18,7 @@ import {
 } from "./features/alerts/alertsSlice";
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
+import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 
 import { PrivateRoute } from "./features/auth/PrivateRoute";
 
@@ -43,8 +44,6 @@ import {
   ActionDeleteExample,
   ActionEditExample,
   editExample,
-  ActionRequestPasswordReset,
-  requestPasswordReset,
 } from "./store";
 import { ThunkDispatch } from "redux-thunk";
 
@@ -189,94 +188,6 @@ export const About = () => {
     <React.Fragment>
       {"<About>"}
       <h1>About VocabTreasury...</h1>
-    </React.Fragment>
-  );
-};
-
-export const RequestPasswordReset = () => {
-  console.log(
-    `${new Date().toISOString()} - React is rendering <RequestPasswordReset>`
-  );
-
-  const [email, setEmail] = React.useState("");
-
-  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
-  console.log(`    hasValidToken: ${hasValidToken}`);
-
-  const dispatch: ThunkDispatch<
-    IState,
-    unknown,
-    ActionRequestPasswordReset | IActionAlertsCreate
-  > = useDispatch();
-
-  if (hasValidToken === true) {
-    const nextURL: string = "/home";
-    console.log(
-      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
-    );
-    return <Redirect to={nextURL} />;
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    console.log("    submitting form");
-
-    const id: string = uuidv4();
-    if (email === "") {
-      dispatch(alertsCreate(id, "THE FORM FIELD MUST BE FILLED OUT"));
-    } else {
-      try {
-        await dispatch(requestPasswordReset(email));
-        dispatch(
-          alertsCreate(
-            id,
-            `PASSWORD-RESET INSTRUCTIONS WERE SUCCESSFULLY SENT TO ${email}`
-          )
-        );
-        setEmail("");
-      } catch (thunkActionError) {
-        dispatch(alertsCreate(id, thunkActionError));
-      }
-    }
-  };
-
-  return (
-    <React.Fragment>
-      {"<RequestPasswordReset>"}
-      <div>
-        <form
-          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <fieldset>
-            <legend>[legend-tag: RESET PASSWORD]</legend>
-            <div>
-              <label htmlFor="<RPR>-email">EMAIL</label>
-              <input
-                id="<RPR>-email"
-                name="email"
-                type="text"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-          </fieldset>
-          <div>
-            <input
-              id="<RPR>-submit"
-              name="submit"
-              type="submit"
-              value="REQUEST PASSWORD RESET"
-            />
-          </div>
-        </form>
-      </div>
     </React.Fragment>
   );
 };

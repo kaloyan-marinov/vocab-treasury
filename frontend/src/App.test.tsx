@@ -2231,22 +2231,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       /* Act. */
       /* Simulate the user's manually changing the URL in her browser's address bar. */
-      /*
-      Note to self:
-      the commented-out parts below were copied from existing test cases
-      but appear to be unnecessary
-      */
-      // cleanup();
-
       history.push("/request_password_reset");
-
-      // render(
-      //   <Provider store={realStore}>
-      //     <Router history={history}>
-      //       <App />
-      //     </Router>
-      //   </Provider>
-      // );
 
       /* Assert. */
       expect(history.location.pathname).toEqual("/home");
