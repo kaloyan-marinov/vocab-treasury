@@ -40,6 +40,8 @@ export const examplesMock: IExampleFromBackend[] = Array.from({
   };
 });
 
+export const MOCK_EXAMPLE_AT_IDX_7 = examplesMock[7];
+
 export const mockPaginationFromBackend = (
   examples: IExampleFromBackend[],
   perPage: number = 2,

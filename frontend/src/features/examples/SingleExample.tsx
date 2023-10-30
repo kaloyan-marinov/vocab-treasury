@@ -13,12 +13,14 @@ import {
 import {
   IState,
   logOut,
-  fetchExamples,
   selectExamplesEntities,
   selectExamplesLinks,
+} from "../../store";
+import {
+  fetchExamples,
   ActionDeleteExample,
   deleteExample,
-} from "../../store";
+} from "./examplesSlice";
 
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 export const SingleExample = () => {

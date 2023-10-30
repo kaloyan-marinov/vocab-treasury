@@ -1,4 +1,9 @@
-import { IStateAlerts, RequestStatus, IStateAuth } from "./types";
+import {
+  IStateAlerts,
+  RequestStatus,
+  IStateAuth,
+  IStateExamples,
+} from "./types";
 
 export const INITIAL_STATE_ALERTS: IStateAlerts = {
   ids: [],
@@ -16,6 +21,26 @@ export const INITIAL_STATE_AUTH: IStateAuth = {
 };
 
 export const URL_FOR_FIRST_PAGE_OF_EXAMPLES: string = "/api/examples";
+
+export const INITIAL_STATE_EXAMPLES: IStateExamples = {
+  requestStatus: RequestStatus.IDLE,
+  requestError: null,
+  meta: {
+    totalItems: null,
+    perPage: null,
+    totalPages: null,
+    page: null,
+  },
+  links: {
+    self: null,
+    next: null,
+    prev: null,
+    first: null,
+    last: null,
+  },
+  ids: [],
+  entities: {},
+};
 
 /*
 TODO: (2023/10/29, 11:52)

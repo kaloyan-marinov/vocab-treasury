@@ -37,11 +37,13 @@ import {
   selectLoggedInUserProfile,
   selectExamplesIds,
   selectExamplesEntities,
-  ActionFetchExamples,
-  fetchExamples,
   selectExamplesMeta,
   selectExamplesLinks,
 } from "./store";
+import {
+  ActionFetchExamples,
+  fetchExamples,
+} from "./features/examples/examplesSlice";
 import { ThunkDispatch } from "redux-thunk";
 
 import { Redirect } from "react-router-dom";

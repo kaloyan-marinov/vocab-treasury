@@ -21,12 +21,10 @@ import {
   selectLoggedInUserProfile,
   selectExamplesIds,
   selectExamplesEntities,
-  ActionFetchExamples,
-  fetchExamples,
   selectExamplesMeta,
   selectExamplesLinks,
 } from "../../store";
-
+import { ActionFetchExamples, fetchExamples } from "./examplesSlice";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 
 interface LocationStateWithinOwnVocabTreasury {

@@ -9,14 +9,15 @@ import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import {
   IState,
   logOut,
+  selectExamplesEntities,
+  selectExamplesLinks,
+} from "../../store";
+import {
   ActionFetchExamples,
   fetchExamples,
   ActionEditExample,
   editExample,
-  selectExamplesEntities,
-  selectExamplesLinks,
-} from "../../store";
-
+} from "./examplesSlice";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 export const EditExample = () => {
   console.log(`${new Date().toISOString()} - React is rendering <EditExample>`);
