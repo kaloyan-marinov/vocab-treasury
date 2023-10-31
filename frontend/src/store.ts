@@ -32,12 +32,12 @@ import {
   IActionExamplesClearSlice,
   examplesReducer,
 } from "./features/examples/examplesSlice";
+/*
+TODO: (2023/10/31, 17:52)
 
-export const INITIAL_STATE: IState = {
-  alerts: INITIAL_STATE_ALERTS,
-  auth: INITIAL_STATE_AUTH,
-  examples: INITIAL_STATE_EXAMPLES,
-};
+      before submitting a pull request for review,
+      improve the organization of the symbols in this file
+*/
 
 /* Define selector functions. */
 export const selectAlertsIds = (state: IState) => state.alerts.ids;
@@ -98,3 +98,4 @@ const composedEnhancer = composeWithDevTools(
 );
 
 export const store = createStore(rootReducer, composedEnhancer);
+export const INITIAL_STATE: IState = store.getState();

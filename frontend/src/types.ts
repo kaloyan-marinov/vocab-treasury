@@ -78,6 +78,9 @@ export interface IStateExamples {
   };
 }
 
+/*
+Specify all slices of the Redux state.
+*/
 export interface IState {
   alerts: IStateAlerts;
   auth: IStateAuth;
