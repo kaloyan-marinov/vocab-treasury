@@ -12,9 +12,9 @@ import { createStore } from "redux";
 import { Provider } from "react-redux";
 
 import { createMemoryHistory } from "history";
-import { Router, Route } from "react-router-dom";
+import { Router } from "react-router-dom";
 
-import { IState, INITIAL_STATE, rootReducer } from "./store";
+import { INITIAL_STATE, rootReducer } from "./store";
 import { NavigationBar, Home, About, Account } from "./App";
 import { Alerts } from "./features/alerts/Alerts";
 
@@ -26,28 +26,12 @@ import { applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 
 // 3
-import { profileMock } from "./dataMocks";
-
 import { App } from "./App";
 import { cleanup } from "@testing-library/react";
 
 // 4
-import { mockPaginationFromBackend } from "./dataMocks";
-
-import { exampleMock } from "./dataMocks";
-
-import {
-  IPaginationMetaFromBackend,
-  IPaginationLinks,
-  IExampleFromBackend,
-  IPaginationMeta,
-  IExample,
-} from "./types";
-import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
 
 // 5
-import { examplesMock } from "./dataMocks";
-
 import {
   requestHandlers,
   RequestHandlingFacilitator,

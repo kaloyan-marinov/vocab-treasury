@@ -5,9 +5,6 @@ import {
   IPaginationMeta,
   IPaginationLinks,
   IExample,
-  IPaginationMetaFromBackend,
-  IExampleFromBackend,
-  IStateExamples,
 } from "./types";
 import { INITIAL_STATE_AUTH, INITIAL_STATE_EXAMPLES } from "./constants";
 
@@ -15,8 +12,6 @@ import { INITIAL_STATE_AUTH, INITIAL_STATE_EXAMPLES } from "./constants";
 import { IState, selectAlertsIds, selectAlertsEntities } from "./store";
 
 // 3
-import { profileMock } from "./dataMocks";
-
 import {
   selectAuthRequestStatus,
   selectHasValidToken,
@@ -29,15 +24,6 @@ import {
   selectExamplesIds,
   selectExamplesEntities,
 } from "./store";
-
-import { mockPaginationFromBackend } from "./dataMocks";
-
-import { convertToPaginationInFrontend } from "./helperFunctionsForTesting";
-
-import { exampleMock } from "./dataMocks";
-
-// 4
-import { examplesMock } from "./dataMocks";
 
 describe("selector functions", () => {
   let state: IState;

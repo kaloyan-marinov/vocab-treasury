@@ -2,23 +2,12 @@ import { composeWithDevTools } from "redux-devtools-extension";
 import { applyMiddleware, Dispatch } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { createStore } from "redux";
-import axios from "axios";
 
 import { combineReducers } from "redux";
 
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  IStateAlerts,
-  RequestStatus,
-  IStateAuth,
-  IExampleFromBackend,
-  IExample,
-  IPaginationMetaFromBackend,
-  IPaginationMeta,
-  IPaginationLinks,
-  IStateExamples,
-} from "./types";
+import { IStateAlerts, IStateAuth, IStateExamples } from "./types";
 import {
   INITIAL_STATE_ALERTS,
   INITIAL_STATE_AUTH,

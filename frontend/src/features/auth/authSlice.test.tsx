@@ -1,3 +1,9 @@
+/*
+TODO: (2023/10/31, 17:31)
+
+      before submitting a pull request for review,
+      change this file's extension to `.ts`
+*/
 import { RequestStatus, IProfile, IStateAuth } from "../../types";
 import { INITIAL_STATE_AUTH, VOCAB_TREASURY_APP_TOKEN } from "../../constants";
 

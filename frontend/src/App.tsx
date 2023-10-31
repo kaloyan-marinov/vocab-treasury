@@ -1,26 +1,16 @@
-import { Dispatch } from "redux";
 import React from "react";
-import { Switch, Route, Link, useParams, useHistory } from "react-router-dom";
+import { Switch, Route, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
 
 import { Alerts } from "./features/alerts/Alerts";
-import {
-  IActionAlertsCreate,
-  alertsCreate,
-} from "./features/alerts/alertsSlice";
 
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 import { fetchProfile } from "./features/auth/authSlice";
 
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  styleForBorder,
-  styleForTable,
-} from "./constants";
-import { IProfile, IExample } from "./types";
+import { styleForBorder, styleForTable } from "./constants";
+import { IProfile } from "./types";
 
 import { PrivateRoute } from "./features/auth/PrivateRoute";
 
@@ -31,22 +21,10 @@ import { EditExample } from "./features/examples/EditExample";
 import { Search } from "./features/examples/Search";
 
 import {
-  IState,
   logOut,
   selectHasValidToken,
   selectLoggedInUserProfile,
-  selectExamplesIds,
-  selectExamplesEntities,
-  selectExamplesMeta,
-  selectExamplesLinks,
 } from "./store";
-import {
-  ActionFetchExamples,
-  fetchExamples,
-} from "./features/examples/examplesSlice";
-import { ThunkDispatch } from "redux-thunk";
-
-import { Redirect } from "react-router-dom";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);

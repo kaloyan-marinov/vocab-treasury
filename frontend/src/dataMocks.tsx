@@ -26,7 +26,7 @@ TODO: (2023/10/22, 10:08)
       before submitting a PR for review,
       rename the "constants" in this file to written in uppercase with underscores
       and
-      rename this file to `mockPiecesOfData`
+      rename this file to `mockPiecesOfData.ts`
 */
 export const examplesMock: IExampleFromBackend[] = Array.from({
   length: 11,

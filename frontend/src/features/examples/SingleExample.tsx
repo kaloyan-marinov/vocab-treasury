@@ -23,6 +23,7 @@ import {
 } from "./examplesSlice";
 
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
+
 export const SingleExample = () => {
   console.log(
     `${new Date().toISOString()} - React is rendering <SingleExample>`
