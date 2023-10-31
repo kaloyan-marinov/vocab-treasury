@@ -11,7 +11,7 @@ import {
   profileMock,
   examplesMock,
   mockPaginationFromBackend,
-} from "./dataMocks";
+} from "./mockPiecesOfData";
 
 /*
 Mock handlers for HTTP requests.

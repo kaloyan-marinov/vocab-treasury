@@ -66,7 +66,7 @@ import {
   examplesMock,
   exampleMock,
   MOCK_EXAMPLE_AT_IDX_7,
-} from "../../dataMocks";
+} from "../../mockPiecesOfData";
 import { INITIAL_STATE } from "../../store";
 import {
   fetchExamples,

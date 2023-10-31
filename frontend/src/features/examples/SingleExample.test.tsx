@@ -20,7 +20,10 @@ import { INITIAL_STATE } from "../../store";
 
 import { rootReducer } from "../../store";
 
-import { mockPaginationFromBackend, examplesMock } from "../../dataMocks";
+import {
+  mockPaginationFromBackend,
+  examplesMock,
+} from "../../mockPiecesOfData";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 
 import { SingleExample } from "./SingleExample";
