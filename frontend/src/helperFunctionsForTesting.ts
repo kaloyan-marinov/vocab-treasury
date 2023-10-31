@@ -1,10 +1,3 @@
-/*
-TODO: (2023/10/31, 17:36)
-
-      before submitting a pull request for review,
-      change this file's extension to `.ts`
-*/
-
 import {
   IExample,
   IExampleFromBackend,
