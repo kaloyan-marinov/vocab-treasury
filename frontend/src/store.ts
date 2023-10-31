@@ -7,7 +7,7 @@ import { combineReducers } from "redux";
 
 import { v4 as uuidv4 } from "uuid";
 
-import { IStateAlerts, IStateAuth, IStateExamples } from "./types";
+import { IState } from "./types";
 import {
   INITIAL_STATE_ALERTS,
   INITIAL_STATE_AUTH,
@@ -32,17 +32,6 @@ import {
   IActionExamplesClearSlice,
   examplesReducer,
 } from "./features/examples/examplesSlice";
-
-/*
-TODO: (2023/10/29, 14:44)
-      before submitting a pull request for review,
-      relocate the following symbol to `frontend/src/types.ts`
-*/
-export interface IState {
-  alerts: IStateAlerts;
-  auth: IStateAuth;
-  examples: IStateExamples;
-}
 
 export const INITIAL_STATE: IState = {
   alerts: INITIAL_STATE_ALERTS,

@@ -77,3 +77,9 @@ export interface IStateExamples {
     [exampleId: string]: IExample;
   };
 }
+
+export interface IState {
+  alerts: IStateAlerts;
+  auth: IStateAuth;
+  examples: IStateExamples;
+}
