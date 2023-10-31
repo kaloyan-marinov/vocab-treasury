@@ -8,12 +8,7 @@ import { combineReducers } from "redux";
 import { v4 as uuidv4 } from "uuid";
 
 import { IState } from "./types";
-import {
-  INITIAL_STATE_ALERTS,
-  INITIAL_STATE_AUTH,
-  VOCAB_TREASURY_APP_TOKEN,
-  INITIAL_STATE_EXAMPLES,
-} from "./constants";
+import { VOCAB_TREASURY_APP_TOKEN } from "./constants";
 
 import {
   alertsCreate,

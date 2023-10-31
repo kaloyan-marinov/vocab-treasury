@@ -14,7 +14,7 @@ import thunkMiddleware from "redux-thunk";
 import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
 import { setupServer, SetupServerApi } from "msw/node";
 
-import { IState } from "../../store";
+import { IState } from "../../types";
 import { INITIAL_STATE, rootReducer } from "../../store";
 
 import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";

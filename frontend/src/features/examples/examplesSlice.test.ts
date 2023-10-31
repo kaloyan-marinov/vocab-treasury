@@ -1,3 +1,5 @@
+import { IState } from "../../types";
+
 import {
   RequestStatus,
   IPaginationMetaFromBackend,
@@ -8,8 +10,6 @@ import {
   IStateExamples,
 } from "../../types";
 import { INITIAL_STATE_EXAMPLES } from "../../constants";
-
-import { IState } from "../../store";
 
 /*
 TODO: (2023/10/30, 07:35)

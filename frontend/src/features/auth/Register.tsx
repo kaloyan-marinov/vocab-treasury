@@ -4,7 +4,8 @@ import { ThunkDispatch } from "redux-thunk";
 import { Redirect, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
-import { IState, selectHasValidToken } from "../../store";
+import { IState } from "../../types";
+import { selectHasValidToken } from "../../store";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 import { ActionCreateUser, createUser } from "./authSlice";
 

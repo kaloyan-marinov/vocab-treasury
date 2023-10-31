@@ -4,8 +4,9 @@ import { useDispatch } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
+import { IState } from "../../types";
 import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
-import { IState, logOut } from "../../store";
+import { logOut } from "../../store";
 import {
   ActionFetchExamples,
   fetchExamples,

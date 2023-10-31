@@ -4,7 +4,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
 
-import { IState, INITIAL_STATE, rootReducer } from "../../store";
+import { IState } from "../../types";
+import { INITIAL_STATE, rootReducer } from "../../store";
 import { Alerts } from "./Alerts";
 
 describe("<Alerts>", () => {

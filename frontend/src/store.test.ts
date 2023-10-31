@@ -1,3 +1,4 @@
+import { IState } from "./types";
 import {
   IAlert,
   RequestStatus,
@@ -9,7 +10,7 @@ import {
 import { INITIAL_STATE_AUTH, INITIAL_STATE_EXAMPLES } from "./constants";
 
 // 1
-import { IState, selectAlertsIds, selectAlertsEntities } from "./store";
+import { selectAlertsIds, selectAlertsEntities } from "./store";
 
 // 3
 import {

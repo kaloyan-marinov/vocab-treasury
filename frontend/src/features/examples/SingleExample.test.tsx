@@ -14,8 +14,9 @@ import {
   IPaginationMetaFromBackend,
   IPaginationMeta,
   IPaginationLinks,
+  IState,
 } from "../../types";
-import { IState, INITIAL_STATE } from "../../store";
+import { INITIAL_STATE } from "../../store";
 
 import { rootReducer } from "../../store";
 

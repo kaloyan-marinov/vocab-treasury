@@ -6,7 +6,8 @@ import { Provider } from "react-redux";
 import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
-import { IState, INITIAL_STATE, rootReducer } from "../../store";
+import { IState } from "../../types";
+import { INITIAL_STATE, rootReducer } from "../../store";
 import { Register } from "./Register";
 import { Alerts } from "../alerts/Alerts";
 
