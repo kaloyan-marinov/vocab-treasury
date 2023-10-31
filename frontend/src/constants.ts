@@ -42,21 +42,11 @@ export const INITIAL_STATE_EXAMPLES: IStateExamples = {
   entities: {},
 };
 
-/*
-TODO: (2023/10/29, 11:52)
+export const STYLE_FOR_BORDER = { border: "1px solid black" };
 
-      before submitting a pull request for review,
-      rename the following variables so that they will "read" like constants
-
-      additional follow-up:
-      consider whether those variables will be rendered unused/unnecessary
-      when v-t-i-58 has been resolved
-*/
-export const styleForBorder = { border: "1px solid black" };
-
-export const styleForTable = { width: "100%" };
-Object.assign(styleForTable, styleForBorder);
+export const STYLE_FOR_TABLE = { width: "100%" };
+Object.assign(STYLE_FOR_TABLE, STYLE_FOR_BORDER);
 
 // The source for the next definition is
 // https://reactgo.com/horizontally-center-elements-css/
-export const styleForCenter = { display: "flex", justifyContent: "center" };
+export const STYLE_FOR_CENTER = { display: "flex", justifyContent: "center" };

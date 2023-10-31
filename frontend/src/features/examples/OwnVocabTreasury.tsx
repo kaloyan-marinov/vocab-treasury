@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  styleForBorder,
-  styleForTable,
+  STYLE_FOR_BORDER,
+  STYLE_FOR_TABLE,
 } from "../../constants";
 import {
   IProfile,
@@ -149,13 +149,13 @@ export const OwnVocabTreasury = () => {
 
     return (
       <tr key={e.id}>
-        <th style={styleForBorder}>
+        <th style={STYLE_FOR_BORDER}>
           <Link to={`/example/${e.id}`}>{e.id}</Link>
         </th>
-        <th style={styleForBorder}>{e.sourceLanguage}</th>
-        <th style={styleForBorder}>{e.newWord}</th>
-        <th style={styleForBorder}>{e.content}</th>
-        <th style={styleForBorder}>{e.contentTranslation}</th>
+        <th style={STYLE_FOR_BORDER}>{e.sourceLanguage}</th>
+        <th style={STYLE_FOR_BORDER}>{e.newWord}</th>
+        <th style={STYLE_FOR_BORDER}>{e.content}</th>
+        <th style={STYLE_FOR_BORDER}>{e.contentTranslation}</th>
       </tr>
     );
   });
@@ -256,14 +256,14 @@ export const OwnVocabTreasury = () => {
       </div>
       <br />
       {paginationControllingButtons}
-      <table style={styleForTable}>
+      <table style={STYLE_FOR_TABLE}>
         <tbody>
           <tr>
-            <th style={styleForBorder}>ID</th>
-            <th style={styleForBorder}>SOURCE LANGUAGE</th>
-            <th style={styleForBorder}>NEW WORD</th>
-            <th style={styleForBorder}>EXAMPLE</th>
-            <th style={styleForBorder}>TRANSLATION</th>
+            <th style={STYLE_FOR_BORDER}>ID</th>
+            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
+            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
+            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
+            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
           </tr>
           {exampleTableRows}
         </tbody>

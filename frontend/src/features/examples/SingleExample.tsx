@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 import { IExample } from "../../types";
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  styleForTable,
-  styleForBorder,
+  STYLE_FOR_TABLE,
+  STYLE_FOR_BORDER,
 } from "../../constants";
 import {
   IState,
@@ -59,21 +59,21 @@ export const SingleExample = () => {
 
   const exampleTable =
     example === undefined ? null : (
-      <table style={styleForTable}>
+      <table style={STYLE_FOR_TABLE}>
         <tbody>
           <tr>
-            <th style={styleForBorder}>ID</th>
-            <th style={styleForBorder}>SOURCE LANGUAGE</th>
-            <th style={styleForBorder}>NEW WORD</th>
-            <th style={styleForBorder}>EXAMPLE</th>
-            <th style={styleForBorder}>TRANSLATION</th>
+            <th style={STYLE_FOR_BORDER}>ID</th>
+            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
+            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
+            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
+            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
           </tr>
           <tr>
-            <th style={styleForBorder}>{example.id}</th>
-            <th style={styleForBorder}>{example.sourceLanguage}</th>
-            <th style={styleForBorder}>{example.newWord}</th>
-            <th style={styleForBorder}>{example.content}</th>
-            <th style={styleForBorder}>{example.contentTranslation}</th>
+            <th style={STYLE_FOR_BORDER}>{example.id}</th>
+            <th style={STYLE_FOR_BORDER}>{example.sourceLanguage}</th>
+            <th style={STYLE_FOR_BORDER}>{example.newWord}</th>
+            <th style={STYLE_FOR_BORDER}>{example.content}</th>
+            <th style={STYLE_FOR_BORDER}>{example.contentTranslation}</th>
           </tr>
         </tbody>
       </table>

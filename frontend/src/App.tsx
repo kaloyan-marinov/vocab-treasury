@@ -9,7 +9,7 @@ import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 import { fetchProfile } from "./features/auth/authSlice";
 
-import { styleForBorder, styleForTable } from "./constants";
+import { STYLE_FOR_BORDER, STYLE_FOR_TABLE } from "./constants";
 import { IProfile } from "./types";
 
 import { PrivateRoute } from "./features/auth/PrivateRoute";
@@ -178,25 +178,25 @@ export const Account = () => {
 
   const accountDetails: null | JSX.Element =
     loggedInUserProfile === null ? null : (
-      <table style={styleForTable}>
+      <table style={STYLE_FOR_TABLE}>
         <thead>
           <tr>
-            <th style={styleForBorder}>KEY</th>
-            <th style={styleForBorder}>VALUE</th>
+            <th style={STYLE_FOR_BORDER}>KEY</th>
+            <th style={STYLE_FOR_BORDER}>VALUE</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style={styleForBorder}>ID</td>
-            <td style={styleForBorder}>{loggedInUserProfile.id}</td>
+            <td style={STYLE_FOR_BORDER}>ID</td>
+            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.id}</td>
           </tr>
           <tr>
-            <td style={styleForBorder}>USERNAME</td>
-            <td style={styleForBorder}>{loggedInUserProfile.username}</td>
+            <td style={STYLE_FOR_BORDER}>USERNAME</td>
+            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.username}</td>
           </tr>
           <tr>
-            <td style={styleForBorder}>EMAIL</td>
-            <td style={styleForBorder}>{loggedInUserProfile.email}</td>
+            <td style={STYLE_FOR_BORDER}>EMAIL</td>
+            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.email}</td>
           </tr>
         </tbody>
       </table>
