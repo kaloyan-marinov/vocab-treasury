@@ -53,7 +53,7 @@ import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
 import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
 import { AnyAction } from "redux";
 import { requestHandlers } from "../../testHelpers";
-import { profileMock } from "../../mockPiecesOfData";
+import { MOCK_PROFILE } from "../../mockPiecesOfData";
 import { INITIAL_STATE } from "../../store";
 import { createUser, issueJWSToken, fetchProfile } from "./authSlice";
 
@@ -703,7 +703,7 @@ describe(
           {
             type: "auth/fetchProfile/fulfilled",
             payload: {
-              profile: profileMock,
+              profile: MOCK_PROFILE,
             },
           },
         ]);

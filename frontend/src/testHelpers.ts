@@ -8,8 +8,8 @@ import {
 
 import { IExampleFromBackend } from "./types";
 import {
-  profileMock,
-  examplesMock,
+  MOCK_PROFILE,
+  MOCK_EXAMPLES,
   mockPaginationFromBackend,
 } from "./mockPiecesOfData";
 
@@ -85,7 +85,7 @@ const mockFetchUserProfile = (
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
-  return res.once(ctx.status(200), ctx.json(profileMock));
+  return res.once(ctx.status(200), ctx.json(MOCK_PROFILE));
 };
 
 const mockRequestPasswordReset = (
@@ -138,7 +138,7 @@ export class RequestHandlingFacilitator {
   mockExamples: IExampleFromBackend[];
 
   constructor() {
-    this.mockExamples = [...examplesMock];
+    this.mockExamples = [...MOCK_EXAMPLES];
   }
 
   createMockFetchExamples() {

@@ -5,13 +5,13 @@ import {
   IExampleFromBackend,
 } from "./types";
 
-export const profileMock: IProfile = {
+export const MOCK_PROFILE: IProfile = {
   id: 17,
   username: "mocked-jd",
   email: "mocked-john.doe@protonmail.com",
 };
 
-export const exampleMock: IExampleFromBackend = {
+export const MOCK_EXAMPLE: IExampleFromBackend = {
   id: 17,
   source_language: "Finnish",
   new_word: "varjo",
@@ -19,14 +19,7 @@ export const exampleMock: IExampleFromBackend = {
   content_translation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
-/* Mock the pagination of Example resources. */
-/*
-TODO: (2023/10/22, 10:08)
-
-      before submitting a PR for review,
-      rename the "constants" in this file to written in uppercase with underscores
-*/
-export const examplesMock: IExampleFromBackend[] = Array.from({
+export const MOCK_EXAMPLES: IExampleFromBackend[] = Array.from({
   length: 11,
 }).map((_, index) => {
   return {
@@ -38,7 +31,7 @@ export const examplesMock: IExampleFromBackend[] = Array.from({
   };
 });
 
-export const MOCK_EXAMPLE_AT_IDX_7 = examplesMock[7];
+export const MOCK_EXAMPLE_AT_IDX_7 = MOCK_EXAMPLES[7];
 
 export const mockPaginationFromBackend = (
   examples: IExampleFromBackend[],

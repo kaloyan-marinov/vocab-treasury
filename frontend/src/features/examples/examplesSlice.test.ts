@@ -63,8 +63,8 @@ import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 import {
   mockPaginationFromBackend,
-  examplesMock,
-  exampleMock,
+  MOCK_EXAMPLES,
+  MOCK_EXAMPLE,
   MOCK_EXAMPLE_AT_IDX_7,
 } from "../../mockPiecesOfData";
 import { INITIAL_STATE } from "../../store";
@@ -98,7 +98,7 @@ describe("action creators", () => {
     const page: number = 1;
 
     const backendPaginationMock = mockPaginationFromBackend(
-      examplesMock,
+      MOCK_EXAMPLES,
       perPage,
       page
     );
@@ -157,7 +157,7 @@ describe("action creators", () => {
     const page: number = 1;
 
     const backendPaginationMock = mockPaginationFromBackend(
-      examplesMock,
+      MOCK_EXAMPLES,
       perPage,
       page
     );
@@ -422,7 +422,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
 
       const action: IActionFetchExamplesFulfilled = {
         type: ActionTypesFetchExamples.FULFILLED,
@@ -498,7 +498,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
 
       const {
         meta,
@@ -625,7 +625,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
       const {
         meta,
         links,
@@ -768,7 +768,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
       const {
         meta,
         links,
@@ -897,7 +897,7 @@ describe("slice reducers", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
       const {
         meta,
         links,
@@ -1153,10 +1153,10 @@ describe(
         /* Act. */
         const createExamplePromise = storeMock.dispatch(
           createExample(
-            exampleMock.source_language,
-            exampleMock.new_word,
-            exampleMock.content,
-            exampleMock.content_translation
+            MOCK_EXAMPLE.source_language,
+            MOCK_EXAMPLE.new_word,
+            MOCK_EXAMPLE.content,
+            MOCK_EXAMPLE.content_translation
           )
         );
 
@@ -1193,10 +1193,10 @@ describe(
         /* Act. */
         const createExamplePromise = storeMock.dispatch(
           createExample(
-            exampleMock.source_language,
-            exampleMock.new_word,
-            exampleMock.content,
-            exampleMock.content_translation
+            MOCK_EXAMPLE.source_language,
+            MOCK_EXAMPLE.new_word,
+            MOCK_EXAMPLE.content,
+            MOCK_EXAMPLE.content_translation
           )
         );
 
@@ -1231,7 +1231,7 @@ describe(
 
         /* Act. */
         const deleteExamplePromise = storeMock.dispatch(
-          deleteExample(exampleMock.id)
+          deleteExample(MOCK_EXAMPLE.id)
         );
 
         /* Assert. */
@@ -1261,7 +1261,7 @@ describe(
 
         /* Act. */
         const deleteExamplePromise = storeMock.dispatch(
-          deleteExample(exampleMock.id)
+          deleteExample(MOCK_EXAMPLE.id)
         );
 
         /* Assert. */
@@ -1296,10 +1296,10 @@ describe(
         /* Act. */
         const editExamplePromise = storeMock.dispatch(
           editExample(MOCK_EXAMPLE_AT_IDX_7.id, {
-            sourceLanguage: exampleMock.source_language,
-            newWord: exampleMock.new_word,
-            content: exampleMock.content,
-            contentTranslation: exampleMock.content_translation,
+            sourceLanguage: MOCK_EXAMPLE.source_language,
+            newWord: MOCK_EXAMPLE.new_word,
+            content: MOCK_EXAMPLE.content,
+            contentTranslation: MOCK_EXAMPLE.content_translation,
           })
         );
 
@@ -1335,11 +1335,11 @@ describe(
 
         /* Act. */
         const editExamplePromise = storeMock.dispatch(
-          editExample(exampleMock.id, {
-            sourceLanguage: exampleMock.source_language,
-            newWord: exampleMock.new_word,
-            content: exampleMock.content,
-            contentTranslation: exampleMock.content_translation,
+          editExample(MOCK_EXAMPLE.id, {
+            sourceLanguage: MOCK_EXAMPLE.source_language,
+            newWord: MOCK_EXAMPLE.new_word,
+            content: MOCK_EXAMPLE.content,
+            contentTranslation: MOCK_EXAMPLE.content_translation,
           })
         );
 

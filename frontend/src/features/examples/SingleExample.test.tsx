@@ -22,7 +22,7 @@ import { rootReducer } from "../../store";
 
 import {
   mockPaginationFromBackend,
-  examplesMock,
+  MOCK_EXAMPLES,
 } from "../../mockPiecesOfData";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 
@@ -41,7 +41,7 @@ describe("<SingleExample>", () => {
         _meta: IPaginationMetaFromBackend;
         _links: IPaginationLinks;
         items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(examplesMock, perPage, page);
+      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
       const {
         meta,
         links,
