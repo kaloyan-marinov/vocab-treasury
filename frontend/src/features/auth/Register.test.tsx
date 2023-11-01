@@ -16,24 +16,10 @@ import { setupServer, SetupServerApi } from "msw/node";
 
 import { requestHandlers } from "../../testHelpers";
 
-let enhancer: TEnhancer;
-let initState: IState;
-let history: MemoryHistory<unknown>;
-
-beforeEach(() => {
-  enhancer = applyMiddleware(thunkMiddleware);
-
-  initState = {
-    ...INITIAL_STATE,
-  };
-
-  history = createMemoryHistory();
-});
-
 describe("<Register>", () => {
   test("redirects any logged-in user to /home", () => {
     /* Arrange. */
-    initState = {
+    const initState: IState = {
       ...INITIAL_STATE,
       auth: {
         ...INITIAL_STATE.auth,
@@ -41,6 +27,7 @@ describe("<Register>", () => {
       },
     };
     const realStore = createStore(rootReducer, initState);
+    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -58,6 +45,7 @@ describe("<Register>", () => {
   test("renders (a <legend> tag and) a registration form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
+    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -97,6 +85,7 @@ describe("<Register>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -142,6 +131,7 @@ describe("<Register>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -188,10 +178,24 @@ const restHandlers: RestHandler<MockedRequest<DefaultRequestBody>>[] = [];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(...restHandlers);
 
+let enhancer: TEnhancer;
+// let initState: IState;
+let history: MemoryHistory<unknown>;
+
 describe("multiple components + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
     requestInterceptionLayer.listen();
+  });
+
+  beforeEach(() => {
+    enhancer = applyMiddleware(thunkMiddleware);
+
+    // initState = {
+    //   ...INITIAL_STATE,
+    // };
+
+    history = createMemoryHistory();
   });
 
   afterEach(() => {

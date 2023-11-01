@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 
 import { Router, Route } from "react-router-dom";
 
-import { createMemoryHistory, MemoryHistory } from "history";
+import { createMemoryHistory } from "history";
 import { createStore, applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { Provider } from "react-redux";
@@ -16,7 +16,7 @@ import {
   IPaginationLinks,
   IState,
 } from "../../types";
-import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
+import { INITIAL_STATE, rootReducer } from "../../store";
 
 import {
   mockPaginationFromBackend,
@@ -25,20 +25,6 @@ import {
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 
 import { SingleExample } from "./SingleExample";
-
-let enhancer: TEnhancer;
-let initState: IState;
-let history: MemoryHistory<unknown>;
-
-beforeEach(() => {
-  enhancer = applyMiddleware(thunkMiddleware);
-
-  initState = {
-    ...INITIAL_STATE,
-  };
-
-  history = createMemoryHistory();
-});
 
 test(
   "renders a specific Example resource" +
@@ -65,7 +51,7 @@ test(
       entities: { [exampleId: string]: IExample };
     } = convertToPaginationInFrontend(paginationFromBackend);
 
-    initState = {
+    const initState: IState = {
       ...INITIAL_STATE,
       examples: {
         ...INITIAL_STATE.examples,
@@ -75,8 +61,10 @@ test(
         entities,
       },
     };
+    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, initState, enhancer);
 
+    const history = createMemoryHistory();
     history.push("/example/2");
 
     /* Arrange. */

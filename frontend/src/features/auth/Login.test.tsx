@@ -6,7 +6,6 @@ import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
-import { IState } from "../../types";
 import { rootReducer, TEnhancer } from "../../store";
 import { Login } from "./Login";
 import { Alerts } from "../alerts/Alerts";
@@ -16,19 +15,11 @@ import { setupServer, SetupServerApi } from "msw/node";
 
 import { requestHandlers } from "../../testHelpers";
 
-let enhancer: TEnhancer;
-let history: MemoryHistory<unknown>;
-
-beforeEach(() => {
-  enhancer = applyMiddleware(thunkMiddleware);
-
-  history = createMemoryHistory();
-});
-
 describe("<Login>", () => {
   test("renders (a <legend> tag and) a login form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
+    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -62,6 +53,7 @@ describe("<Login>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
+      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -98,6 +90,15 @@ describe("<Login>", () => {
 const restHandlers: RestHandler<MockedRequest<DefaultRequestBody>>[] = [];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(...restHandlers);
+
+let enhancer: TEnhancer;
+let history: MemoryHistory<unknown>;
+
+beforeEach(() => {
+  enhancer = applyMiddleware(thunkMiddleware);
+
+  history = createMemoryHistory();
+});
 
 describe("multiple components + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
