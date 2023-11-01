@@ -3,11 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { createStore, applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { Provider } from "react-redux";
-import { createMemoryHistory } from "history";
+import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
 import { IState } from "../../types";
-import { INITIAL_STATE, rootReducer } from "../../store";
+import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
 import { Register } from "./Register";
 import { Alerts } from "../alerts/Alerts";
 
@@ -16,10 +16,24 @@ import { setupServer, SetupServerApi } from "msw/node";
 
 import { requestHandlers } from "../../testHelpers";
 
+let enhancer: TEnhancer;
+let initState: IState;
+let history: MemoryHistory<unknown>;
+
+beforeEach(() => {
+  enhancer = applyMiddleware(thunkMiddleware);
+
+  initState = {
+    ...INITIAL_STATE,
+  };
+
+  history = createMemoryHistory();
+});
+
 describe("<Register>", () => {
   test("redirects any logged-in user to /home", () => {
     /* Arrange. */
-    const initState: IState = {
+    initState = {
       ...INITIAL_STATE,
       auth: {
         ...INITIAL_STATE.auth,
@@ -27,7 +41,6 @@ describe("<Register>", () => {
       },
     };
     const realStore = createStore(rootReducer, initState);
-    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -45,7 +58,6 @@ describe("<Register>", () => {
   test("renders (a <legend> tag and) a registration form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
-    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -85,7 +97,6 @@ describe("<Register>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -131,7 +142,6 @@ describe("<Register>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -204,10 +214,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         rest.post("/api/users", requestHandlers.mockCreateUser)
       );
 
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -269,10 +276,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
         })
       );
 
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>

@@ -4,10 +4,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
 
-import { createMemoryHistory } from "history";
+import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
-import { INITIAL_STATE, rootReducer } from "../store";
+import { IState } from "../types";
+import { INITIAL_STATE, rootReducer, TEnhancer } from "../store";
 import { NavigationBar } from "./NavigationBar";
 import { Alerts } from "./alerts/Alerts";
 
@@ -18,10 +19,23 @@ const alwaysVisibleLinks = ["VocabTreasury", "Home", "About"];
 const guestUserLinks = ["Log in", "Register"];
 const loggedInUserLinks = ["Own VocabTreasury", "Account", "Log out"];
 
+let enhancer: TEnhancer;
+let initState: IState;
+let history: MemoryHistory<unknown>;
+
+beforeEach(() => {
+  enhancer = applyMiddleware(thunkMiddleware);
+
+  initState = {
+    ...INITIAL_STATE,
+  };
+
+  history = createMemoryHistory();
+});
+
 test("renders all of a guest user's navigation links", () => {
   /* Arrange. */
   const realStore = createStore(rootReducer);
-  const history = createMemoryHistory();
 
   /* Act. */
   render(
@@ -46,7 +60,7 @@ test("renders all of a guest user's navigation links", () => {
 
 test("renders all of a logged-in user's navigation links", () => {
   /* Arrange. */
-  const initState = {
+  initState = {
     ...INITIAL_STATE,
     auth: {
       ...INITIAL_STATE.auth,
@@ -54,7 +68,6 @@ test("renders all of a logged-in user's navigation links", () => {
     },
   };
   const realStore = createStore(rootReducer, initState);
-  const history = createMemoryHistory();
 
   /* Act. */
   render(
@@ -84,16 +97,14 @@ test(
     " after the user clicks on the 'Log out' link",
   async () => {
     /* Arrange. */
-    const initState = {
+    initState = {
       ...INITIAL_STATE,
       auth: {
         ...INITIAL_STATE.auth,
         hasValidToken: true,
       },
     };
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, initState, enhancer);
-    const history = createMemoryHistory();
 
     render(
       <Provider store={realStore}>

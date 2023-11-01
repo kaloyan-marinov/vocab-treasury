@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
-import { createMemoryHistory } from "history";
+import { createMemoryHistory, MemoryHistory } from "history";
 
 import { Router } from "react-router-dom";
 
@@ -15,7 +15,7 @@ import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
 import { setupServer, SetupServerApi } from "msw/node";
 
 import { IState } from "../../types";
-import { INITIAL_STATE, rootReducer } from "../../store";
+import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
 
 import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
 import { Alerts } from "../alerts/Alerts";
@@ -29,10 +29,24 @@ const requestInterceptionLayer: SetupServerApi = setupServer(
   ...requestHandlersToMock
 );
 
+let enhancer: TEnhancer;
+let initState: IState;
+let history: MemoryHistory<unknown>;
+
 describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
     requestInterceptionLayer.listen();
+  });
+
+  beforeEach(() => {
+    enhancer = applyMiddleware(thunkMiddleware);
+
+    initState = {
+      ...INITIAL_STATE,
+    };
+
+    history = createMemoryHistory();
   });
 
   afterEach(() => {
@@ -49,7 +63,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       " and a page of the logged-in user's Example resources",
     async () => {
       /* Arrange. */
-      const initState: IState = {
+      initState = {
         ...INITIAL_STATE,
         auth: {
           ...INITIAL_STATE.auth,
@@ -60,10 +74,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
           },
         },
       };
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, initState, enhancer);
-
-      const history = createMemoryHistory();
 
       const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
       requestInterceptionLayer.use(
@@ -176,7 +187,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
         */
 
       /* Arrange. */
-      const initState: IState = {
+      initState = {
         ...INITIAL_STATE,
         auth: {
           ...INITIAL_STATE.auth,
@@ -187,10 +198,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
           },
         },
       };
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, initState, enhancer);
-
-      const history = createMemoryHistory();
 
       /* Act. */
       render(

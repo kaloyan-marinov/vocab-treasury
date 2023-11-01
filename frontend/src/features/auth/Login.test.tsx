@@ -3,10 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { createStore, applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { Provider } from "react-redux";
-import { createMemoryHistory } from "history";
+import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
-import { rootReducer } from "../../store";
+import { IState } from "../../types";
+import { rootReducer, TEnhancer } from "../../store";
 import { Login } from "./Login";
 import { Alerts } from "../alerts/Alerts";
 
@@ -15,11 +16,19 @@ import { setupServer, SetupServerApi } from "msw/node";
 
 import { requestHandlers } from "../../testHelpers";
 
+let enhancer: TEnhancer;
+let history: MemoryHistory<unknown>;
+
+beforeEach(() => {
+  enhancer = applyMiddleware(thunkMiddleware);
+
+  history = createMemoryHistory();
+});
+
 describe("<Login>", () => {
   test("renders (a <legend> tag and) a login form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
-    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -53,7 +62,6 @@ describe("<Login>", () => {
     () => {
       /* Arrange. */
       const realStore = createStore(rootReducer);
-      const history = createMemoryHistory();
 
       render(
         <Provider store={realStore}>
@@ -113,10 +121,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was accepted as valid and processed",
     async () => {
       /* Arrange. */
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       requestInterceptionLayer.use(
         rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
@@ -163,10 +168,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was determined to be invalid",
     async () => {
       /* Arrange. */
-      const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
-
-      const history = createMemoryHistory();
 
       requestInterceptionLayer.use(
         rest.post("/api/tokens", requestHandlers.mockSingleFailure)

@@ -93,4 +93,6 @@ const composedEnhancer = composeWithDevTools(
 );
 
 export const store = createStore(rootReducer, composedEnhancer);
+
 export const INITIAL_STATE: IState = store.getState();
+export type TEnhancer = typeof composedEnhancer;

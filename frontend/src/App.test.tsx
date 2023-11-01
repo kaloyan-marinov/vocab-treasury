@@ -11,10 +11,11 @@ import {
 import { createStore } from "redux";
 import { Provider } from "react-redux";
 
-import { createMemoryHistory } from "history";
+import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
-import { INITIAL_STATE, rootReducer } from "./store";
+import { IState } from "./types";
+import { INITIAL_STATE, rootReducer, TEnhancer } from "./store";
 
 // 2
 import { rest } from "msw";
@@ -60,9 +61,23 @@ const requestHandlersToMock = [
 
 const requestInterceptionLayer = setupServer(...requestHandlersToMock);
 
+let enhancer: TEnhancer;
+let initState: IState;
+let history: MemoryHistory<unknown>;
+
 beforeAll(() => {
   /* Enable API mocking. */
   requestInterceptionLayer.listen();
+});
+
+beforeEach(() => {
+  enhancer = applyMiddleware(thunkMiddleware);
+
+  initState = {
+    ...INITIAL_STATE,
+  };
+
+  history = createMemoryHistory();
 });
 
 afterEach(() => {
@@ -81,21 +96,7 @@ test(
     " a logged-in user's navigation links",
   async () => {
     /* Arrange. */
-    const initState = {
-      ...INITIAL_STATE,
-    };
-
-    /*
-      TODO: (2023/10/20, 07:44)
-
-            before submitting a pull request for review,
-            eliminate duplication by moving `initState`, `enhancer`, and `history`
-            to a module-level `beforeEach`
-      */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, initState, enhancer);
-
-    const history = createMemoryHistory();
 
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockSingleFailure),
@@ -200,10 +201,7 @@ test(
       })
     );
 
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     /* Act. */
     render(
@@ -229,9 +227,7 @@ test(
     " should navigate to the <PrivateRoute>, which wraps <Account>",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-    const history = createMemoryHistory();
 
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
@@ -274,10 +270,7 @@ test(
       })
     );
 
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     render(
       <Provider store={realStore}>
@@ -321,10 +314,7 @@ test(
     " the user clicks the navigation-controlling button for 'Next page'",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -389,10 +379,7 @@ test(
     " the user clicks the navigation-controlling button for 'Last page: N'",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -448,10 +435,7 @@ test(
     " and then that for 'Previous page'",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -525,10 +509,7 @@ test(
     " and then that for 'First page: 1'",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -603,10 +584,7 @@ test(
     " the form submission was accepted as valid and processed",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -679,10 +657,7 @@ test(
     " the form submission was determined to be invalid",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -752,10 +727,7 @@ test(
     " the user's access token has expired",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -845,10 +817,7 @@ test(
     " the user should be navigated back to the same page [of examples]",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -909,7 +878,7 @@ test(
     /*
       - ensure that the page [of examples], which is now rendered,
       will not be removed
-      */
+    */
     const p = waitForElementToBeRemoved(() =>
       screen.queryByText("Current page: 2")
     );
@@ -929,10 +898,7 @@ test(
     " the user should be navigated back to the same page [of examples]",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -1013,10 +979,7 @@ test(
     " the user should be navigated back to the last page [of examples]",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -1102,10 +1065,7 @@ test(
     " and then the user clicks on 'Delete this example'," +
     " the user gets logged out",
   async () => {
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -1162,10 +1122,7 @@ test(
     " and the edited example should be displayed there",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
 
@@ -1265,10 +1222,7 @@ test(
     " an alert about the error should be created",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
 
@@ -1333,10 +1287,7 @@ test(
     " the user should get logged out",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
 
@@ -1392,10 +1343,7 @@ test(
     " together with pagination-controlling buttons that can be used",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -1468,10 +1416,7 @@ test(
     " the user gets logged out",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
     requestInterceptionLayer.use(
@@ -1537,10 +1482,7 @@ test(
       })
     );
 
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     render(
       <Provider store={realStore}>
@@ -1587,10 +1529,7 @@ test(
       )
     );
 
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     render(
       <Provider store={realStore}>
@@ -1633,10 +1572,7 @@ test(
     " the frontend application should redirect the user to /home",
   async () => {
     /* Arrange. */
-    const enhancer = applyMiddleware(thunkMiddleware);
     const realStore = createStore(rootReducer, enhancer);
-
-    const history = createMemoryHistory();
 
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
