@@ -188,20 +188,13 @@ describe("reducer", () => {
   let initStAuth: IStateAuth;
 
   beforeEach(() => {
-    initStAuth = { ...INITIAL_STATE_AUTH };
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+    };
   });
 
   test("auth/createUser/pending", () => {
-    /*
-    TODO: (2023/10/29, 10:30)
-
-          before submitting a pull request for review,
-          eliminate the duplication between
-          the variable defined in the next statement
-          and
-          the `initStAuth` defined in the `beforeEach`
-    */
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-createUser-rejected",
@@ -210,7 +203,7 @@ describe("reducer", () => {
       type: ActionTypesCreateUser.PENDING,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
@@ -222,7 +215,7 @@ describe("reducer", () => {
   });
 
   test("auth/createUser/rejected", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -232,7 +225,7 @@ describe("reducer", () => {
       error: "auth-createUser-rejected",
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
@@ -244,7 +237,7 @@ describe("reducer", () => {
   });
 
   test("auth/createUser/fulfilled", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -253,7 +246,7 @@ describe("reducer", () => {
       type: ActionTypesCreateUser.FULFILLED,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
@@ -265,7 +258,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/pending", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-issueJWSToken-rejected",
@@ -274,7 +267,7 @@ describe("reducer", () => {
       type: ActionTypesIssueJWSToken.PENDING,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
@@ -286,7 +279,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/rejected", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -296,7 +289,7 @@ describe("reducer", () => {
       error: "auth-issueJWSToken-rejected",
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
@@ -308,7 +301,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/fulfilled", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -320,7 +313,7 @@ describe("reducer", () => {
       },
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
@@ -332,7 +325,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/pending", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-fetchProfile-rejected",
@@ -342,7 +335,7 @@ describe("reducer", () => {
       type: ActionTypesFetchProfile.PENDING,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
@@ -354,7 +347,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/rejected", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -365,7 +358,7 @@ describe("reducer", () => {
       error: "auth-fetchProfile-rejected",
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
@@ -377,7 +370,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/fulfilled", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -394,7 +387,7 @@ describe("reducer", () => {
       },
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
@@ -410,7 +403,7 @@ describe("reducer", () => {
   });
 
   test("auth/requestPasswordReset/pending", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-requestPasswordReset-rejected",
@@ -419,17 +412,17 @@ describe("reducer", () => {
       type: ActionTypesRequestPasswordReset.PENDING,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
-      ...initState,
+      ...initStAuth,
       requestStatus: RequestStatus.LOADING,
       requestError: null,
     });
   });
 
   test("auth/requestPasswordReset/rejected", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
     };
@@ -438,17 +431,17 @@ describe("reducer", () => {
       error: "auth-requestPasswordReset-rejected",
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
-      ...initState,
+      ...initStAuth,
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-requestPasswordReset-rejected",
     });
   });
 
   test("auth/requestPasswordReset/fulfilled", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
     };
@@ -456,16 +449,16 @@ describe("reducer", () => {
       type: ActionTypesRequestPasswordReset.FULFILLED,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
-      ...initState,
+      ...initStAuth,
       requestStatus: RequestStatus.SUCCEEDED,
     });
   });
 
   test("auth/clearSlice", () => {
-    const initState: IStateAuth = {
+    initStAuth = {
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
       token: "token-issued-by-the-backend",
@@ -480,7 +473,7 @@ describe("reducer", () => {
       type: ACTION_TYPE_AUTH_CLEAR_SLICE,
     };
 
-    const newState: IStateAuth = authReducer(initState, action);
+    const newState: IStateAuth = authReducer(initStAuth, action);
 
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
