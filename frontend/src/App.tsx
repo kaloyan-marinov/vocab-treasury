@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { Alerts } from "./features/alerts/Alerts";
 
+import { Home } from "./features/Home";
+
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
@@ -141,19 +143,6 @@ export const NavigationBar = () => {
       {"<NavigationBar>"}
       {alwaysVisibleLinks}
       {!hasValidToken ? guestUserLinks : loggedInUserLinks}
-    </React.Fragment>
-  );
-};
-
-export const Home = () => {
-  console.log(`${new Date().toISOString()} - React is rendering <Home>`);
-
-  return (
-    <React.Fragment>
-      {"<Home>"}
-      <div>
-        <h1>Welcome to VocabTreasury!</h1>
-      </div>
     </React.Fragment>
   );
 };
