@@ -3,12 +3,11 @@ import { render, screen } from "@testing-library/react";
 
 import { Home } from "./Home";
 
-describe("<Home>", () => {
-  test("renders a 'Welcome to VocabTreasury!' message", () => {
-    render(<Home />);
-    const headingElement = screen.getByText("Welcome to VocabTreasury!");
+test("renders a 'Welcome to VocabTreasury!' message", () => {
+  render(<Home />);
+  const headingElement = screen.getByText("Welcome to VocabTreasury!");
 
-    /*
+  /*
       The following statement throws a
       `TypeError: expect(...).toBeInTheDocument is not a function`
   
@@ -28,6 +27,5 @@ describe("<Home>", () => {
         (which means that the "21: remove files and boilerplate code, which ..." commit was
         what gave rise to this problem in this repository)
       */
-    expect(headingElement).toBeInTheDocument();
-  });
+  expect(headingElement).toBeInTheDocument();
 });

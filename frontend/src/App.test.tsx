@@ -15,8 +15,7 @@ import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
 import { INITIAL_STATE, rootReducer } from "./store";
-import { NavigationBar, About, Account } from "./App";
-import { Alerts } from "./features/alerts/Alerts";
+import { About, Account } from "./App";
 
 // 2
 import { rest } from "msw";
@@ -42,110 +41,6 @@ import {
 
 // const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
-
-describe("<NavigationBar>", () => {
-  const alwaysVisibleLinks = ["VocabTreasury", "Home", "About"];
-  const guestUserLinks = ["Log in", "Register"];
-  const loggedInUserLinks = ["Own VocabTreasury", "Account", "Log out"];
-
-  test("renders all of a guest user's navigation links", () => {
-    /* Arrange. */
-    const realStore = createStore(rootReducer);
-    const history = createMemoryHistory();
-
-    /* Act. */
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <NavigationBar />
-        </Router>
-      </Provider>
-    );
-
-    /* Assert. */
-    for (const navigationLinkText of alwaysVisibleLinks.concat(
-      guestUserLinks
-    )) {
-      const element = screen.getByText(navigationLinkText);
-      expect(element).toBeInTheDocument();
-    }
-
-    for (const navigationLinkText of loggedInUserLinks) {
-      const element = screen.queryByText(navigationLinkText);
-      expect(element).not.toBeInTheDocument();
-    }
-  });
-
-  test("renders all of a logged-in user's navigation links", () => {
-    /* Arrange. */
-    const initState = {
-      ...INITIAL_STATE,
-      auth: {
-        ...INITIAL_STATE.auth,
-        hasValidToken: true,
-      },
-    };
-    const realStore = createStore(rootReducer, initState);
-    const history = createMemoryHistory();
-
-    /* Act. */
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <NavigationBar />
-        </Router>
-      </Provider>
-    );
-
-    /* Assert. */
-    for (const navigationLinkText of alwaysVisibleLinks.concat(
-      loggedInUserLinks
-    )) {
-      const element = screen.getByText(navigationLinkText);
-      expect(element).toBeInTheDocument();
-    }
-
-    for (const navigationLinkText of guestUserLinks) {
-      const element = screen.queryByText(navigationLinkText);
-      expect(element).not.toBeInTheDocument();
-    }
-  });
-
-  test(
-    "+ <Alerts> - renders an alert" +
-      " after the user clicks on the 'Log out' link",
-    async () => {
-      /* Arrange. */
-      const initState = {
-        ...INITIAL_STATE,
-        auth: {
-          ...INITIAL_STATE.auth,
-          hasValidToken: true,
-        },
-      };
-      const enhancer = applyMiddleware(thunkMiddleware);
-      const realStore = createStore(rootReducer, initState, enhancer);
-      const history = createMemoryHistory();
-
-      render(
-        <Provider store={realStore}>
-          <Router history={history}>
-            <Alerts />
-            <NavigationBar />
-          </Router>
-        </Provider>
-      );
-
-      /* Act. */
-      const logoutAnchor = screen.getByText("Log out");
-      fireEvent.click(logoutAnchor);
-
-      /* Assert. */
-      const element: HTMLElement = await screen.findByText("LOGOUT SUCCESSFUL");
-      expect(element).toBeInTheDocument();
-    }
-  );
-});
 
 describe("<About>", () => {
   test("renders an 'About VocabTreasury...' message", () => {

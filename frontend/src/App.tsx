@@ -1,10 +1,11 @@
 import React from "react";
-import { Switch, Route, Link } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import { Alerts } from "./features/alerts/Alerts";
 
 import { Home } from "./features/Home";
+import { NavigationBar } from "./features/NavigationBar";
 
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
@@ -22,11 +23,7 @@ import { SingleExample } from "./features/examples/SingleExample";
 import { EditExample } from "./features/examples/EditExample";
 import { Search } from "./features/examples/Search";
 
-import {
-  logOut,
-  selectHasValidToken,
-  selectLoggedInUserProfile,
-} from "./store";
+import { logOut, selectLoggedInUserProfile } from "./store";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -97,52 +94,6 @@ export const App = () => {
           <Search />
         </PrivateRoute>
       </Switch>
-    </React.Fragment>
-  );
-};
-
-export const NavigationBar = () => {
-  console.log(
-    `${new Date().toISOString()} - React is rendering <NavigationBar>`
-  );
-
-  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
-  console.log(`    hasValidToken: ${hasValidToken}`);
-
-  const dispatch = useDispatch();
-
-  const alwaysVisibleLinks = (
-    <React.Fragment>
-      <div>
-        <Link to="/">VocabTreasury</Link>
-      </div>
-      <div>
-        <Link to="/home">Home</Link> <Link to="/about">About</Link>
-      </div>
-    </React.Fragment>
-  );
-
-  const guestUserLinks = (
-    <div>
-      <Link to="/login">Log in</Link> <Link to="/register">Register</Link>
-    </div>
-  );
-
-  const loggedInUserLinks = (
-    <div>
-      <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
-      <Link to="/account">Account</Link>{" "}
-      <a href="#!" onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}>
-        Log out
-      </a>
-    </div>
-  );
-
-  return (
-    <React.Fragment>
-      {"<NavigationBar>"}
-      {alwaysVisibleLinks}
-      {!hasValidToken ? guestUserLinks : loggedInUserLinks}
     </React.Fragment>
   );
 };
