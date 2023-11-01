@@ -1,20 +1,18 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import { Alerts } from "./features/alerts/Alerts";
 
 import { Home } from "./features/Home";
 import { NavigationBar } from "./features/NavigationBar";
 import { About } from "./features/About";
+import { Account } from "./features/Account";
 
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 import { fetchProfile } from "./features/auth/authSlice";
-
-import { STYLE_FOR_BORDER, STYLE_FOR_TABLE } from "./constants";
-import { IProfile } from "./types";
 
 import { PrivateRoute } from "./features/auth/PrivateRoute";
 
@@ -24,7 +22,7 @@ import { SingleExample } from "./features/examples/SingleExample";
 import { EditExample } from "./features/examples/EditExample";
 import { Search } from "./features/examples/Search";
 
-import { logOut, selectLoggedInUserProfile } from "./store";
+import { logOut } from "./store";
 
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
@@ -95,47 +93,6 @@ export const App = () => {
           <Search />
         </PrivateRoute>
       </Switch>
-    </React.Fragment>
-  );
-};
-
-export const Account = () => {
-  console.log(`${new Date().toISOString()} - React is rendering <Account>`);
-
-  const loggedInUserProfile: IProfile | null = useSelector(
-    selectLoggedInUserProfile
-  );
-
-  const accountDetails: null | JSX.Element =
-    loggedInUserProfile === null ? null : (
-      <table style={STYLE_FOR_TABLE}>
-        <thead>
-          <tr>
-            <th style={STYLE_FOR_BORDER}>KEY</th>
-            <th style={STYLE_FOR_BORDER}>VALUE</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style={STYLE_FOR_BORDER}>ID</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.id}</td>
-          </tr>
-          <tr>
-            <td style={STYLE_FOR_BORDER}>USERNAME</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.username}</td>
-          </tr>
-          <tr>
-            <td style={STYLE_FOR_BORDER}>EMAIL</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.email}</td>
-          </tr>
-        </tbody>
-      </table>
-    );
-
-  return (
-    <React.Fragment>
-      {"<Account>"}
-      {accountDetails}
     </React.Fragment>
   );
 };
