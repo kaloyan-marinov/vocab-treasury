@@ -25,21 +25,23 @@ import { OwnVocabTreasury } from "./OwnVocabTreasury";
 const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
   [rest.get("/api/examples", requestHandlers.mockMultipleFailures)];
 
-const quasiServer: SetupServerApi = setupServer(...requestHandlersToMock);
+const requestInterceptionLayer: SetupServerApi = setupServer(
+  ...requestHandlersToMock
+);
 
 describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
-    quasiServer.listen();
+    requestInterceptionLayer.listen();
   });
 
   afterEach(() => {
-    quasiServer.resetHandlers();
+    requestInterceptionLayer.resetHandlers();
   });
 
   afterAll(() => {
     /* Disable API mocking. */
-    quasiServer.close();
+    requestInterceptionLayer.close();
   });
 
   test(
@@ -64,7 +66,9 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       const history = createMemoryHistory();
 
       const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
-      quasiServer.use(rest.get("/api/examples", rhf.createMockFetchExamples()));
+      requestInterceptionLayer.use(
+        rest.get("/api/examples", rhf.createMockFetchExamples())
+      );
 
       /* Act. */
       render(

@@ -176,21 +176,21 @@ describe("<Register>", () => {
 /* Create an MSW "request-interception layer". */
 const restHandlers: RestHandler<MockedRequest<DefaultRequestBody>>[] = [];
 
-const quasiServer: SetupServerApi = setupServer(...restHandlers);
+const requestInterceptionLayer: SetupServerApi = setupServer(...restHandlers);
 
 describe("multiple components + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
-    quasiServer.listen();
+    requestInterceptionLayer.listen();
   });
 
   afterEach(() => {
-    quasiServer.resetHandlers();
+    requestInterceptionLayer.resetHandlers();
   });
 
   afterAll(() => {
     /* Disable API mocking. */
-    quasiServer.close();
+    requestInterceptionLayer.close();
   });
 
   test(
@@ -200,7 +200,9 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was accepted as valid and processed",
     async () => {
       /* Arrange. */
-      quasiServer.use(rest.post("/api/users", requestHandlers.mockCreateUser));
+      requestInterceptionLayer.use(
+        rest.post("/api/users", requestHandlers.mockCreateUser)
+      );
 
       const enhancer = applyMiddleware(thunkMiddleware);
       const realStore = createStore(rootReducer, enhancer);
@@ -256,7 +258,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       " the form submission was determined to be invalid",
     async () => {
       /* Arrange. */
-      quasiServer.use(
+      requestInterceptionLayer.use(
         rest.post("/api/users", (req, res, ctx) => {
           return res(
             ctx.status(400),

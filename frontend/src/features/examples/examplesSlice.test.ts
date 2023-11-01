@@ -978,7 +978,9 @@ const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
     // ),
   ];
 
-const quasiServer: SetupServerApi = setupServer(...requestHandlersToMock);
+const requestInterceptionLayer: SetupServerApi = setupServer(
+  ...requestHandlersToMock
+);
 
 const createStoreMock = configureMockStore<
   IState,
@@ -1007,7 +1009,7 @@ describe(
         Establish the created request-interception layer
         (= Enable API mocking).
         */
-      quasiServer.listen();
+      requestInterceptionLayer.listen();
     });
 
     beforeEach(() => {
@@ -1020,7 +1022,7 @@ describe(
         Remove any request handlers that may have been added at runtime
         (by individual tests after the initial `setupServer` call).
         */
-      quasiServer.resetHandlers();
+      requestInterceptionLayer.resetHandlers();
     });
 
     afterAll(() => {
@@ -1031,7 +1033,7 @@ describe(
         (= Stop request interception)
         (= Disable API mocking).
         */
-      quasiServer.close();
+      requestInterceptionLayer.close();
     });
 
     test(
@@ -1042,7 +1044,7 @@ describe(
         const rhf: RequestHandlingFacilitator =
           new RequestHandlingFacilitator();
 
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.get("/api/examples", rhf.createMockFetchExamples())
         );
 
@@ -1116,7 +1118,7 @@ describe(
               ensure that each test has Arrange-Act-Assert comments
         */
         /* Arrange. */
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.get("/api/examples", requestHandlers.mockSingleFailure)
         );
 
@@ -1151,7 +1153,7 @@ describe(
         const rhf: RequestHandlingFacilitator =
           new RequestHandlingFacilitator();
 
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/examples", rhf.createMockCreateExample())
         );
 
@@ -1191,7 +1193,7 @@ describe(
         "+ the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/examples", requestHandlers.mockSingleFailure)
         );
 
@@ -1230,7 +1232,7 @@ describe(
         const rhf: RequestHandlingFacilitator =
           new RequestHandlingFacilitator();
 
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.delete("/api/examples/:id", rhf.createMockDeleteExample())
         );
 
@@ -1260,7 +1262,7 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.delete("/api/examples/:id", requestHandlers.mockSingleFailure)
         );
 
@@ -1294,7 +1296,7 @@ describe(
         const rhf: RequestHandlingFacilitator =
           new RequestHandlingFacilitator();
 
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.put("/api/examples/:id", rhf.createMockEditExample())
         );
 
@@ -1334,7 +1336,7 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
         );
 

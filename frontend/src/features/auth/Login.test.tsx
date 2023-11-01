@@ -89,21 +89,21 @@ describe("<Login>", () => {
 /* Create an MSW "request-interception layer". */
 const restHandlers: RestHandler<MockedRequest<DefaultRequestBody>>[] = [];
 
-const quasiServer: SetupServerApi = setupServer(...restHandlers);
+const requestInterceptionLayer: SetupServerApi = setupServer(...restHandlers);
 
 describe("multiple components + mocking of HTTP requests to the backend", () => {
   beforeAll(() => {
     /* Enable API mocking. */
-    quasiServer.listen();
+    requestInterceptionLayer.listen();
   });
 
   afterEach(() => {
-    quasiServer.resetHandlers();
+    requestInterceptionLayer.resetHandlers();
   });
 
   afterAll(() => {
     /* Disable API mocking. */
-    quasiServer.close();
+    requestInterceptionLayer.close();
   });
 
   test(
@@ -118,7 +118,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
-      quasiServer.use(
+      requestInterceptionLayer.use(
         rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
         rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
       );
@@ -168,7 +168,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
 
       const history = createMemoryHistory();
 
-      quasiServer.use(
+      requestInterceptionLayer.use(
         rest.post("/api/tokens", requestHandlers.mockSingleFailure)
       );
 

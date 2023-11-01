@@ -497,7 +497,9 @@ const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
     ),
   ];
 
-const quasiServer: SetupServerApi = setupServer(...requestHandlersToMock);
+const requestInterceptionLayer: SetupServerApi = setupServer(
+  ...requestHandlersToMock
+);
 
 const createStoreMock = configureMockStore<
   IState,
@@ -526,7 +528,7 @@ describe(
       Establish the created request-interception layer
       (= Enable API mocking).
       */
-      quasiServer.listen();
+      requestInterceptionLayer.listen();
     });
 
     beforeEach(() => {
@@ -539,7 +541,7 @@ describe(
       Remove any request handlers that may have been added at runtime
       (by individual tests after the initial `setupServer` call).
       */
-      quasiServer.resetHandlers();
+      requestInterceptionLayer.resetHandlers();
     });
 
     afterAll(() => {
@@ -550,14 +552,14 @@ describe(
       (= Stop request interception)
       (= Disable API mocking).
       */
-      quasiServer.close();
+      requestInterceptionLayer.close();
     });
 
     test(
       "createUser(username, ...)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/users", requestHandlers.mockCreateUser)
         );
 
@@ -581,7 +583,7 @@ describe(
       "createUser(username, ...)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/users", (req, res, ctx) => {
             return res(
               ctx.status(400),
@@ -620,7 +622,7 @@ describe(
       "issueJWSToken(email, password)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/tokens", requestHandlers.mockIssueJWSToken)
         );
 
@@ -647,7 +649,7 @@ describe(
       "issueJWSToken(email, password)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/tokens", (req, res, ctx) => {
             return res(
               ctx.status(401),
@@ -682,7 +684,7 @@ describe(
       "fetchProfile()" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
         );
 
@@ -707,7 +709,7 @@ describe(
       "fetchProfile()" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.get("/api/user-profile", (req, res, ctx) => {
             return res(
               ctx.status(401),
@@ -783,7 +785,7 @@ describe(
       "requestPasswordReset(email)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post(
             "/api/request-password-reset",
             requestHandlers.mockRequestPasswordReset
@@ -810,7 +812,7 @@ describe(
       "requestPasswordReset(email)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        quasiServer.use(
+        requestInterceptionLayer.use(
           rest.post("/api/request-password-reset", (req, res, ctx) => {
             return res(
               ctx.status(400),
