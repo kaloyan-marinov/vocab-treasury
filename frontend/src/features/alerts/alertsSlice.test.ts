@@ -67,7 +67,7 @@ describe("reducer", () => {
 
   test("alerts/remove", () => {
     initStAlerts = {
-      ...initStAlerts,
+      ...INITIAL_STATE_ALERTS,
       ids: ["alert-id-17"],
       entities: {
         "alert-id-17": {
