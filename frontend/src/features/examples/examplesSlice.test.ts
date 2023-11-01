@@ -337,319 +337,357 @@ describe("action creators", () => {
   });
 });
 
-describe("slice reducers", () => {
-  describe("examplesReducer", () => {
-    test("examples/fetchExamples/pending", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.FAILED,
-        requestError: "error-fetchExamples-rejected",
-      };
-      const action: IActionFetchExamplesPending = {
-        type: ActionTypesFetchExamples.PENDING,
-      };
+describe("reducer", () => {
+  let initStExamples: IStateExamples;
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+  beforeEach(() => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+    };
+  });
 
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
+  test("examples/fetchExamples/pending", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "error-fetchExamples-rejected",
+    };
+    const action: IActionFetchExamplesPending = {
+      type: ActionTypesFetchExamples.PENDING,
+    };
+
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
+    });
+  });
+
+  test("examples/fetchExamples/rejected", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+    };
+    const action: IActionFetchExamplesRejected = {
+      type: ActionTypesFetchExamples.REJECTED,
+      error: "examples-fetchExamples-rejected",
+    };
+
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.FAILED,
+      requestError: "examples-fetchExamples-rejected",
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
+    });
+  });
+
+  test("examples/fetchExamples/fulfilled", () => {
+    /* Arrange. */
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+    };
+
+    const perPage: number = 2;
+    const page: number = 1;
+    const {
+      _meta,
+      _links,
+      items,
+    }: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+
+    const action: IActionFetchExamplesFulfilled = {
+      type: ActionTypesFetchExamples.FULFILLED,
+      payload: {
         meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
+          totalItems: _meta.total_items,
+          perPage: _meta.per_page,
+          totalPages: _meta.total_pages,
+          page: _meta.page,
         },
         links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
+          self: _links.self,
+          next: _links.next,
+          prev: _links.prev,
+          first: _links.first,
+          last: _links.last,
         },
-        ids: [],
-        entities: {},
-      });
+        items: items.map((e: IExampleFromBackend) => ({
+          id: e.id,
+          sourceLanguage: e.source_language,
+          newWord: e.new_word,
+          content: e.content,
+          contentTranslation: e.content_translation,
+        })),
+      },
+    };
+
+    /* Act. */
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      meta: {
+        totalItems: 11,
+        perPage: 2,
+        totalPages: 6,
+        page: 1,
+      },
+      links: {
+        self: "/api/examples?per_page=2&page=1",
+        next: "/api/examples?per_page=2&page=2",
+        prev: null,
+        first: "/api/examples?per_page=2&page=1",
+        last: "/api/examples?per_page=2&page=6",
+      },
+      ids: [1, 2],
+      entities: {
+        "1": {
+          id: 1,
+          sourceLanguage: "Finnish",
+          newWord: "sana numero-1",
+          content: "lause numero-1",
+          contentTranslation: "käännös numero-1",
+        },
+        "2": {
+          id: 2,
+          sourceLanguage: "Finnish",
+          newWord: "sana numero-2",
+          content: "lause numero-2",
+          contentTranslation: "käännös numero-2",
+        },
+      },
     });
+  });
 
-    test("examples/fetchExamples/rejected", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-      };
-      const action: IActionFetchExamplesRejected = {
-        type: ActionTypesFetchExamples.REJECTED,
-        error: "examples-fetchExamples-rejected",
-      };
+  test("examples/clearSlice", () => {
+    /* Arrange. */
+    const perPage: number = 2;
+    const page: number = 1;
+    const paginationFromBackend: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    const {
+      meta,
+      links,
+      ids,
+      entities,
+    }: {
+      meta: IPaginationMeta;
+      links: IPaginationLinks;
+      ids: number[];
+      entities: { [exampleId: string]: IExample };
+    } = convertToPaginationInFrontend(paginationFromBackend);
 
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.FAILED,
-        requestError: "examples-fetchExamples-rejected",
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.SUCCEEDED,
+      meta,
+      links,
+      ids,
+      entities,
+    };
+
+    const action: IActionExamplesClearSlice = {
+      type: ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
+    };
+
+    /* Act. */
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/fetchExamples/fulfilled", () => {
-      /* Arrange. */
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-      };
+  test("examples/createExample/pending", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "examples-createExample-rejected",
+    };
+    const action: IActionCreateExamplePending = {
+      type: ActionTypesCreateExample.PENDING,
+    };
 
-      const perPage: number = 2;
-      const page: number = 1;
-      const {
-        _meta,
-        _links,
-        items,
-      }: {
-        _meta: IPaginationMetaFromBackend;
-        _links: IPaginationLinks;
-        items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      const action: IActionFetchExamplesFulfilled = {
-        type: ActionTypesFetchExamples.FULFILLED,
-        payload: {
-          meta: {
-            totalItems: _meta.total_items,
-            perPage: _meta.per_page,
-            totalPages: _meta.total_pages,
-            page: _meta.page,
-          },
-          links: {
-            self: _links.self,
-            next: _links.next,
-            prev: _links.prev,
-            first: _links.first,
-            last: _links.last,
-          },
-          items: items.map((e: IExampleFromBackend) => ({
-            id: e.id,
-            sourceLanguage: e.source_language,
-            newWord: e.new_word,
-            content: e.content,
-            contentTranslation: e.content_translation,
-          })),
-        },
-      };
-
-      /* Act. */
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      /* Assert. */
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
-        meta: {
-          totalItems: 11,
-          perPage: 2,
-          totalPages: 6,
-          page: 1,
-        },
-        links: {
-          self: "/api/examples?per_page=2&page=1",
-          next: "/api/examples?per_page=2&page=2",
-          prev: null,
-          first: "/api/examples?per_page=2&page=1",
-          last: "/api/examples?per_page=2&page=6",
-        },
-        ids: [1, 2],
-        entities: {
-          "1": {
-            id: 1,
-            sourceLanguage: "Finnish",
-            newWord: "sana numero-1",
-            content: "lause numero-1",
-            contentTranslation: "käännös numero-1",
-          },
-          "2": {
-            id: 2,
-            sourceLanguage: "Finnish",
-            newWord: "sana numero-2",
-            content: "lause numero-2",
-            contentTranslation: "käännös numero-2",
-          },
-        },
-      });
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/clearSlice", () => {
-      /* Arrange. */
-      const perPage: number = 2;
-      const page: number = 1;
-      const paginationFromBackend: {
-        _meta: IPaginationMetaFromBackend;
-        _links: IPaginationLinks;
-        items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+  test("examples/createExample/rejected", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionCreateExampleRejected = {
+      type: ActionTypesCreateExample.REJECTED,
+      error: "examples-createExample-rejected",
+    };
 
-      const {
-        meta,
-        links,
-        ids,
-        entities,
-      }: {
-        meta: IPaginationMeta;
-        links: IPaginationLinks;
-        ids: number[];
-        entities: { [exampleId: string]: IExample };
-      } = convertToPaginationInFrontend(paginationFromBackend);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.SUCCEEDED,
-        meta,
-        links,
-        ids,
-        entities,
-      };
-
-      const action: IActionExamplesClearSlice = {
-        type: ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
-      };
-
-      /* Act. */
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      /* Assert. */
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.FAILED,
+      requestError: "examples-createExample-rejected",
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/createExample/pending", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.FAILED,
-        requestError: "examples-createExample-rejected",
-      };
-      const action: IActionCreateExamplePending = {
-        type: ActionTypesCreateExample.PENDING,
-      };
+  test("examples/createExample/fulfilled", () => {
+    /* Arrange. */
+    const perPage: number = 2;
+    const page: number = 2;
+    const paginationFromBackend: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+    const {
+      meta,
+      links,
+      ids,
+      entities,
+    }: {
+      meta: IPaginationMeta;
+      links: IPaginationLinks;
+      ids: number[];
+      entities: { [exampleId: string]: IExample };
+    } = convertToPaginationInFrontend(paginationFromBackend);
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      meta,
+      links,
+      ids,
+      entities,
+    };
+    const action: IActionCreateExampleFulfilled = {
+      type: ActionTypesCreateExample.FULFILLED,
+      payload: {
+        id: 17,
+        sourceLanguage: "Finnish",
+        newWord: "epätavallinen",
+        content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
+        contentTranslation: "There is unusually hot weather in North America.",
+      },
+    };
 
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
-    });
+    /* Act. */
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-    test("examples/createExample/rejected", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-      };
-      const action: IActionCreateExampleRejected = {
-        type: ActionTypesCreateExample.REJECTED,
-        error: "examples-createExample-rejected",
-      };
-
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.FAILED,
-        requestError: "examples-createExample-rejected",
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
-    });
-
-    test("examples/createExample/fulfilled", () => {
-      /* Arrange. */
-      const perPage: number = 2;
-      const page: number = 2;
-      const paginationFromBackend: {
-        _meta: IPaginationMetaFromBackend;
-        _links: IPaginationLinks;
-        items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
-      const {
-        meta,
-        links,
-        ids,
-        entities,
-      }: {
-        meta: IPaginationMeta;
-        links: IPaginationLinks;
-        ids: number[];
-        entities: { [exampleId: string]: IExample };
-      } = convertToPaginationInFrontend(paginationFromBackend);
-
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-        meta,
-        links,
-        ids,
-        entities,
-      };
-      const action: IActionCreateExampleFulfilled = {
-        type: ActionTypesCreateExample.FULFILLED,
-        payload: {
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      meta: {
+        totalItems: 12,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [17],
+      entities: {
+        "17": {
           id: 17,
           sourceLanguage: "Finnish",
           newWord: "epätavallinen",
@@ -657,306 +695,273 @@ describe("slice reducers", () => {
           contentTranslation:
             "There is unusually hot weather in North America.",
         },
-      };
-
-      /* Act. */
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      /* Assert. */
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
-        meta: {
-          totalItems: 12,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [17],
-        entities: {
-          "17": {
-            id: 17,
-            sourceLanguage: "Finnish",
-            newWord: "epätavallinen",
-            content: "Pohjois-Amerikassa on epätavallisen kuuma sää.",
-            contentTranslation:
-              "There is unusually hot weather in North America.",
-          },
-        },
-      });
+      },
     });
+  });
 
-    test("examples/deleteExample/pending", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.FAILED,
-        requestError: "examples-deleteExample-rejected",
-      };
-      const action: IActionDeleteExamplePending = {
-        type: ActionTypesDeleteExample.PENDING,
-      };
+  test("examples/deleteExample/pending", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "examples-deleteExample-rejected",
+    };
+    const action: IActionDeleteExamplePending = {
+      type: ActionTypesDeleteExample.PENDING,
+    };
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      expect(newState).toEqual({
-        requestStatus: "loading",
-        requestError: null,
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    expect(newState).toEqual({
+      requestStatus: "loading",
+      requestError: null,
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/deleteExample/rejected", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-      };
-      const action: IActionDeleteExampleRejected = {
-        type: ActionTypesDeleteExample.REJECTED,
-        error: "examples-deleteExample-rejected",
-      };
+  test("examples/deleteExample/rejected", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionDeleteExampleRejected = {
+      type: ActionTypesDeleteExample.REJECTED,
+      error: "examples-deleteExample-rejected",
+    };
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      expect(newState).toEqual({
-        requestStatus: "failed",
-        requestError: "examples-deleteExample-rejected",
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    expect(newState).toEqual({
+      requestStatus: "failed",
+      requestError: "examples-deleteExample-rejected",
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/deleteExample/fulfilled", () => {
-      /* Arrange. */
-      const perPage: number = 2;
-      const page: number = 2;
-      const paginationFromBackend: {
-        _meta: IPaginationMetaFromBackend;
-        _links: IPaginationLinks;
-        items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
-      const {
-        meta,
-        links,
-        ids,
-        entities,
-      }: {
-        meta: IPaginationMeta;
-        links: IPaginationLinks;
-        ids: number[];
-        entities: { [exampleId: string]: IExample };
-      } = convertToPaginationInFrontend(paginationFromBackend);
+  test("examples/deleteExample/fulfilled", () => {
+    /* Arrange. */
+    const perPage: number = 2;
+    const page: number = 2;
+    const paginationFromBackend: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+    const {
+      meta,
+      links,
+      ids,
+      entities,
+    }: {
+      meta: IPaginationMeta;
+      links: IPaginationLinks;
+      ids: number[];
+      entities: { [exampleId: string]: IExample };
+    } = convertToPaginationInFrontend(paginationFromBackend);
 
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-        meta,
-        links,
-        ids,
-        entities,
-      };
-      const action: IActionDeleteExampleFulfilled = {
-        type: ActionTypesDeleteExample.FULFILLED,
-        payload: {
-          id: 4,
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      meta,
+      links,
+      ids,
+      entities,
+    };
+    const action: IActionDeleteExampleFulfilled = {
+      type: ActionTypesDeleteExample.FULFILLED,
+      payload: {
+        id: 4,
+      },
+    };
+
+    /* Act. */
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    /* Assert. */
+    expect({
+      requestStatus: newState.requestStatus,
+      requestError: newState.requestError,
+      ids: newState.ids,
+      entities: newState.entities,
+    }).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      ids: [3],
+      entities: {
+        "3": {
+          id: 3,
+          sourceLanguage: "Finnish",
+          newWord: "sana numero-3",
+          content: "lause numero-3",
+          contentTranslation: "käännös numero-3",
         },
-      };
-
-      /* Act. */
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      /* Assert. */
-      expect({
-        requestStatus: newState.requestStatus,
-        requestError: newState.requestError,
-        ids: newState.ids,
-        entities: newState.entities,
-      }).toEqual({
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
-        ids: [3],
-        entities: {
-          "3": {
-            id: 3,
-            sourceLanguage: "Finnish",
-            newWord: "sana numero-3",
-            content: "lause numero-3",
-            contentTranslation: "käännös numero-3",
-          },
-        },
-      });
+      },
     });
+  });
 
-    test("examples/editExample/pending", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.FAILED,
-        requestError: "examples-editExample-rejected",
-      };
-      const action: IActionEditExamplePending = {
-        type: ActionTypesEditExample.PENDING,
-      };
+  test("examples/editExample/pending", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "examples-editExample-rejected",
+    };
+    const action: IActionEditExamplePending = {
+      type: ActionTypesEditExample.PENDING,
+    };
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      expect(newState).toEqual({
-        requestStatus: "loading",
-        requestError: null,
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    expect(newState).toEqual({
+      requestStatus: "loading",
+      requestError: null,
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/editExample/rejected", () => {
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-      };
-      const action: IActionEditExampleRejected = {
-        type: ActionTypesEditExample.REJECTED,
-        error: "examples-editExample-rejected",
-      };
+  test("examples/editExample/rejected", () => {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionEditExampleRejected = {
+      type: ActionTypesEditExample.REJECTED,
+      error: "examples-editExample-rejected",
+    };
 
-      const newState: IStateExamples = examplesReducer(initState, action);
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
 
-      expect(newState).toEqual({
-        requestStatus: "failed",
-        requestError: "examples-editExample-rejected",
-        meta: {
-          totalItems: null,
-          perPage: null,
-          totalPages: null,
-          page: null,
-        },
-        links: {
-          self: null,
-          next: null,
-          prev: null,
-          first: null,
-          last: null,
-        },
-        ids: [],
-        entities: {},
-      });
+    expect(newState).toEqual({
+      requestStatus: "failed",
+      requestError: "examples-editExample-rejected",
+      meta: {
+        totalItems: null,
+        perPage: null,
+        totalPages: null,
+        page: null,
+      },
+      links: {
+        self: null,
+        next: null,
+        prev: null,
+        first: null,
+        last: null,
+      },
+      ids: [],
+      entities: {},
     });
+  });
 
-    test("examples/editExample/fulfilled", () => {
-      /* Arrange. */
-      const perPage: number = 2;
-      const page: number = 2;
-      const paginationFromBackend: {
-        _meta: IPaginationMetaFromBackend;
-        _links: IPaginationLinks;
-        items: IExampleFromBackend[];
-      } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
-      const {
-        meta,
-        links,
-        ids,
-        entities,
-      }: {
-        meta: IPaginationMeta;
-        links: IPaginationLinks;
-        ids: number[];
-        entities: { [exampleId: string]: IExample };
-      } = convertToPaginationInFrontend(paginationFromBackend);
+  test("examples/editExample/fulfilled", () => {
+    /* Arrange. */
+    const perPage: number = 2;
+    const page: number = 2;
+    const paginationFromBackend: {
+      _meta: IPaginationMetaFromBackend;
+      _links: IPaginationLinks;
+      items: IExampleFromBackend[];
+    } = mockPaginationFromBackend(MOCK_EXAMPLES, perPage, page);
+    const {
+      meta,
+      links,
+      ids,
+      entities,
+    }: {
+      meta: IPaginationMeta;
+      links: IPaginationLinks;
+      ids: number[];
+      entities: { [exampleId: string]: IExample };
+    } = convertToPaginationInFrontend(paginationFromBackend);
 
-      const initState: IStateExamples = {
-        ...INITIAL_STATE_EXAMPLES,
-        requestStatus: RequestStatus.LOADING,
-        requestError: null,
-        meta,
-        links,
-        ids,
-        entities,
-      };
-      const action: IActionEditExampleFulfilled = {
-        type: ActionTypesEditExample.FULFILLED,
-        payload: {
+    initStExamples = {
+      ...INITIAL_STATE_EXAMPLES,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      meta,
+      links,
+      ids,
+      entities,
+    };
+    const action: IActionEditExampleFulfilled = {
+      type: ActionTypesEditExample.FULFILLED,
+      payload: {
+        id: 3,
+        sourceLanguage: "German",
+        newWord: "Wort numero-4",
+        content: "Satz numero-4",
+        contentTranslation: "Übersetzung numero-4",
+      },
+    };
+
+    /* Act. */
+    const newState: IStateExamples = examplesReducer(initStExamples, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      meta,
+      links,
+      ids: [3, 4],
+      entities: {
+        "3": {
           id: 3,
           sourceLanguage: "German",
           newWord: "Wort numero-4",
           content: "Satz numero-4",
           contentTranslation: "Übersetzung numero-4",
         },
-      };
-
-      /* Act. */
-      const newState: IStateExamples = examplesReducer(initState, action);
-
-      /* Assert. */
-      expect(newState).toEqual({
-        requestStatus: RequestStatus.SUCCEEDED,
-        requestError: null,
-        meta,
-        links,
-        ids: [3, 4],
-        entities: {
-          "3": {
-            id: 3,
-            sourceLanguage: "German",
-            newWord: "Wort numero-4",
-            content: "Satz numero-4",
-            contentTranslation: "Übersetzung numero-4",
-          },
-          "4": {
-            id: 4,
-            sourceLanguage: "Finnish",
-            newWord: "sana numero-4",
-            content: "lause numero-4",
-            contentTranslation: "käännös numero-4",
-          },
+        "4": {
+          id: 4,
+          sourceLanguage: "Finnish",
+          newWord: "sana numero-4",
+          content: "lause numero-4",
+          contentTranslation: "käännös numero-4",
         },
-      });
+      },
     });
   });
 });
