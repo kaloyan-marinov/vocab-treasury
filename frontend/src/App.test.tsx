@@ -15,7 +15,7 @@ import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
 import { INITIAL_STATE, rootReducer } from "./store";
-import { About, Account } from "./App";
+import { Account } from "./App";
 
 // 2
 import { rest } from "msw";
@@ -41,14 +41,6 @@ import {
 
 // const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
-
-describe("<About>", () => {
-  test("renders an 'About VocabTreasury...' message", () => {
-    render(<About />);
-    const headingElement = screen.getByText("About VocabTreasury...");
-    expect(headingElement).toBeInTheDocument();
-  });
-});
 
 describe("<Account>", () => {
   test("renders the logged-in user's profile details", () => {

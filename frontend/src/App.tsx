@@ -6,6 +6,7 @@ import { Alerts } from "./features/alerts/Alerts";
 
 import { Home } from "./features/Home";
 import { NavigationBar } from "./features/NavigationBar";
+import { About } from "./features/About";
 
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
@@ -94,17 +95,6 @@ export const App = () => {
           <Search />
         </PrivateRoute>
       </Switch>
-    </React.Fragment>
-  );
-};
-
-export const About = () => {
-  console.log(`${new Date().toISOString()} - React is rendering <About>`);
-
-  return (
-    <React.Fragment>
-      {"<About>"}
-      <h1>About VocabTreasury...</h1>
     </React.Fragment>
   );
 };
