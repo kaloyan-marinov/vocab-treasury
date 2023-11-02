@@ -487,15 +487,7 @@ describe("reducer", () => {
 
 /* Create an MSW "request-interception layer". */
 const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [
-    rest.post("/api/users", requestHandlers.mockMultipleFailures),
-    rest.post("/api/tokens", requestHandlers.mockMultipleFailures),
-    rest.get("/api/user-profile", requestHandlers.mockMultipleFailures),
-    rest.get(
-      "/api/request-password-reset",
-      requestHandlers.mockMultipleFailures
-    ),
-  ];
+  [];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(
   ...requestHandlersToMock

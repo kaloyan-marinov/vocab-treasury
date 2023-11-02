@@ -174,9 +174,12 @@ describe("<Register>", () => {
 });
 
 /* Create an MSW "request-interception layer". */
-const restHandlers: RestHandler<MockedRequest<DefaultRequestBody>>[] = [];
+const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
+  [];
 
-const requestInterceptionLayer: SetupServerApi = setupServer(...restHandlers);
+const requestInterceptionLayer: SetupServerApi = setupServer(
+  ...requestHandlersToMock
+);
 
 let enhancer: TEnhancer;
 // let initState: IState;

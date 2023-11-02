@@ -19,7 +19,7 @@ import { INITIAL_STATE, rootReducer, TEnhancer } from "./store";
 
 // 2
 import { rest } from "msw";
-import { setupServer } from "msw/node";
+import { setupServer, SetupServerApi } from "msw/node";
 
 import { applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
@@ -59,7 +59,9 @@ const requestHandlersToMock = [
   rest.delete("/api/examples/:id", requestHandlers.mockMultipleFailures),
 ];
 
-const requestInterceptionLayer = setupServer(...requestHandlersToMock);
+const requestInterceptionLayer: SetupServerApi = setupServer(
+  ...requestHandlersToMock
+);
 
 let enhancer: TEnhancer;
 let initState: IState;

@@ -24,6 +24,11 @@ TODO: (2023/10/20, 07:42)
       before submitting a pull request for review,
       consolidate the `mockMultipleFailures` and `mockSingleFailure`
       into a `createMockFailure({ status, error, message, mockOnceOrMultiple })` function
+
+      +
+
+      utilize that to reduce duplication
+      in as many `requestInterceptionLayer.use` calls as possible
 */
 const mockMultipleFailures = (
   req: RestRequest<DefaultRequestBody, RequestParams>,

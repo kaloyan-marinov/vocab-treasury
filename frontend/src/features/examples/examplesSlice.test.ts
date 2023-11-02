@@ -968,15 +968,7 @@ describe("reducer", () => {
 
 /* Create an MSW "request-interception layer". */
 const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [
-    // rest.post("/api/users", requestHandlers.mockMultipleFailures),
-    // rest.post("/api/tokens", requestHandlers.mockMultipleFailures),
-    // rest.get("/api/user-profile", requestHandlers.mockMultipleFailures),
-    // rest.get(
-    //   "/api/request-password-reset",
-    //   requestHandlers.mockMultipleFailures
-    // ),
-  ];
+  [];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(
   ...requestHandlersToMock
@@ -1102,15 +1094,6 @@ describe(
       "fetchExamples()" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        /*
-        TODO: (2023/10/30, 08:17)
-
-              before submitting a pull request for review,
-              refactor the tests in `authSlice.test.tsx`
-              that rely on mocking HTTP requests
-              in such a way that makes them more strict,
-              just like the ones here
-        */
         /*
         TODO: (2023/10/30, 08:18)
 
