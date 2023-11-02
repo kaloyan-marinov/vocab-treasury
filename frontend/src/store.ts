@@ -27,30 +27,8 @@ import {
   IActionExamplesClearSlice,
   examplesReducer,
 } from "./features/examples/examplesSlice";
-/*
-TODO: (2023/10/31, 17:52)
 
-      before submitting a pull request for review,
-      improve the organization of the symbols in this file
-*/
-
-/* Define selector functions. */
-export const selectAlertsIds = (state: IState) => state.alerts.ids;
-export const selectAlertsEntities = (state: IState) => state.alerts.entities;
-
-export const selectAuthRequestStatus = (state: IState) =>
-  state.auth.requestStatus;
-export const selectHasValidToken = (state: IState) => state.auth.hasValidToken;
-export const selectLoggedInUserProfile = (state: IState) =>
-  state.auth.loggedInUserProfile;
-
-export const selectExamplesMeta = (state: IState) => state.examples.meta;
-export const selectExamplesLinks = (state: IState) => state.examples.links;
-export const selectExamplesIds = (state: IState) => state.examples.ids;
-export const selectExamplesEntities = (state: IState) =>
-  state.examples.entities;
-
-/* authSlice thunk-action creator */
+/* "authSlice + examplesSlice + alertsSlice" thunk-action creator */
 export const logOut = (message: string) => {
   /*
   Create a thunk-action.
@@ -96,3 +74,19 @@ export const store = createStore(rootReducer, composedEnhancer);
 
 export const INITIAL_STATE: IState = store.getState();
 export type TEnhancer = typeof composedEnhancer;
+
+/* Define selector functions. */
+export const selectAlertsIds = (state: IState) => state.alerts.ids;
+export const selectAlertsEntities = (state: IState) => state.alerts.entities;
+
+export const selectAuthRequestStatus = (state: IState) =>
+  state.auth.requestStatus;
+export const selectHasValidToken = (state: IState) => state.auth.hasValidToken;
+export const selectLoggedInUserProfile = (state: IState) =>
+  state.auth.loggedInUserProfile;
+
+export const selectExamplesMeta = (state: IState) => state.examples.meta;
+export const selectExamplesLinks = (state: IState) => state.examples.links;
+export const selectExamplesIds = (state: IState) => state.examples.ids;
+export const selectExamplesEntities = (state: IState) =>
+  state.examples.entities;
