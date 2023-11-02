@@ -94,19 +94,22 @@ describe("action creators", () => {
   });
 
   test("mockPaginationFromBackend (which is a function that helps test fetchExamplesFulfilled)", () => {
+    /* Arrange. */
     const perPage: number = 2;
     const page: number = 1;
 
+    /* Act. */
     const backendPaginationMock = mockPaginationFromBackend(
       MOCK_EXAMPLES,
       perPage,
       page
     );
 
+    /* Assert. */
     /*
-        The two blocks of code below are equivalent,
-        but the latter one is more idiomatic.
-        */
+    The two blocks of code below are equivalent,
+    but the latter one is more idiomatic.
+    */
     // const metaFromBackend: IPaginationMetaFromBackend = backendPaginationMock._meta;
     // const links: IPaginationLinks = backendPaginationMock._links;
     // const examplesFromBackend: IExampleFromBackend[] = backendPaginationMock.items;
@@ -163,9 +166,9 @@ describe("action creators", () => {
     );
 
     /*
-        The two blocks of code below are equivalent,
-        but the latter one is more idiomatic.
-        */
+    The two blocks of code below are equivalent,
+    but the latter one is more idiomatic.
+    */
     // const metaFromBackend: IPaginationMetaFromBackend = backendPaginationMock._meta;
     // const links: IPaginationLinks = backendPaginationMock._links;
     // const examplesFromBackend: IExampleFromBackend[] = backendPaginationMock.items;
@@ -347,6 +350,7 @@ describe("reducer", () => {
   });
 
   test("examples/fetchExamples/pending", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.FAILED,
@@ -356,8 +360,10 @@ describe("reducer", () => {
       type: ActionTypesFetchExamples.PENDING,
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -380,6 +386,7 @@ describe("reducer", () => {
   });
 
   test("examples/fetchExamples/rejected", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.LOADING,
@@ -389,8 +396,10 @@ describe("reducer", () => {
       error: "examples-fetchExamples-rejected",
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
       requestError: "examples-fetchExamples-rejected",
@@ -558,6 +567,7 @@ describe("reducer", () => {
   });
 
   test("examples/createExample/pending", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.FAILED,
@@ -567,8 +577,10 @@ describe("reducer", () => {
       type: ActionTypesCreateExample.PENDING,
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -591,6 +603,7 @@ describe("reducer", () => {
   });
 
   test("examples/createExample/rejected", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.LOADING,
@@ -601,8 +614,10 @@ describe("reducer", () => {
       error: "examples-createExample-rejected",
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
       requestError: "examples-createExample-rejected",
@@ -700,6 +715,7 @@ describe("reducer", () => {
   });
 
   test("examples/deleteExample/pending", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.FAILED,
@@ -709,8 +725,10 @@ describe("reducer", () => {
       type: ActionTypesDeleteExample.PENDING,
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: "loading",
       requestError: null,
@@ -733,6 +751,7 @@ describe("reducer", () => {
   });
 
   test("examples/deleteExample/rejected", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.LOADING,
@@ -743,8 +762,10 @@ describe("reducer", () => {
       error: "examples-deleteExample-rejected",
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: "failed",
       requestError: "examples-deleteExample-rejected",
@@ -829,6 +850,7 @@ describe("reducer", () => {
   });
 
   test("examples/editExample/pending", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.FAILED,
@@ -838,8 +860,10 @@ describe("reducer", () => {
       type: ActionTypesEditExample.PENDING,
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: "loading",
       requestError: null,
@@ -862,6 +886,7 @@ describe("reducer", () => {
   });
 
   test("examples/editExample/rejected", () => {
+    /* Arrange. */
     initStExamples = {
       ...INITIAL_STATE_EXAMPLES,
       requestStatus: RequestStatus.LOADING,
@@ -872,8 +897,10 @@ describe("reducer", () => {
       error: "examples-editExample-rejected",
     };
 
+    /* Act. */
     const newState: IStateExamples = examplesReducer(initStExamples, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: "failed",
       requestError: "examples-editExample-rejected",
@@ -998,9 +1025,9 @@ describe(
 
     beforeAll(() => {
       /*
-        Establish the created request-interception layer
-        (= Enable API mocking).
-        */
+      Establish the created request-interception layer
+      (= Enable API mocking).
+      */
       requestInterceptionLayer.listen();
     });
 
@@ -1011,20 +1038,20 @@ describe(
 
     afterEach(() => {
       /*
-        Remove any request handlers that may have been added at runtime
-        (by individual tests after the initial `setupServer` call).
-        */
+      Remove any request handlers that may have been added at runtime
+      (by individual tests after the initial `setupServer` call).
+      */
       requestInterceptionLayer.resetHandlers();
     });
 
     afterAll(() => {
       /*
-        Prevent the established request-interception layer
-        from affecting irrelevant tests
-        by tearing down that layer
-        (= Stop request interception)
-        (= Disable API mocking).
-        */
+      Prevent the established request-interception layer
+      from affecting irrelevant tests
+      by tearing down that layer
+      (= Stop request interception)
+      (= Disable API mocking).
+      */
       requestInterceptionLayer.close();
     });
 
@@ -1094,12 +1121,6 @@ describe(
       "fetchExamples()" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
-        /*
-        TODO: (2023/10/30, 08:18)
-
-              before submitting a pull request for review,
-              ensure that each test has Arrange-Act-Assert comments
-        */
         /* Arrange. */
         requestInterceptionLayer.use(
           rest.get("/api/examples", requestHandlers.mockSingleFailure)

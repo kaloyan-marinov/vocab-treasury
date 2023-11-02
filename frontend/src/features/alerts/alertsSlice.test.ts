@@ -44,6 +44,7 @@ describe("reducer", () => {
   });
 
   test("alerts/create", () => {
+    /* Arrange. */
     const action: IActionAlertsCreate = {
       type: ActionTypesAlerts.CREATE,
       payload: {
@@ -52,8 +53,10 @@ describe("reducer", () => {
       },
     };
 
+    /* Act. */
     const newState: IStateAlerts = alertsReducer(initStAlerts, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       ids: ["alert-id-17"],
       entities: {
@@ -66,6 +69,7 @@ describe("reducer", () => {
   });
 
   test("alerts/remove", () => {
+    /* Arrange. */
     initStAlerts = {
       ...INITIAL_STATE_ALERTS,
       ids: ["alert-id-17"],
@@ -83,8 +87,10 @@ describe("reducer", () => {
       },
     };
 
+    /* Act. */
     const newState: IStateAlerts = alertsReducer(initStAlerts, action);
 
+    /* Assert */
     expect(newState).toEqual({
       ids: [],
       entities: {},

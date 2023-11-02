@@ -67,7 +67,7 @@ test(
     const history = createMemoryHistory();
     history.push("/example/2");
 
-    /* Arrange. */
+    /* Act. */
     render(
       <Provider store={realStore}>
         <Router history={history}>

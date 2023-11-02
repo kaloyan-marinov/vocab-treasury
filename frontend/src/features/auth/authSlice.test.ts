@@ -194,6 +194,7 @@ describe("reducer", () => {
   });
 
   test("auth/createUser/pending", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
@@ -203,8 +204,10 @@ describe("reducer", () => {
       type: ActionTypesCreateUser.PENDING,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -215,6 +218,7 @@ describe("reducer", () => {
   });
 
   test("auth/createUser/rejected", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -225,8 +229,10 @@ describe("reducer", () => {
       error: "auth-createUser-rejected",
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-createUser-rejected",
@@ -237,6 +243,7 @@ describe("reducer", () => {
   });
 
   test("auth/createUser/fulfilled", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -246,8 +253,10 @@ describe("reducer", () => {
       type: ActionTypesCreateUser.FULFILLED,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
@@ -258,6 +267,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/pending", () => {
+    /* Arrage. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
@@ -267,8 +277,10 @@ describe("reducer", () => {
       type: ActionTypesIssueJWSToken.PENDING,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -279,6 +291,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/rejected", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -289,8 +302,10 @@ describe("reducer", () => {
       error: "auth-issueJWSToken-rejected",
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-issueJWSToken-rejected",
@@ -301,6 +316,7 @@ describe("reducer", () => {
   });
 
   test("auth/issueJWSToken/fulfilled", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -313,8 +329,10 @@ describe("reducer", () => {
       },
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
@@ -325,6 +343,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/pending", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
@@ -335,8 +354,10 @@ describe("reducer", () => {
       type: ActionTypesFetchProfile.PENDING,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.LOADING,
       requestError: null,
@@ -347,6 +368,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/rejected", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -358,8 +380,10 @@ describe("reducer", () => {
       error: "auth-fetchProfile-rejected",
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.FAILED,
       requestError: "auth-fetchProfile-rejected",
@@ -370,6 +394,7 @@ describe("reducer", () => {
   });
 
   test("auth/fetchProfile/fulfilled", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -387,8 +412,10 @@ describe("reducer", () => {
       },
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
@@ -403,6 +430,7 @@ describe("reducer", () => {
   });
 
   test("auth/requestPasswordReset/pending", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.FAILED,
@@ -412,8 +440,10 @@ describe("reducer", () => {
       type: ActionTypesRequestPasswordReset.PENDING,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       ...initStAuth,
       requestStatus: RequestStatus.LOADING,
@@ -422,6 +452,7 @@ describe("reducer", () => {
   });
 
   test("auth/requestPasswordReset/rejected", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -431,8 +462,10 @@ describe("reducer", () => {
       error: "auth-requestPasswordReset-rejected",
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       ...initStAuth,
       requestStatus: RequestStatus.FAILED,
@@ -441,6 +474,7 @@ describe("reducer", () => {
   });
 
   test("auth/requestPasswordReset/fulfilled", () => {
+    /* Arrange. */
     initStAuth = {
       ...INITIAL_STATE_AUTH,
       requestStatus: RequestStatus.LOADING,
@@ -449,8 +483,10 @@ describe("reducer", () => {
       type: ActionTypesRequestPasswordReset.FULFILLED,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       ...initStAuth,
       requestStatus: RequestStatus.SUCCEEDED,
@@ -458,6 +494,7 @@ describe("reducer", () => {
   });
 
   test("auth/clearSlice", () => {
+    /* Arrange. */
     initStAuth = {
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
@@ -473,8 +510,10 @@ describe("reducer", () => {
       type: ACTION_TYPE_AUTH_CLEAR_SLICE,
     };
 
+    /* Act. */
     const newState: IStateAuth = authReducer(initStAuth, action);
 
+    /* Assert. */
     expect(newState).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
@@ -497,12 +536,6 @@ const createStoreMock = configureMockStore<
   IState,
   ThunkDispatch<IState, any, AnyAction>
 >([thunkMiddleware]);
-/*
-MockStoreEnhanced<
-    IState,
-    ThunkDispatch<IState, any, AnyAction>
->
-*/
 
 describe(
   "dispatching of async thunk-actions," +
@@ -551,10 +584,12 @@ describe(
       "createUser(username, ...)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.post("/api/users", requestHandlers.mockCreateUser)
         );
 
+        /* Act. */
         const createUserPromise = storeMock.dispatch(
           createUser(
             "mocked-username",
@@ -563,6 +598,7 @@ describe(
           )
         );
 
+        /* Assert. */
         await expect(createUserPromise).resolves.toEqual(undefined);
         expect(storeMock.getActions()).toEqual([
           { type: "auth/createUser/pending" },
@@ -575,6 +611,7 @@ describe(
       "createUser(username, ...)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.post("/api/users", (req, res, ctx) => {
             return res(
@@ -587,6 +624,7 @@ describe(
           })
         );
 
+        /* Act. */
         const createUserPromise = storeMock.dispatch(
           createUser(
             "mocked-username",
@@ -595,6 +633,7 @@ describe(
           )
         );
 
+        /* Assert. */
         await expect(createUserPromise).rejects.toEqual(
           "[mocked] The provided email is already taken."
         );
@@ -614,14 +653,17 @@ describe(
       "issueJWSToken(email, password)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
+        /* Arrane. */
         requestInterceptionLayer.use(
           rest.post("/api/tokens", requestHandlers.mockIssueJWSToken)
         );
 
+        /* Act. */
         const issueJWSTokenPromise = storeMock.dispatch(
           issueJWSToken("mocked-email@protonmail.com", "mocked-password")
         );
 
+        /* Assert. */
         await expect(issueJWSTokenPromise).resolves.toEqual(undefined);
         expect(storeMock.getActions()).toEqual([
           {
@@ -641,6 +683,7 @@ describe(
       "issueJWSToken(email, password)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.post("/api/tokens", (req, res, ctx) => {
             return res(
@@ -653,10 +696,12 @@ describe(
           })
         );
 
+        /* Act. */
         const issueJWSTokenPromise = storeMock.dispatch(
           issueJWSToken("mocked-email@protonmail.com", "mocked-password")
         );
 
+        /* Assert. */
         await expect(issueJWSTokenPromise).rejects.toEqual(
           "[mocked] Incorrect email and/or password."
         );
@@ -676,12 +721,15 @@ describe(
       "fetchProfile()" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
         );
 
+        /* Act. */
         const fetchProfilePromise = storeMock.dispatch(fetchProfile());
 
+        /* Assert. */
         await expect(fetchProfilePromise).resolves.toEqual(undefined);
         expect(storeMock.getActions()).toEqual([
           {
@@ -701,6 +749,7 @@ describe(
       "fetchProfile()" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.get("/api/user-profile", (req, res, ctx) => {
             return res(
@@ -713,8 +762,10 @@ describe(
           })
         );
 
+        /* Act. */
         const fetchProfilePromise = storeMock.dispatch(fetchProfile());
 
+        /* Assert. */
         await expect(fetchProfilePromise).rejects.toEqual(
           "[mocked] Expired access token."
         );
@@ -777,6 +828,7 @@ describe(
       "requestPasswordReset(email)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.post(
             "/api/request-password-reset",
@@ -784,10 +836,12 @@ describe(
           )
         );
 
+        /* Act. */
         const requestPasswordResetPromise = storeMock.dispatch(
           requestPasswordReset("mocked-email@protonmail.com")
         );
 
+        /* Assert. */
         await expect(requestPasswordResetPromise).resolves.toEqual(undefined);
         expect(storeMock.getActions()).toEqual([
           {
@@ -804,6 +858,7 @@ describe(
       "requestPasswordReset(email)" +
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
+        /* Arrange. */
         requestInterceptionLayer.use(
           rest.post("/api/request-password-reset", (req, res, ctx) => {
             return res(
@@ -816,10 +871,12 @@ describe(
           })
         );
 
+        /* Act. */
         const requestPasswordResetPromise = storeMock.dispatch(
           requestPasswordReset("mocked-email@protonmail.com")
         );
 
+        /* Assert. */
         await expect(requestPasswordResetPromise).rejects.toEqual(
           "[mocked] This is a bad request."
         );

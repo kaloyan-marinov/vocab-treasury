@@ -145,13 +145,13 @@ test(
 
     /* Act. */
     /*
-      Simulate the user's hitting her browser's Reload button.
-      
-      (Note that the purpose of defining and using `realStoreAfterReload` as done below
-      is purely illustrative,
-      because the subsequent call to `render` dispatches a `fetchProfile()` thunk-action
-      whose HTTP request will be intercepted and mocked/handled by `requestInterceptionLayer`.)
-      */
+    Simulate the user's hitting her browser's Reload button.
+    
+    (Note that the purpose of defining and using `realStoreAfterReload` as done below
+    is purely illustrative,
+    because the subsequent call to `render` dispatches a `fetchProfile()` thunk-action
+    whose HTTP request will be intercepted and mocked/handled by `requestInterceptionLayer`.)
+    */
     cleanup();
 
     const realStoreAfterReload = createStore(
@@ -780,9 +780,9 @@ test(
     });
 
     /*
-      The remaining "Act" statements are not really necessary for this test case,
-      but they increase the test suite's code coverage.
-      */
+    The remaining "Act" statements are not really necessary for this test case,
+    but they increase the test suite's code coverage.
+    */
     const sourceLanguageInputElement = screen.getByLabelText("SOURCE LANGUAGE");
     expect(sourceLanguageInputElement).toBeInTheDocument();
     const contentTranslationInputElement = screen.getByLabelText("TRANSLATION");
@@ -863,7 +863,9 @@ test(
     fireEvent.click(returnToOwnVocabTreasuryAnchorElement);
 
     /* Assert. */
-    /* - wait for the same page [of examples] to be rendered */
+    /*
+      - wait for the same page [of examples] to be rendered
+    */
     const currentPageSpanElement: HTMLElement = await screen.findByText(
       "Current page: 2"
     );
@@ -940,26 +942,26 @@ test(
     /* Assert. */
     let element: HTMLElement;
     /*
-      It is worth emphasizing that:
-      (a) when you run this test,
-          it will PASS, but
-      (b) when you use the Jest extension to debug this test,
-          it will FAIL at the next statement.
-      
-      The reason for (b) is that,
-      as per https://testing-library.com/docs/dom-testing-library/api-async ,
-      "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
-      is 1000ms."
+    It is worth emphasizing that:
+    (a) when you run this test,
+        it will PASS, but
+    (b) when you use the Jest extension to debug this test,
+        it will FAIL at the next statement.
+    
+    The reason for (b) is that,
+    as per https://testing-library.com/docs/dom-testing-library/api-async ,
+    "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
+    is 1000ms."
 
-      If you wish to use the Jest extension to debug this test
-      without it FAILing due to the default timeout,
-      please change the following statement to:
-      ```
-      element = await screen.findByText("Current page: 1", undefined, {
-        timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
-      });
-      ```
-      */
+    If you wish to use the Jest extension to debug this test
+    without it FAILing due to the default timeout,
+    please change the following statement to:
+    ```
+    element = await screen.findByText("Current page: 1", undefined, {
+      timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
+    });
+    ```
+    */
     element = await screen.findByText("Current page: 1");
     expect(element).toBeInTheDocument();
 
@@ -1028,26 +1030,26 @@ test(
     /* Assert. */
     let element: HTMLElement;
     /*
-      It is worth emphasizing that:
-      (a) when you run this test,
-          it will PASS, but
-      (b) when you use the Jest extension to debug this test,
-          it will FAIL at the next statement.
-      
-      The reason for (b) is that,
-      as per https://testing-library.com/docs/dom-testing-library/api-async ,
-      "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
-      is 1000ms."
+    It is worth emphasizing that:
+    (a) when you run this test,
+        it will PASS, but
+    (b) when you use the Jest extension to debug this test,
+        it will FAIL at the next statement.
+    
+    The reason for (b) is that,
+    as per https://testing-library.com/docs/dom-testing-library/api-async ,
+    "[the] default timeout [for `waitFor` and the other async utilities within `RTL`]
+    is 1000ms."
 
-      If you wish to use the Jest extension to debug this test
-      without it FAILing due to the default timeout,
-      please change the following statement to:
-      ```
-      element = await screen.findByText("Current page: 5", undefined, {
-        timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
-      });
-      ```
-      */
+    If you wish to use the Jest extension to debug this test
+    without it FAILing due to the default timeout,
+    please change the following statement to:
+    ```
+    element = await screen.findByText("Current page: 5", undefined, {
+      timeout: BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS,
+    });
+    ```
+    */
     element = await screen.findByText("Current page: 5");
     expect(element).toBeInTheDocument();
 
@@ -1067,6 +1069,7 @@ test(
     " and then the user clicks on 'Delete this example'," +
     " the user gets logged out",
   async () => {
+    /* Arrange. */
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();

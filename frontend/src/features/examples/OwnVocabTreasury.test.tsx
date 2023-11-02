@@ -176,15 +176,15 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       " to reject the client-provided authentication credential as invalid",
     async () => {
       /*
-        TODO: find out whether it would be better practice to convert this test case
-              into one that (fits under the
-              "multiple components + mocking of HTTP requests to the backend" `describe`
-              block and) renders the whole <App>, makes analogous assertions as this test,
-              and finally concludes by making the following extra assertion:
-                ```
-                expect(history.location.pathname).toEqual("/login")
-                ```
-        */
+      TODO: find out whether it would be better practice to convert this test case
+            into one that (fits under the
+            "multiple components + mocking of HTTP requests to the backend" `describe`
+            block and) renders the whole <App>, makes analogous assertions as this test,
+            and finally concludes by making the following extra assertion:
+              ```
+              expect(history.location.pathname).toEqual("/login")
+              ```
+      */
 
       /* Arrange. */
       initState = {
