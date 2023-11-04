@@ -7,52 +7,47 @@ import { AnyAction } from "redux";
 
 import { RequestStatus, IProfile, IStateAuth, IState } from "../../types";
 import { INITIAL_STATE_AUTH, VOCAB_TREASURY_APP_TOKEN } from "../../constants";
+import { MOCK_PROFILE } from "../../mockPiecesOfData";
+import { requestHandlers } from "../../testHelpers";
 import { logOut, INITIAL_STATE } from "../../store";
-/*
-TODO: (2023/10/29, 10:42)
-
-      before submitting a pull request for review,
-      consider breaking down the symbols imported by the next statement
-      into semantically-cohesive groups
-*/
 import {
-  createUserPending,
-  createUserRejected,
-  createUserFulfilled,
-  issueJWSTokenPending,
-  issueJWSTokenRejected,
-  issueJWSTokenFulfilled,
-  fetchProfilePending,
-  fetchProfileRejected,
-  fetchProfileFulfilled,
-  requestPasswordResetPending,
-  requestPasswordResetRejected,
-  requestPasswordResetFulfilled,
-  authClearSlice,
   ActionTypesCreateUser,
   IActionCreateUserPending,
   IActionCreateUserRejected,
   IActionCreateUserFulfilled,
+  createUserPending,
+  createUserRejected,
+  createUserFulfilled,
+  createUser,
   ActionTypesIssueJWSToken,
   IActionIssueJWSTokenPending,
   IActionIssueJWSTokenRejected,
   IActionIssueJWSTokenFulfilled,
+  issueJWSTokenPending,
+  issueJWSTokenRejected,
+  issueJWSTokenFulfilled,
+  issueJWSToken,
   ActionTypesFetchProfile,
   IActionFetchProfilePending,
   IActionFetchProfileRejected,
   IActionFetchProfileFulfilled,
+  fetchProfilePending,
+  fetchProfileRejected,
+  fetchProfileFulfilled,
+  fetchProfile,
   ActionTypesRequestPasswordReset,
   IActionRequestPasswordResetPending,
   IActionRequestPasswordResetRejected,
   IActionRequestPasswordResetFulfilled,
+  requestPasswordResetPending,
+  requestPasswordResetRejected,
+  requestPasswordResetFulfilled,
+  requestPasswordReset,
   ACTION_TYPE_AUTH_CLEAR_SLICE,
   IActionAuthClearSlice,
-  requestPasswordReset,
+  authClearSlice,
   authReducer,
 } from "./authSlice";
-import { requestHandlers } from "../../testHelpers";
-import { MOCK_PROFILE } from "../../mockPiecesOfData";
-import { createUser, issueJWSToken, fetchProfile } from "./authSlice";
 
 describe("action creators", () => {
   test("createUserPending", () => {

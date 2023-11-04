@@ -16,61 +16,52 @@ import {
   IState,
 } from "../../types";
 import { INITIAL_STATE_EXAMPLES } from "../../constants";
-import { INITIAL_STATE } from "../../store";
-/*
-TODO: (2023/10/30, 07:35)
-
-      before submitting a pull request for review,
-      consider breaking down the symbols imported by the next statement
-      into semantically-cohesive groups
-*/
-import {
-  fetchExamplesPending,
-  fetchExamplesRejected,
-  fetchExamplesFulfilled,
-  createExamplePending,
-  createExampleRejected,
-  createExampleFulfilled,
-  deleteExamplePending,
-  deleteExampleRejected,
-  deleteExampleFulfilled,
-  editExamplePending,
-  editExampleRejected,
-  editExampleFulfilled,
-  examplesClearSlice,
-  ActionTypesFetchExamples,
-  IActionFetchExamplesPending,
-  IActionFetchExamplesRejected,
-  IActionFetchExamplesFulfilled,
-  ActionTypesCreateExample,
-  IActionCreateExamplePending,
-  IActionCreateExampleRejected,
-  IActionCreateExampleFulfilled,
-  ActionTypesDeleteExample,
-  IActionDeleteExamplePending,
-  IActionDeleteExampleRejected,
-  IActionDeleteExampleFulfilled,
-  ActionTypesEditExample,
-  IActionEditExamplePending,
-  IActionEditExampleRejected,
-  IActionEditExampleFulfilled,
-  ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
-  IActionExamplesClearSlice,
-  examplesReducer,
-} from "./examplesSlice";
-import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
-import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 import {
   mockPaginationFromBackend,
   MOCK_EXAMPLES,
   MOCK_EXAMPLE,
   MOCK_EXAMPLE_AT_IDX_7,
 } from "../../mockPiecesOfData";
+import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
+import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
+import { INITIAL_STATE } from "../../store";
 import {
+  ActionTypesFetchExamples,
+  IActionFetchExamplesPending,
+  IActionFetchExamplesRejected,
+  IActionFetchExamplesFulfilled,
+  fetchExamplesPending,
+  fetchExamplesRejected,
+  fetchExamplesFulfilled,
   fetchExamples,
+  ActionTypesCreateExample,
+  IActionCreateExamplePending,
+  IActionCreateExampleRejected,
+  IActionCreateExampleFulfilled,
+  createExamplePending,
+  createExampleRejected,
+  createExampleFulfilled,
   createExample,
+  ActionTypesDeleteExample,
+  IActionDeleteExamplePending,
+  IActionDeleteExampleRejected,
+  IActionDeleteExampleFulfilled,
+  deleteExamplePending,
+  deleteExampleRejected,
+  deleteExampleFulfilled,
   deleteExample,
+  ActionTypesEditExample,
+  IActionEditExamplePending,
+  IActionEditExampleRejected,
+  IActionEditExampleFulfilled,
+  editExamplePending,
+  editExampleRejected,
+  editExampleFulfilled,
   editExample,
+  examplesClearSlice,
+  ACTION_TYPE_EXAMPLES_CLEAR_SLICE,
+  IActionExamplesClearSlice,
+  examplesReducer,
 } from "./examplesSlice";
 
 describe("action creators", () => {

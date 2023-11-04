@@ -14,12 +14,12 @@ import {
   IPaginationLinks,
   IState,
 } from "../../types";
-import { INITIAL_STATE, rootReducer } from "../../store";
 import {
   mockPaginationFromBackend,
   MOCK_EXAMPLES,
 } from "../../mockPiecesOfData";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
+import { INITIAL_STATE, rootReducer } from "../../store";
 import { SingleExample } from "./SingleExample";
 
 test(
