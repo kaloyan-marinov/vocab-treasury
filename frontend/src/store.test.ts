@@ -1,4 +1,3 @@
-import { IState } from "./types";
 import {
   IAlert,
   RequestStatus,
@@ -6,20 +5,16 @@ import {
   IPaginationMeta,
   IPaginationLinks,
   IExample,
+  IState,
 } from "./types";
 import { INITIAL_STATE_AUTH, INITIAL_STATE_EXAMPLES } from "./constants";
 
-// 1
-import { selectAlertsIds, selectAlertsEntities } from "./store";
-
-// 3
 import {
+  selectAlertsIds,
+  selectAlertsEntities,
   selectAuthRequestStatus,
   selectHasValidToken,
   selectLoggedInUserProfile,
-} from "./store";
-
-import {
   selectExamplesMeta,
   selectExamplesLinks,
   selectExamplesIds,

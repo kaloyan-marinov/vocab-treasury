@@ -1,18 +1,14 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
-
-import { createStore } from "redux";
+import { applyMiddleware, createStore } from "redux";
 import { Provider } from "react-redux";
-
+import thunkMiddleware from "redux-thunk";
 import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 
 import { INITIAL_STATE, rootReducer } from "../store";
 import { NavigationBar } from "./NavigationBar";
 import { Alerts } from "./alerts/Alerts";
-
-import { applyMiddleware } from "redux";
-import thunkMiddleware from "redux-thunk";
 
 const alwaysVisibleLinks = ["VocabTreasury", "Home", "About"];
 const guestUserLinks = ["Log in", "Register"];

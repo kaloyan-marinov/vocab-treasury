@@ -1,8 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-
 import { Router, Route } from "react-router-dom";
-
 import { createMemoryHistory } from "history";
 import { createStore, applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
@@ -17,13 +15,11 @@ import {
   IState,
 } from "../../types";
 import { INITIAL_STATE, rootReducer } from "../../store";
-
 import {
   mockPaginationFromBackend,
   MOCK_EXAMPLES,
 } from "../../mockPiecesOfData";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
-
 import { SingleExample } from "./SingleExample";
 
 test(

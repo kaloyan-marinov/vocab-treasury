@@ -1,22 +1,16 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-
 import { createMemoryHistory, MemoryHistory } from "history";
-
 import { Router } from "react-router-dom";
-
 import { createStore } from "redux";
 import { Provider } from "react-redux";
-
 import { applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
-
 import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
 import { setupServer, SetupServerApi } from "msw/node";
 
 import { IState } from "../../types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
-
 import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
 import { Alerts } from "../alerts/Alerts";
 import { OwnVocabTreasury } from "./OwnVocabTreasury";

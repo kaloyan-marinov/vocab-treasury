@@ -1,11 +1,9 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
-
 import { createStore } from "redux";
 import { Provider } from "react-redux";
 
 import { rootReducer } from "../../store";
-
 import { Alerts } from "../alerts/Alerts";
 import { RecordNewExample } from "./RecordNewExample";
 

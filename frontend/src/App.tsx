@@ -3,25 +3,20 @@ import { Switch, Route } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import { Alerts } from "./features/alerts/Alerts";
-
 import { Home } from "./features/Home";
 import { NavigationBar } from "./features/NavigationBar";
 import { About } from "./features/About";
 import { Account } from "./features/Account";
-
 import { Register } from "./features/auth/Register";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 import { fetchProfile } from "./features/auth/authSlice";
-
 import { PrivateRoute } from "./features/auth/PrivateRoute";
-
 import { OwnVocabTreasury } from "./features/examples/OwnVocabTreasury";
 import { RecordNewExample } from "./features/examples/RecordNewExample";
 import { SingleExample } from "./features/examples/SingleExample";
 import { EditExample } from "./features/examples/EditExample";
 import { Search } from "./features/examples/Search";
-
 import { logOut } from "./store";
 
 export const App = () => {

@@ -1,4 +1,3 @@
-// 1
 import "@testing-library/jest-dom";
 import {
   fireEvent,
@@ -6,29 +5,18 @@ import {
   screen,
   waitFor,
   waitForElementToBeRemoved,
+  cleanup,
 } from "@testing-library/react";
-
-import { createStore } from "redux";
+import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
-
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
+import { rest } from "msw";
+import { setupServer, SetupServerApi } from "msw/node";
+import thunkMiddleware from "redux-thunk";
 
 import { IState } from "./types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "./store";
-
-// 2
-import { rest } from "msw";
-import { setupServer, SetupServerApi } from "msw/node";
-
-import { applyMiddleware } from "redux";
-import thunkMiddleware from "redux-thunk";
-
-// 3
-import { App } from "./App";
-import { cleanup } from "@testing-library/react";
-
-// 4
 import {
   requestHandlers,
   RequestHandlingFacilitator,
@@ -36,6 +24,7 @@ import {
   PutResponseBody,
   PutRequestParams,
 } from "./testHelpers";
+import { App } from "./App";
 
 // const BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS: number = 5 * 60 * 1000;
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);

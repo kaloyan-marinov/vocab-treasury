@@ -1,10 +1,6 @@
+import { combineReducers, applyMiddleware, Dispatch, createStore } from "redux";
 import { composeWithDevTools } from "redux-devtools-extension";
-import { applyMiddleware, Dispatch } from "redux";
 import thunkMiddleware from "redux-thunk";
-import { createStore } from "redux";
-
-import { combineReducers } from "redux";
-
 import { v4 as uuidv4 } from "uuid";
 
 import { IState } from "./types";
@@ -15,13 +11,11 @@ import {
   alertsReducer,
   IActionAlertsCreate,
 } from "./features/alerts/alertsSlice";
-
 import {
   authClearSlice,
   IActionAuthClearSlice,
   authReducer,
 } from "./features/auth/authSlice";
-
 import {
   examplesClearSlice,
   IActionExamplesClearSlice,

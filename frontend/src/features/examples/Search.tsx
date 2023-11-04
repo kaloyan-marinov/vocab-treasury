@@ -19,7 +19,6 @@ import {
   selectExamplesLinks,
 } from "../../store";
 import { ActionFetchExamples, fetchExamples } from "./examplesSlice";
-
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 
 export const Search = () => {

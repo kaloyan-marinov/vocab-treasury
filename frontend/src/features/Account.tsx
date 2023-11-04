@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 
 import { STYLE_FOR_BORDER, STYLE_FOR_TABLE } from "../constants";
 import { IProfile } from "../types";
-
 import { selectLoggedInUserProfile } from "../store";
 
 export const Account = () => {

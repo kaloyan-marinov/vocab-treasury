@@ -1,8 +1,13 @@
+import { setupServer, SetupServerApi } from "msw/node";
+import { MockStoreEnhanced } from "redux-mock-store";
+import configureMockStore from "redux-mock-store";
+import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
+import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
+import { AnyAction } from "redux";
+
 import { RequestStatus, IProfile, IStateAuth, IState } from "../../types";
 import { INITIAL_STATE_AUTH, VOCAB_TREASURY_APP_TOKEN } from "../../constants";
-
-import { logOut } from "../../store";
-
+import { logOut, INITIAL_STATE } from "../../store";
 /*
 TODO: (2023/10/29, 10:42)
 
@@ -45,16 +50,8 @@ import {
   requestPasswordReset,
   authReducer,
 } from "./authSlice";
-
-import { setupServer, SetupServerApi } from "msw/node";
-import { MockStoreEnhanced } from "redux-mock-store";
-import configureMockStore from "redux-mock-store";
-import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
-import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
-import { AnyAction } from "redux";
 import { requestHandlers } from "../../testHelpers";
 import { MOCK_PROFILE } from "../../mockPiecesOfData";
-import { INITIAL_STATE } from "../../store";
 import { createUser, issueJWSToken, fetchProfile } from "./authSlice";
 
 describe("action creators", () => {

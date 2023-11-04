@@ -1,4 +1,9 @@
-import { IState } from "../../types";
+import { setupServer, SetupServerApi } from "msw/node";
+import { MockStoreEnhanced } from "redux-mock-store";
+import configureMockStore from "redux-mock-store";
+import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
+import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
+import { AnyAction } from "redux";
 
 import {
   RequestStatus,
@@ -8,9 +13,10 @@ import {
   IExampleFromBackend,
   IExample,
   IStateExamples,
+  IState,
 } from "../../types";
 import { INITIAL_STATE_EXAMPLES } from "../../constants";
-
+import { INITIAL_STATE } from "../../store";
 /*
 TODO: (2023/10/30, 07:35)
 
@@ -52,13 +58,6 @@ import {
   IActionExamplesClearSlice,
   examplesReducer,
 } from "./examplesSlice";
-
-import { setupServer, SetupServerApi } from "msw/node";
-import { MockStoreEnhanced } from "redux-mock-store";
-import configureMockStore from "redux-mock-store";
-import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
-import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
-import { AnyAction } from "redux";
 import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 import {
@@ -67,7 +66,6 @@ import {
   MOCK_EXAMPLE,
   MOCK_EXAMPLE_AT_IDX_7,
 } from "../../mockPiecesOfData";
-import { INITIAL_STATE } from "../../store";
 import {
   fetchExamples,
   createExample,

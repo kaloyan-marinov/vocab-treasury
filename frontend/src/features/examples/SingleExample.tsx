@@ -20,7 +20,6 @@ import {
   ActionDeleteExample,
   deleteExample,
 } from "./examplesSlice";
-
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 
 export const SingleExample = () => {

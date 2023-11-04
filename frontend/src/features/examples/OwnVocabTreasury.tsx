@@ -5,17 +5,17 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
-  STYLE_FOR_TABLE,
-} from "../../constants";
-import {
   IProfile,
   IExample,
   IPaginationMeta,
   IPaginationLinks,
   IState,
 } from "../../types";
+import {
+  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
+  STYLE_FOR_BORDER,
+  STYLE_FOR_TABLE,
+} from "../../constants";
 import {
   logOut,
   selectLoggedInUserProfile,

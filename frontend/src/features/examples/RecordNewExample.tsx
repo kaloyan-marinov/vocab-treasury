@@ -13,7 +13,6 @@ import {
   ActionCreateExample,
   createExample,
 } from "./examplesSlice";
-
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 
 export const RecordNewExample = () => {

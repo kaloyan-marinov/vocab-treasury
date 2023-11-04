@@ -5,15 +5,13 @@ import thunkMiddleware from "redux-thunk";
 import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
+import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
+import { setupServer, SetupServerApi } from "msw/node";
 
 import { IState } from "../../types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
 import { Register } from "./Register";
 import { Alerts } from "../alerts/Alerts";
-
-import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
-import { setupServer, SetupServerApi } from "msw/node";
-
 import { requestHandlers } from "../../testHelpers";
 
 describe("<Register>", () => {
