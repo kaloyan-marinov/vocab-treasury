@@ -14,9 +14,9 @@ import {
   IExample,
   IPaginationMeta,
   IPaginationLinks,
+  IState,
 } from "../../types";
 import {
-  IState,
   logOut,
   selectLoggedInUserProfile,
   selectExamplesIds,

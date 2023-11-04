@@ -10,9 +10,8 @@ import {
   STYLE_FOR_TABLE,
   STYLE_FOR_CENTER,
 } from "../../constants";
-import { IExample } from "../../types";
+import { IExample, IState } from "../../types";
 import {
-  IState,
   logOut,
   selectExamplesIds,
   selectExamplesEntities,

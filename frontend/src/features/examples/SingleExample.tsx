@@ -4,14 +4,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
-import { IExample } from "../../types";
+import { IExample, IState } from "../../types";
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
   STYLE_FOR_TABLE,
   STYLE_FOR_BORDER,
 } from "../../constants";
 import {
-  IState,
   logOut,
   selectExamplesEntities,
   selectExamplesLinks,
