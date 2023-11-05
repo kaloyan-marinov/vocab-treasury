@@ -3,15 +3,15 @@ import {
   IPaginationMetaFromBackend,
   IPaginationLinks,
   IExampleFromBackend,
-} from "./store";
+} from "./types";
 
-export const profileMock: IProfile = {
+export const MOCK_PROFILE: IProfile = {
   id: 17,
   username: "mocked-jd",
   email: "mocked-john.doe@protonmail.com",
 };
 
-export const exampleMock: IExampleFromBackend = {
+export const MOCK_EXAMPLE: IExampleFromBackend = {
   id: 17,
   source_language: "Finnish",
   new_word: "varjo",
@@ -19,8 +19,7 @@ export const exampleMock: IExampleFromBackend = {
   content_translation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
-/* Mock the pagination of Example resources. */
-export const examplesMock: IExampleFromBackend[] = Array.from({
+export const MOCK_EXAMPLES: IExampleFromBackend[] = Array.from({
   length: 11,
 }).map((_, index) => {
   return {
@@ -31,6 +30,8 @@ export const examplesMock: IExampleFromBackend[] = Array.from({
     content_translation: "käännös numero-" + (index + 1).toString(),
   };
 });
+
+export const MOCK_EXAMPLE_AT_IDX_7 = MOCK_EXAMPLES[7];
 
 export const mockPaginationFromBackend = (
   examples: IExampleFromBackend[],
@@ -115,26 +116,3 @@ export const mockPaginationFromBackend = (
     items,
   };
 };
-
-/*
-console.log();
-console.log(mockPaginationFromBackend(1));
-
-console.log();
-console.log(mockPaginationFromBackend(2));
-
-console.log();
-console.log(mockPaginationFromBackend(3));
-
-console.log();
-console.log(mockPaginationFromBackend(4));
-
-console.log();
-console.log(mockPaginationFromBackend(5));
-
-console.log();
-console.log(mockPaginationFromBackend(6));
-
-console.log();
-console.log(mockPaginationFromBackend(7));
-*/

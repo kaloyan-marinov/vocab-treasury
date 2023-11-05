@@ -4,7 +4,7 @@ import {
   IPaginationLinks,
   IPaginationMeta,
   IPaginationMetaFromBackend,
-} from "./store";
+} from "./types";
 
 export const convertToPaginationInFrontend = (paginationFromBackend: {
   _meta: IPaginationMetaFromBackend;
