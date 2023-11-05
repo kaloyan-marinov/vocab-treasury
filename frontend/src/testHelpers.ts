@@ -18,44 +18,52 @@ Mock handlers for HTTP requests.
 Each of these mock handlers is "lone-standing",
 i.e. independent of the other ones.
 */
-/*
-TODO: (2023/10/20, 07:42)
+export const createMockOneOrManyFailures = (description: string) => {
+  const statusCode: number = 401;
+  const error: string = "[mocked] Unauthorized";
+  const message: string =
+    "[mocked] Authentication in the Basic Auth format is required.";
 
-      before submitting a pull request for review,
-      consolidate the `mockMultipleFailures` and `mockSingleFailure`
-      into a `createMockFailure({ status, error, message, mockOnceOrMultiple })` function
+  switch (description) {
+    case "single failure": {
+      const mockSingleFailure = (
+        req: RestRequest<DefaultRequestBody, RequestParams>,
+        res: ResponseComposition<any>,
+        ctx: RestContext
+      ) => {
+        return res.once(
+          ctx.status(statusCode),
+          ctx.json({
+            error,
+            message,
+          })
+        );
+      };
 
-      +
+      return mockSingleFailure;
+    }
 
-      utilize that to reduce duplication
-      in as many `requestInterceptionLayer.use` calls as possible
-*/
-const mockMultipleFailures = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
-  res: ResponseComposition<any>,
-  ctx: RestContext
-) => {
-  return res(
-    ctx.status(401),
-    ctx.json({
-      error: "[mocked] Unauthorized",
-      message: "[mocked] Authentication in the Basic Auth format is required.",
-    })
-  );
-};
+    case "multiple failures": {
+      const mockMultipleFailures = (
+        req: RestRequest<DefaultRequestBody, RequestParams>,
+        res: ResponseComposition<any>,
+        ctx: RestContext
+      ) => {
+        return res(
+          ctx.status(statusCode),
+          ctx.json({
+            error,
+            message,
+          })
+        );
+      };
 
-const mockSingleFailure = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
-  res: ResponseComposition<any>,
-  ctx: RestContext
-) => {
-  return res.once(
-    ctx.status(401),
-    ctx.json({
-      error: "[mocked] Unauthorized",
-      message: "[mocked] Authentication in the Basic Auth format is required.",
-    })
-  );
+      return mockMultipleFailures;
+    }
+
+    default:
+      throw Error(`Encountered an invalid value: description='${description}'`);
+  }
 };
 
 const mockCreateUser = (
@@ -337,9 +345,6 @@ export class RequestHandlingFacilitator {
 }
 
 export const requestHandlers = {
-  mockMultipleFailures,
-  mockSingleFailure,
-
   mockCreateUser,
   mockIssueJWSToken,
   mockFetchUserProfile,

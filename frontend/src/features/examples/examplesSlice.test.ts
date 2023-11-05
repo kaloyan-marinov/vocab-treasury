@@ -22,7 +22,10 @@ import {
   MOCK_EXAMPLE,
   MOCK_EXAMPLE_AT_IDX_7,
 } from "../../mockPiecesOfData";
-import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
+import {
+  createMockOneOrManyFailures,
+  RequestHandlingFacilitator,
+} from "../../testHelpers";
 import { convertToPaginationInFrontend } from "../../helperFunctionsForTesting";
 import { INITIAL_STATE } from "../../store";
 import {
@@ -1112,7 +1115,10 @@ describe(
       async () => {
         /* Arrange. */
         requestInterceptionLayer.use(
-          rest.get("/api/examples", requestHandlers.mockSingleFailure)
+          rest.get(
+            "/api/examples",
+            createMockOneOrManyFailures("single failure")
+          )
         );
 
         /* Act. */
@@ -1187,7 +1193,10 @@ describe(
       async () => {
         /* Arrange. */
         requestInterceptionLayer.use(
-          rest.post("/api/examples", requestHandlers.mockSingleFailure)
+          rest.post(
+            "/api/examples",
+            createMockOneOrManyFailures("single failure")
+          )
         );
 
         /* Act. */
@@ -1256,7 +1265,10 @@ describe(
       async () => {
         /* Arrange. */
         requestInterceptionLayer.use(
-          rest.delete("/api/examples/:id", requestHandlers.mockSingleFailure)
+          rest.delete(
+            "/api/examples/:id",
+            createMockOneOrManyFailures("single failure")
+          )
         );
 
         /* Act. */
@@ -1330,7 +1342,10 @@ describe(
       async () => {
         /* Arrange. */
         requestInterceptionLayer.use(
-          rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
+          rest.put(
+            "/api/examples/:id",
+            createMockOneOrManyFailures("single failure")
+          )
         );
 
         /* Act. */

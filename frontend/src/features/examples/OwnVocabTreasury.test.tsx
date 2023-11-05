@@ -11,13 +11,16 @@ import { setupServer, SetupServerApi } from "msw/node";
 
 import { IState } from "../../types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
-import { requestHandlers, RequestHandlingFacilitator } from "../../testHelpers";
+import {
+  createMockOneOrManyFailures,
+  RequestHandlingFacilitator,
+} from "../../testHelpers";
 import { Alerts } from "../alerts/Alerts";
 import { OwnVocabTreasury } from "./OwnVocabTreasury";
 
 /* Create an MSW "request-interception layer". */
 const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [rest.get("/api/examples", requestHandlers.mockMultipleFailures)];
+  [rest.get("/api/examples", createMockOneOrManyFailures("multiple failures"))];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(
   ...requestHandlersToMock

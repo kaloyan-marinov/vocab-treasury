@@ -11,7 +11,10 @@ import { setupServer, SetupServerApi } from "msw/node";
 import { rootReducer, TEnhancer } from "../../store";
 import { Login } from "./Login";
 import { Alerts } from "../alerts/Alerts";
-import { requestHandlers } from "../../testHelpers";
+import {
+  createMockOneOrManyFailures,
+  requestHandlers,
+} from "../../testHelpers";
 
 describe("<Login>", () => {
   test("renders (a <legend> tag and) a login form", () => {
@@ -173,7 +176,7 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       requestInterceptionLayer.use(
-        rest.post("/api/tokens", requestHandlers.mockSingleFailure)
+        rest.post("/api/tokens", createMockOneOrManyFailures("single failure"))
       );
 
       render(

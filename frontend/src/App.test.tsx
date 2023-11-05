@@ -18,6 +18,7 @@ import thunkMiddleware from "redux-thunk";
 import { IState } from "./types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "./store";
 import {
+  createMockOneOrManyFailures,
   requestHandlers,
   RequestHandlingFacilitator,
   PutRequestBody,
@@ -30,22 +31,20 @@ import { App } from "./App";
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 /* Create an MSW "request-interception layer". */
+const mockMultipleFailures = createMockOneOrManyFailures("multiple failures");
 const requestHandlersToMock = [
-  rest.post("/api/users", requestHandlers.mockMultipleFailures),
+  rest.post("/api/users", mockMultipleFailures),
 
-  rest.post("/api/tokens", requestHandlers.mockMultipleFailures),
+  rest.post("/api/tokens", mockMultipleFailures),
 
-  rest.get("/api/user-profile", requestHandlers.mockMultipleFailures),
+  rest.get("/api/user-profile", mockMultipleFailures),
 
-  rest.post(
-    "/api/request-password-reset",
-    requestHandlers.mockMultipleFailures
-  ),
+  rest.post("/api/request-password-reset", mockMultipleFailures),
 
-  rest.get("/api/examples", requestHandlers.mockMultipleFailures),
-  rest.post("/api/examples", requestHandlers.mockMultipleFailures),
-  rest.put("/api/examples/:id", requestHandlers.mockMultipleFailures),
-  rest.delete("/api/examples/:id", requestHandlers.mockMultipleFailures),
+  rest.get("/api/examples", mockMultipleFailures),
+  rest.post("/api/examples", mockMultipleFailures),
+  rest.put("/api/examples/:id", mockMultipleFailures),
+  rest.delete("/api/examples/:id", mockMultipleFailures),
 ];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(
@@ -90,7 +89,10 @@ test(
     const realStore = createStore(rootReducer, initState, enhancer);
 
     requestInterceptionLayer.use(
-      rest.get("/api/user-profile", requestHandlers.mockSingleFailure),
+      rest.get(
+        "/api/user-profile",
+        createMockOneOrManyFailures("single failure")
+      ),
 
       rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
@@ -1067,7 +1069,10 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.delete("/api/examples/:id", requestHandlers.mockSingleFailure)
+      rest.delete(
+        "/api/examples/:id",
+        createMockOneOrManyFailures("single failure")
+      )
     );
 
     render(
@@ -1225,7 +1230,7 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples())
 
-      // rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
+      // rest.put("/api/examples/:id", createMockOneOrManyFailures("single failure"))
     );
 
     render(
@@ -1290,7 +1295,10 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.put("/api/examples/:id", requestHandlers.mockSingleFailure)
+      rest.put(
+        "/api/examples/:id",
+        createMockOneOrManyFailures("single failure")
+      )
     );
 
     render(
@@ -1418,7 +1426,7 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.get("/api/examples", requestHandlers.mockSingleFailure)
+      rest.get("/api/examples", createMockOneOrManyFailures("single failure"))
     );
 
     render(
@@ -1516,7 +1524,10 @@ test(
   async () => {
     /* Arrange. */
     requestInterceptionLayer.use(
-      rest.get("/api/user-profile", requestHandlers.mockSingleFailure),
+      rest.get(
+        "/api/user-profile",
+        createMockOneOrManyFailures("single failure")
+      ),
       rest.post(
         "/api/request-password-reset",
         requestHandlers.mockRequestPasswordReset
