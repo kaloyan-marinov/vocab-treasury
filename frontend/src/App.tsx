@@ -19,8 +19,6 @@ import { EditExample } from "./features/examples/EditExample";
 import { Search } from "./features/examples/Search";
 import { logOut } from "./store";
 
-import "./App.css";
-
 export const App = () => {
   console.log(`${new Date().toISOString()} - React is rendering <App>`);
 
