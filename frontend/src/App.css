@@ -1,0 +1,25 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&display=swap'); */
+
+
+* {
+    /* Reset the margin and padding (settings). */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* font-family: "Roboto";
+    font-weight: 400; */
+
+    font-family: monospace;
+
+    /* background-color: #333;
+    color: #ccc; */
+    
+    /* font-size: 24px; */
+}
+
+.container {
+    width: 70%;
+    margin: auto;
+}
