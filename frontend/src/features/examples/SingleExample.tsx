@@ -58,7 +58,7 @@ export const SingleExample = () => {
   const exampleTable =
     example === undefined ? null : (
       <table style={STYLE_FOR_TABLE}>
-        <tbody>
+        <thead>
           <tr>
             <th style={STYLE_FOR_BORDER}>ID</th>
             <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
@@ -66,12 +66,14 @@ export const SingleExample = () => {
             <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
             <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
           </tr>
+        </thead>
+        <tbody>
           <tr>
-            <th style={STYLE_FOR_BORDER}>{example.id}</th>
-            <th style={STYLE_FOR_BORDER}>{example.sourceLanguage}</th>
-            <th style={STYLE_FOR_BORDER}>{example.newWord}</th>
-            <th style={STYLE_FOR_BORDER}>{example.content}</th>
-            <th style={STYLE_FOR_BORDER}>{example.contentTranslation}</th>
+            <td style={STYLE_FOR_BORDER}>{example.id}</td>
+            <td style={STYLE_FOR_BORDER}>{example.sourceLanguage}</td>
+            <td style={STYLE_FOR_BORDER}>{example.newWord}</td>
+            <td style={STYLE_FOR_BORDER}>{example.content}</td>
+            <td style={STYLE_FOR_BORDER}>{example.contentTranslation}</td>
           </tr>
         </tbody>
       </table>

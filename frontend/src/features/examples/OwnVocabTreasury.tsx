@@ -149,13 +149,13 @@ export const OwnVocabTreasury = () => {
 
     return (
       <tr key={e.id}>
-        <th style={STYLE_FOR_BORDER}>
+        <td style={STYLE_FOR_BORDER}>
           <Link to={`/example/${e.id}`}>{e.id}</Link>
-        </th>
-        <th style={STYLE_FOR_BORDER}>{e.sourceLanguage}</th>
-        <th style={STYLE_FOR_BORDER}>{e.newWord}</th>
-        <th style={STYLE_FOR_BORDER}>{e.content}</th>
-        <th style={STYLE_FOR_BORDER}>{e.contentTranslation}</th>
+        </td>
+        <td style={STYLE_FOR_BORDER}>{e.sourceLanguage}</td>
+        <td style={STYLE_FOR_BORDER}>{e.newWord}</td>
+        <td style={STYLE_FOR_BORDER}>{e.content}</td>
+        <td style={STYLE_FOR_BORDER}>{e.contentTranslation}</td>
       </tr>
     );
   });

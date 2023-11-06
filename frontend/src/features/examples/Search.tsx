@@ -119,13 +119,13 @@ export const Search = () => {
 
           return (
             <tr key={e.id}>
-              <th style={STYLE_FOR_BORDER}>
+              <td style={STYLE_FOR_BORDER}>
                 <Link to={`/example/${e.id}`}>{e.id}</Link>
-              </th>
-              <th style={STYLE_FOR_BORDER}>{e.sourceLanguage}</th>
-              <th style={STYLE_FOR_BORDER}>{e.newWord}</th>
-              <th style={STYLE_FOR_BORDER}>{e.content}</th>
-              <th style={STYLE_FOR_BORDER}>{e.contentTranslation}</th>
+              </td>
+              <td style={STYLE_FOR_BORDER}>{e.sourceLanguage}</td>
+              <td style={STYLE_FOR_BORDER}>{e.newWord}</td>
+              <td style={STYLE_FOR_BORDER}>{e.content}</td>
+              <td style={STYLE_FOR_BORDER}>{e.contentTranslation}</td>
             </tr>
           );
         });
@@ -221,7 +221,7 @@ export const Search = () => {
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
       >
         <table style={STYLE_FOR_TABLE}>
-          <tbody>
+          <thead>
             <tr>
               <th style={STYLE_FOR_BORDER}>
                 <label htmlFor="<S>-new_word">NEW WORD</label>
@@ -233,8 +233,10 @@ export const Search = () => {
                 <label htmlFor="<S>-content_translation">TRANSLATION</label>
               </th>
             </tr>
+          </thead>
+          <tbody>
             <tr>
-              <th style={STYLE_FOR_BORDER}>
+              <td style={STYLE_FOR_BORDER}>
                 <input
                   id="<S>-new_word"
                   name="newWord"
@@ -244,8 +246,8 @@ export const Search = () => {
                     handleChange(e)
                   }
                 />
-              </th>
-              <th style={STYLE_FOR_BORDER}>
+              </td>
+              <td style={STYLE_FOR_BORDER}>
                 <input
                   id="<S>-content"
                   name="content"
@@ -255,8 +257,8 @@ export const Search = () => {
                     handleChange(e)
                   }
                 />
-              </th>
-              <th style={STYLE_FOR_BORDER}>
+              </td>
+              <td style={STYLE_FOR_BORDER}>
                 <input
                   id="<S>-content_translation"
                   name="contentTranslation"
@@ -266,7 +268,7 @@ export const Search = () => {
                     handleChange(e)
                   }
                 />
-              </th>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -281,7 +283,7 @@ export const Search = () => {
         <React.Fragment>
           {paginationControllingButtons}
           <table style={STYLE_FOR_TABLE}>
-            <tbody>
+            <thead>
               <tr>
                 <th style={STYLE_FOR_BORDER}>ID</th>
                 <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
@@ -289,8 +291,8 @@ export const Search = () => {
                 <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
                 <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
               </tr>
-              {exampleTableRows}
-            </tbody>
+            </thead>
+            <tbody>{exampleTableRows}</tbody>
           </table>
         </React.Fragment>
       )}
