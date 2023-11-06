@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import { IExample, IState } from "../../types";
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_TABLE,
   STYLE_FOR_BORDER,
 } from "../../constants";
 import {
@@ -57,7 +56,7 @@ export const SingleExample = () => {
 
   const exampleTable =
     example === undefined ? null : (
-      <table style={STYLE_FOR_TABLE}>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th style={STYLE_FOR_BORDER}>ID</th>

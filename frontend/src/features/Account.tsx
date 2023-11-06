@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { STYLE_FOR_BORDER, STYLE_FOR_TABLE } from "../constants";
+import { STYLE_FOR_BORDER } from "../constants";
 import { IProfile } from "../types";
 import { selectLoggedInUserProfile } from "../store";
 
@@ -14,7 +14,7 @@ export const Account = () => {
 
   const accountDetails: null | JSX.Element =
     loggedInUserProfile === null ? null : (
-      <table style={STYLE_FOR_TABLE}>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th style={STYLE_FOR_BORDER}>KEY</th>

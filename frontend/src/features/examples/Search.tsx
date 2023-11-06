@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
   STYLE_FOR_BORDER,
-  STYLE_FOR_TABLE,
   STYLE_FOR_CENTER,
 } from "../../constants";
 import { IExample, IState } from "../../types";
@@ -220,7 +219,7 @@ export const Search = () => {
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
       >
-        <table style={STYLE_FOR_TABLE}>
+        <table className="table table-striped-columns">
           <thead>
             <tr>
               <th style={STYLE_FOR_BORDER}>
@@ -282,7 +281,7 @@ export const Search = () => {
       {paginationControllingButtons && (
         <React.Fragment>
           {paginationControllingButtons}
-          <table style={STYLE_FOR_TABLE}>
+          <table className="table table-striped">
             <thead>
               <tr>
                 <th style={STYLE_FOR_BORDER}>ID</th>

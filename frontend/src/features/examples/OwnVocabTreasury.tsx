@@ -14,7 +14,6 @@ import {
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
   STYLE_FOR_BORDER,
-  STYLE_FOR_TABLE,
 } from "../../constants";
 import {
   logOut,
@@ -256,7 +255,7 @@ export const OwnVocabTreasury = () => {
       </div>
       <br />
       {paginationControllingButtons}
-      <table style={STYLE_FOR_TABLE}>
+      <table className="table table-striped">
         <tbody>
           <tr>
             <th style={STYLE_FOR_BORDER}>ID</th>
