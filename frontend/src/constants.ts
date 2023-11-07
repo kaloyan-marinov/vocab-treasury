@@ -42,11 +42,6 @@ export const INITIAL_STATE_EXAMPLES: IStateExamples = {
   entities: {},
 };
 
-export const STYLE_FOR_BORDER = { border: "1px solid black" };
-
-export const STYLE_FOR_TABLE = { width: "100%" };
-Object.assign(STYLE_FOR_TABLE, STYLE_FOR_BORDER);
-
 // The source for the next definition is
 // https://reactgo.com/horizontally-center-elements-css/
 export const STYLE_FOR_CENTER = { display: "flex", justifyContent: "center" };
