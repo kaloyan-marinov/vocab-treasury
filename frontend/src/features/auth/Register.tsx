@@ -138,7 +138,10 @@ export const Register = () => {
       </div>
       <div>
         <small>
-          ALREADY HAVE AN ACCOUNT? <Link to="/login">CLICK HERE TO LOG IN</Link>
+          ALREADY HAVE AN ACCOUNT?{" "}
+          <Link to="/login" className="btn btn-dark">
+            CLICK HERE TO LOG IN
+          </Link>
         </small>
       </div>
     </React.Fragment>

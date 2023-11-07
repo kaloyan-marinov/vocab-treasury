@@ -17,25 +17,45 @@ export const NavigationBar = () => {
   const alwaysVisibleLinks = (
     <React.Fragment>
       <div>
-        <Link to="/">VocabTreasury</Link>
+        <Link to="/" className="btn btn-dark">
+          VocabTreasury
+        </Link>
       </div>
       <div>
-        <Link to="/home">Home</Link> <Link to="/about">About</Link>
+        <Link to="/home" className="btn btn-dark">
+          Home
+        </Link>{" "}
+        <Link to="/about" className="btn btn-dark">
+          About
+        </Link>
       </div>
     </React.Fragment>
   );
 
   const guestUserLinks = (
     <div>
-      <Link to="/login">Log in</Link> <Link to="/register">Register</Link>
+      <Link to="/login" className="btn btn-dark">
+        Log in
+      </Link>{" "}
+      <Link to="/register" className="btn btn-dark">
+        Register
+      </Link>
     </div>
   );
 
   const loggedInUserLinks = (
     <div>
-      <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
-      <Link to="/account">Account</Link>{" "}
-      <a href="#!" onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}>
+      <Link to="/own-vocabtreasury" className="btn btn-dark">
+        Own VocabTreasury
+      </Link>{" "}
+      <Link to="/account" className="btn btn-dark">
+        Account
+      </Link>{" "}
+      <a
+        href="#!"
+        onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}
+        className="btn btn-dark"
+      >
         Log out
       </a>
     </div>

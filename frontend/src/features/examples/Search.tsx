@@ -118,7 +118,9 @@ export const Search = () => {
           return (
             <tr key={e.id}>
               <td>
-                <Link to={`/example/${e.id}`}>{e.id}</Link>
+                <Link to={`/example/${e.id}`} className="btn btn-dark">
+                  {e.id}
+                </Link>
               </td>
               <td>{e.sourceLanguage}</td>
               <td>{e.newWord}</td>

@@ -105,14 +105,19 @@ export const Login = () => {
               value="LOG INTO MY ACCOUNT"
             />
             <small>
-              <Link to="/request_password_reset">FORGOT PASSWORD?</Link>
+              <Link to="/request_password_reset" className="btn btn-dark">
+                FORGOT PASSWORD?
+              </Link>
             </small>
           </div>
         </form>
       </div>
       <div>
         <small>
-          NEED AN ACCOUNT? <Link to="/register">CLICK HERE TO REGISTER</Link>
+          NEED AN ACCOUNT?{" "}
+          <Link to="/register" className="btn btn-dark">
+            CLICK HERE TO REGISTER
+          </Link>
         </small>
       </div>
     </React.Fragment>

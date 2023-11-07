@@ -146,7 +146,9 @@ export const OwnVocabTreasury = () => {
     return (
       <tr key={e.id}>
         <td>
-          <Link to={`/example/${e.id}`}>{e.id}</Link>
+          <Link to={`/example/${e.id}`} className="btn btn-dark">
+            {e.id}
+          </Link>
         </td>
         <td>{e.sourceLanguage}</td>
         <td>{e.newWord}</td>
@@ -245,10 +247,14 @@ export const OwnVocabTreasury = () => {
           : `${loggedInUserProfile.username}'s Own VocabTreasury`}
       </h1>
       <div>
-        <Link to="/example/new">Record new example</Link>
+        <Link to="/example/new" className="btn btn-dark">
+          Record new example
+        </Link>
       </div>
       <div>
-        <Link to="/own-vocabtreasury/search">Search</Link>
+        <Link to="/own-vocabtreasury/search" className="btn btn-dark">
+          Search
+        </Link>
       </div>
       <br />
       {paginationControllingButtons}

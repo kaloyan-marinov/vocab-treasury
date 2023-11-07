@@ -76,7 +76,7 @@ export const SingleExample = () => {
     );
 
   const linkToOwnVocabTreasury = (
-    <Link to={locationDescriptor}>
+    <Link to={locationDescriptor} className="btn btn-dark">
       Return to this example within my Own VocabTreasury
     </Link>
   );
@@ -84,7 +84,9 @@ export const SingleExample = () => {
   const linkToEditExample =
     example === undefined ? null : (
       <div>
-        <Link to={`/example/${example.id}/edit`}>Edit this example</Link>
+        <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
+          Edit this example
+        </Link>
       </div>
     );
 
