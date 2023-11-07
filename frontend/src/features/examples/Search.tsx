@@ -156,11 +156,14 @@ export const Search = () => {
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setFilteredExamplesUrl(examplesLinks.prev!)
           }
+          className="btn btn-dark"
         >
           Previous page
         </button>
       ) : (
-        <button disabled>Previous page</button>
+        <button disabled className="btn btn-dark">
+          Previous page
+        </button>
       );
 
     const paginationCtrlBtnNext: JSX.Element =
@@ -169,11 +172,14 @@ export const Search = () => {
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setFilteredExamplesUrl(examplesLinks.next!)
           }
+          className="btn btn-dark"
         >
           Next page
         </button>
       ) : (
-        <button disabled>Next page</button>
+        <button disabled className="btn btn-dark">
+          Next page
+        </button>
       );
 
     const paginationCtrlBtnFirst: JSX.Element = (
@@ -182,6 +188,7 @@ export const Search = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setFilteredExamplesUrl(examplesLinks.first!)
         }
+        className="btn btn-dark"
       >
         First page: 1
       </button>
@@ -193,6 +200,7 @@ export const Search = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setFilteredExamplesUrl(examplesLinks.last!)
         }
+        className="btn btn-dark"
       >
         Last page: {examplesMeta.totalPages}
       </button>

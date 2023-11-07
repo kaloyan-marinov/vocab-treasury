@@ -26,6 +26,7 @@ export const Alerts = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           handleClick(aId, e)
         }
+        className="btn btn-light"
       >
         Clear alert
       </button>
