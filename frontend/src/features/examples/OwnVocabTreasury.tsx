@@ -11,10 +11,7 @@ import {
   IPaginationLinks,
   IState,
 } from "../../types";
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import {
   logOut,
   selectLoggedInUserProfile,
@@ -148,13 +145,13 @@ export const OwnVocabTreasury = () => {
 
     return (
       <tr key={e.id}>
-        <td style={STYLE_FOR_BORDER}>
+        <td>
           <Link to={`/example/${e.id}`}>{e.id}</Link>
         </td>
-        <td style={STYLE_FOR_BORDER}>{e.sourceLanguage}</td>
-        <td style={STYLE_FOR_BORDER}>{e.newWord}</td>
-        <td style={STYLE_FOR_BORDER}>{e.content}</td>
-        <td style={STYLE_FOR_BORDER}>{e.contentTranslation}</td>
+        <td>{e.sourceLanguage}</td>
+        <td>{e.newWord}</td>
+        <td>{e.content}</td>
+        <td>{e.contentTranslation}</td>
       </tr>
     );
   });
@@ -256,16 +253,16 @@ export const OwnVocabTreasury = () => {
       <br />
       {paginationControllingButtons}
       <table className="table table-striped">
-        <tbody>
+        <thead>
           <tr>
-            <th style={STYLE_FOR_BORDER}>ID</th>
-            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
           </tr>
-          {exampleTableRows}
-        </tbody>
+        </thead>
+        <tbody className="table-group-divider">{exampleTableRows}</tbody>
       </table>
     </React.Fragment>
   );

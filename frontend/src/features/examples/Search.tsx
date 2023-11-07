@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import {
   URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
   STYLE_FOR_CENTER,
 } from "../../constants";
 import { IExample, IState } from "../../types";
@@ -118,13 +117,13 @@ export const Search = () => {
 
           return (
             <tr key={e.id}>
-              <td style={STYLE_FOR_BORDER}>
+              <td>
                 <Link to={`/example/${e.id}`}>{e.id}</Link>
               </td>
-              <td style={STYLE_FOR_BORDER}>{e.sourceLanguage}</td>
-              <td style={STYLE_FOR_BORDER}>{e.newWord}</td>
-              <td style={STYLE_FOR_BORDER}>{e.content}</td>
-              <td style={STYLE_FOR_BORDER}>{e.contentTranslation}</td>
+              <td>{e.sourceLanguage}</td>
+              <td>{e.newWord}</td>
+              <td>{e.content}</td>
+              <td>{e.contentTranslation}</td>
             </tr>
           );
         });
@@ -219,23 +218,23 @@ export const Search = () => {
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
       >
-        <table className="table table-striped-columns">
+        <table className="table table-bordered table-primary">
           <thead>
             <tr>
-              <th style={STYLE_FOR_BORDER}>
+              <th>
                 <label htmlFor="<S>-new_word">NEW WORD</label>
               </th>
-              <th style={STYLE_FOR_BORDER}>
+              <th>
                 <label htmlFor="<S>-content">EXAMPLE</label>
               </th>
-              <th style={STYLE_FOR_BORDER}>
+              <th>
                 <label htmlFor="<S>-content_translation">TRANSLATION</label>
               </th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style={STYLE_FOR_BORDER}>
+              <td>
                 <input
                   id="<S>-new_word"
                   name="newWord"
@@ -246,7 +245,7 @@ export const Search = () => {
                   }
                 />
               </td>
-              <td style={STYLE_FOR_BORDER}>
+              <td>
                 <input
                   id="<S>-content"
                   name="content"
@@ -257,7 +256,7 @@ export const Search = () => {
                   }
                 />
               </td>
-              <td style={STYLE_FOR_BORDER}>
+              <td>
                 <input
                   id="<S>-content_translation"
                   name="contentTranslation"
@@ -284,14 +283,14 @@ export const Search = () => {
           <table className="table table-striped">
             <thead>
               <tr>
-                <th style={STYLE_FOR_BORDER}>ID</th>
-                <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-                <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-                <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-                <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
+                <th>ID</th>
+                <th>SOURCE LANGUAGE</th>
+                <th>NEW WORD</th>
+                <th>EXAMPLE</th>
+                <th>TRANSLATION</th>
               </tr>
             </thead>
-            <tbody>{exampleTableRows}</tbody>
+            <tbody className="table-group-divider">{exampleTableRows}</tbody>
           </table>
         </React.Fragment>
       )}

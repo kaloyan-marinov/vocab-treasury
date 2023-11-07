@@ -5,10 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import { IExample, IState } from "../../types";
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import {
   logOut,
   selectExamplesEntities,
@@ -56,23 +53,23 @@ export const SingleExample = () => {
 
   const exampleTable =
     example === undefined ? null : (
-      <table className="table table-striped">
+      <table className="table table-bordered table-primary">
         <thead>
           <tr>
-            <th style={STYLE_FOR_BORDER}>ID</th>
-            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style={STYLE_FOR_BORDER}>{example.id}</td>
-            <td style={STYLE_FOR_BORDER}>{example.sourceLanguage}</td>
-            <td style={STYLE_FOR_BORDER}>{example.newWord}</td>
-            <td style={STYLE_FOR_BORDER}>{example.content}</td>
-            <td style={STYLE_FOR_BORDER}>{example.contentTranslation}</td>
+            <td>{example.id}</td>
+            <td>{example.sourceLanguage}</td>
+            <td>{example.newWord}</td>
+            <td>{example.content}</td>
+            <td>{example.contentTranslation}</td>
           </tr>
         </tbody>
       </table>

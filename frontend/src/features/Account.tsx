@@ -1,7 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { STYLE_FOR_BORDER } from "../constants";
 import { IProfile } from "../types";
 import { selectLoggedInUserProfile } from "../store";
 
@@ -17,22 +16,22 @@ export const Account = () => {
       <table className="table table-striped">
         <thead>
           <tr>
-            <th style={STYLE_FOR_BORDER}>KEY</th>
-            <th style={STYLE_FOR_BORDER}>VALUE</th>
+            <th>KEY</th>
+            <th>VALUE</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="table-group-divider">
           <tr>
-            <td style={STYLE_FOR_BORDER}>ID</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.id}</td>
+            <td>ID</td>
+            <td>{loggedInUserProfile.id}</td>
           </tr>
           <tr>
-            <td style={STYLE_FOR_BORDER}>USERNAME</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.username}</td>
+            <td>USERNAME</td>
+            <td>{loggedInUserProfile.username}</td>
           </tr>
           <tr>
-            <td style={STYLE_FOR_BORDER}>EMAIL</td>
-            <td style={STYLE_FOR_BORDER}>{loggedInUserProfile.email}</td>
+            <td>EMAIL</td>
+            <td>{loggedInUserProfile.email}</td>
           </tr>
         </tbody>
       </table>
