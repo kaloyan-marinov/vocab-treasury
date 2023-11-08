@@ -232,13 +232,19 @@ export const Search = () => {
           <thead>
             <tr>
               <th>
-                <label htmlFor="<S>-new_word">NEW WORD</label>
+                <label htmlFor="<S>-new_word" className="form-label">
+                  NEW WORD
+                </label>
               </th>
               <th>
-                <label htmlFor="<S>-content">EXAMPLE</label>
+                <label htmlFor="<S>-content" className="form-label">
+                  EXAMPLE
+                </label>
               </th>
               <th>
-                <label htmlFor="<S>-content_translation">TRANSLATION</label>
+                <label htmlFor="<S>-content_translation" className="form-label">
+                  TRANSLATION
+                </label>
               </th>
             </tr>
           </thead>
@@ -253,6 +259,7 @@ export const Search = () => {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
+                  className="form-control"
                 />
               </td>
               <td>
@@ -264,6 +271,7 @@ export const Search = () => {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
+                  className="form-control"
                 />
               </td>
               <td>
@@ -275,6 +283,7 @@ export const Search = () => {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleChange(e)
                   }
+                  className="form-control"
                 />
               </td>
             </tr>

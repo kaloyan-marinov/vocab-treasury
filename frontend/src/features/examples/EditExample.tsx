@@ -131,7 +131,9 @@ export const EditExample = () => {
         <fieldset>
           <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
           <div>
-            <label htmlFor="<EE>-source_language">SOURCE LANGUAGE</label>
+            <label htmlFor="<EE>-source_language" className="form-label">
+              SOURCE LANGUAGE
+            </label>
             <input
               id="<EE>-source_language"
               name="sourceLanguage"
@@ -140,10 +142,13 @@ export const EditExample = () => {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
+              className="form-control"
             />
           </div>
           <div>
-            <label htmlFor="<EE>-new_word">NEW WORD</label>
+            <label htmlFor="<EE>-new_word" className="form-label">
+              NEW WORD
+            </label>
             <input
               id="<EE>-new_word"
               name="newWord"
@@ -152,10 +157,13 @@ export const EditExample = () => {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(e)
               }
+              className="form-control"
             />
           </div>
           <div>
-            <label htmlFor="<EE>-content">EXAMPLE</label>
+            <label htmlFor="<EE>-content" className="form-label">
+              EXAMPLE
+            </label>
             <textarea
               id="<EE>-content"
               name="content"
@@ -163,10 +171,13 @@ export const EditExample = () => {
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
+              className="form-control"
             />
           </div>
           <div>
-            <label htmlFor="<EE>-content_translation">TRANSLATION</label>
+            <label htmlFor="<EE>-content_translation" className="form-label">
+              TRANSLATION
+            </label>
             <textarea
               id="<EE>-content_translation"
               name="contentTranslation"
@@ -174,6 +185,7 @@ export const EditExample = () => {
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange(e)
               }
+              className="form-control"
             />
           </div>
           <div>
@@ -182,6 +194,7 @@ export const EditExample = () => {
               name="submit"
               type="submit"
               value="EDIT THIS EXAMPLE"
+              className="btn btn-dark"
             />
           </div>
         </fieldset>

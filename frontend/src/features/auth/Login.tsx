@@ -73,7 +73,9 @@ export const Login = () => {
           <fieldset>
             <legend>[legend-tag: LOG IN]</legend>
             <div>
-              <label htmlFor="<L>-email">EMAIL</label>
+              <label htmlFor="<L>-email" className="form-label">
+                EMAIL
+              </label>
               <input
                 id="<L>-email"
                 name="email"
@@ -82,10 +84,13 @@ export const Login = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<L>-password">PASSWORD</label>
+              <label htmlFor="<L>-password" className="form-label">
+                PASSWORD
+              </label>
               <input
                 id="<L>-password"
                 name="password"
@@ -94,6 +99,7 @@ export const Login = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
           </fieldset>
@@ -103,6 +109,7 @@ export const Login = () => {
               name="submit"
               type="submit"
               value="LOG INTO MY ACCOUNT"
+              className="btn btn-dark"
             />
             <small>
               <Link to="/request_password_reset" className="btn btn-dark">

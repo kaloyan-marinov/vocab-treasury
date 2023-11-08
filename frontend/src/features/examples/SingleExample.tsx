@@ -151,7 +151,11 @@ export const SingleExample = () => {
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
       >
-        <input type="submit" value="Delete this example" />
+        <input
+          type="submit"
+          value="Delete this example"
+          className="btn btn-danger"
+        />
       </form>
     </React.Fragment>
   );

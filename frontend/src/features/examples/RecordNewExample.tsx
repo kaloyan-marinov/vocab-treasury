@@ -107,7 +107,9 @@ export const RecordNewExample = () => {
           <fieldset>
             <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
             <div>
-              <label htmlFor="<RNE>-source_language">SOURCE LANGUAGE</label>
+              <label htmlFor="<RNE>-source_language" className="form-label">
+                SOURCE LANGUAGE
+              </label>
               <input
                 id="<RNE>-source_language"
                 name="sourceLanguage"
@@ -116,10 +118,13 @@ export const RecordNewExample = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-new_word">NEW WORD</label>
+              <label htmlFor="<RNE>-new_word" className="form-label">
+                NEW WORD
+              </label>
               <input
                 id="<RNE>-new_word"
                 name="newWord"
@@ -128,10 +133,13 @@ export const RecordNewExample = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-content">EXAMPLE</label>
+              <label htmlFor="<RNE>-content" className="form-label">
+                EXAMPLE
+              </label>
               <textarea
                 id="<RNE>-content"
                 name="content"
@@ -139,10 +147,13 @@ export const RecordNewExample = () => {
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-content_translation">TRANSLATION</label>
+              <label htmlFor="<RNE>-content_translation" className="form-label">
+                TRANSLATION
+              </label>
               <textarea
                 id="<RNE>-content_translation"
                 name="contentTranslation"
@@ -150,6 +161,7 @@ export const RecordNewExample = () => {
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
@@ -158,6 +170,7 @@ export const RecordNewExample = () => {
                 name="submit"
                 type="submit"
                 value="RECORD THIS EXAMPLE"
+                className="btn btn-dark"
               />
             </div>
           </fieldset>

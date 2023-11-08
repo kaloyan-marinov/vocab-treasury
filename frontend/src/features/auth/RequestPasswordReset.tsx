@@ -71,7 +71,9 @@ export const RequestPasswordReset = () => {
           <fieldset>
             <legend>[legend-tag: RESET PASSWORD]</legend>
             <div>
-              <label htmlFor="<RPR>-email">EMAIL</label>
+              <label htmlFor="<RPR>-email" className="form-label">
+                EMAIL
+              </label>
               <input
                 id="<RPR>-email"
                 name="email"
@@ -80,6 +82,7 @@ export const RequestPasswordReset = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
           </fieldset>
@@ -89,6 +92,7 @@ export const RequestPasswordReset = () => {
               name="submit"
               type="submit"
               value="REQUEST PASSWORD RESET"
+              className="btn btn-dark"
             />
           </div>
         </form>

@@ -78,7 +78,9 @@ export const Register = () => {
           <fieldset>
             <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
-              <label htmlFor="<R>-username">USERNAME</label>
+              <label htmlFor="<R>-username" className="form-label">
+                USERNAME
+              </label>
               <input
                 id="<R>-username"
                 name="username"
@@ -87,10 +89,13 @@ export const Register = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<R>-email">EMAIL</label>
+              <label htmlFor="<R>-email" className="form-label">
+                EMAIL
+              </label>
               <input
                 id="<R>-email"
                 name="email"
@@ -99,10 +104,13 @@ export const Register = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<R>-password">PASSWORD</label>
+              <label htmlFor="<R>-password" className="form-label">
+                PASSWORD
+              </label>
               <input
                 id="<R>-password"
                 name="password"
@@ -111,10 +119,13 @@ export const Register = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
             <div>
-              <label htmlFor="<R>-confirmPassword">CONFIRM PASSWORD</label>
+              <label htmlFor="<R>-confirmPassword" className="form-label">
+                CONFIRM PASSWORD
+              </label>
               <input
                 id="<R>-confirmPassword"
                 name="confirmPassword"
@@ -123,6 +134,7 @@ export const Register = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleChange(e)
                 }
+                className="form-control"
               />
             </div>
           </fieldset>
@@ -132,6 +144,7 @@ export const Register = () => {
               name="submit"
               type="submit"
               value="CREATE MY ACCOUNT"
+              className="btn btn-dark"
             />
           </div>
         </form>
