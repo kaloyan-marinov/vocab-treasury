@@ -64,8 +64,10 @@ export const NavigationBar = () => {
   return (
     <React.Fragment>
       {"<NavigationBar>"}
-      {alwaysVisibleLinks}
-      {!hasValidToken ? guestUserLinks : loggedInUserLinks}
+      <nav className="navbar navbar-light bg-light">
+        {alwaysVisibleLinks}
+        {!hasValidToken ? guestUserLinks : loggedInUserLinks}
+      </nav>
     </React.Fragment>
   );
 };
