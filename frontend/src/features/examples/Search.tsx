@@ -210,9 +210,7 @@ export const Search = () => {
       <React.Fragment>
         <div>
           {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span style={{ color: "red" }}>
-            Current page: {examplesMeta.page}{" "}
-          </span>
+          <span className="bg-warning">Current page: {examplesMeta.page} </span>
           {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
         </div>
       </React.Fragment>
@@ -292,7 +290,13 @@ export const Search = () => {
 
         <br />
         <div style={STYLE_FOR_CENTER}>
-          <input id="<S>-submit" name="submit" type="submit" value="SEARCH" />
+          <input
+            id="<S>-submit"
+            name="submit"
+            type="submit"
+            value="SEARCH"
+            className="btn btn-primary"
+          />
         </div>
         <br />
       </form>

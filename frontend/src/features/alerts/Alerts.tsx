@@ -21,7 +21,7 @@ export const Alerts = () => {
   };
 
   const alertsDivs = alertsIds.map((aId: string) => (
-    <div key={aId} style={{ color: "red" }}>
+    <div key={aId} className="text-warning">
       <button
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           handleClick(aId, e)

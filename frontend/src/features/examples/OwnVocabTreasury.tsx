@@ -237,9 +237,7 @@ export const OwnVocabTreasury = () => {
       <React.Fragment>
         <div>
           {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span style={{ color: "red" }}>
-            Current page: {examplesMeta.page}{" "}
-          </span>
+          <span className="bg-warning">Current page: {examplesMeta.page} </span>
           {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
         </div>
       </React.Fragment>

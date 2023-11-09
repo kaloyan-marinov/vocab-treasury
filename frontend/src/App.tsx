@@ -44,7 +44,7 @@ export const App = () => {
 
   return (
     <React.Fragment>
-      <section className="container">
+      <section className="container font-monospace">
         {"<App>"}
         <hr />
         <NavigationBar />
