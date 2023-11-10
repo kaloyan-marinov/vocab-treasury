@@ -206,14 +206,18 @@ export const Search = () => {
       </button>
     );
 
+    /*
+    According to
+    https://getbootstrap.com/docs/5.3/utilities/spacing/#horizontal-centering ,
+    the CSS styling of the following content ensures that
+    the content will be centered horizontally.
+    */
     paginationControllingButtons = (
-      <React.Fragment>
-        <div>
-          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span className="bg-warning">Current page: {examplesMeta.page} </span>
-          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
-        </div>
-      </React.Fragment>
+      <div className="mx-auto" style={{ width: "60%" }}>
+        {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}
+        <span className="bg-warning">Current page: {examplesMeta.page} </span>
+        {paginationCtrlBtnNext} {paginationCtrlBtnLast}
+      </div>
     );
   }
   if (filteredExamplesUrl === "") {

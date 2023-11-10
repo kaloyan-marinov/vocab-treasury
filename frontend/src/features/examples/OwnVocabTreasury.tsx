@@ -233,14 +233,18 @@ export const OwnVocabTreasury = () => {
       </button>
     );
 
+    /*
+    According to
+    https://getbootstrap.com/docs/5.3/utilities/spacing/#horizontal-centering ,
+    the CSS styling of the following content ensures that
+    the content will be centered horizontally.
+    */
     paginationControllingButtons = (
-      <React.Fragment>
-        <div>
-          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span className="bg-warning">Current page: {examplesMeta.page} </span>
-          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
-        </div>
-      </React.Fragment>
+      <div className="mx-auto" style={{ width: "60%" }}>
+        {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}
+        <span className="bg-warning">Current page: {examplesMeta.page} </span>
+        {paginationCtrlBtnNext} {paginationCtrlBtnLast}
+      </div>
     );
   }
 
@@ -252,16 +256,18 @@ export const OwnVocabTreasury = () => {
           ? "Something went wrong..."
           : `${loggedInUserProfile.username}'s Own VocabTreasury`}
       </h1>
-      <div>
-        <Link to="/example/new" className="btn btn-dark">
-          Record new example
-        </Link>
-      </div>
-      <div>
-        <Link to="/own-vocabtreasury/search" className="btn btn-dark">
-          Search
-        </Link>
-      </div>
+      <ul className="nav nav-justified">
+        <li className="nav-item">
+          <Link to="/example/new" className="btn btn-dark">
+            Record new example
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to="/own-vocabtreasury/search" className="btn btn-dark">
+            Search
+          </Link>
+        </li>
+      </ul>
       <br />
       {paginationControllingButtons}
       <table className="table table-striped">
