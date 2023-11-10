@@ -64,7 +64,7 @@ export const RequestPasswordReset = () => {
   return (
     <React.Fragment>
       {"<RequestPasswordReset>"}
-      <div>
+      <div className="mx-auto" style={{ width: "40%" }}>
         <form
           onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         >
@@ -86,15 +86,13 @@ export const RequestPasswordReset = () => {
               />
             </div>
           </fieldset>
-          <div>
-            <input
-              id="<RPR>-submit"
-              name="submit"
-              type="submit"
-              value="REQUEST PASSWORD RESET"
-              className="btn btn-dark"
-            />
-          </div>
+          <input
+            id="<RPR>-submit"
+            name="submit"
+            type="submit"
+            value="REQUEST PASSWORD RESET"
+            className="btn btn-dark mt-2"
+          />
         </form>
       </div>
     </React.Fragment>

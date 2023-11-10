@@ -71,7 +71,7 @@ export const Register = () => {
   return (
     <React.Fragment>
       {"<Register>"}
-      <div>
+      <div className="mx-auto" style={{ width: "40%" }}>
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
@@ -92,7 +92,7 @@ export const Register = () => {
                 className="form-control"
               />
             </div>
-            <div>
+            <div className="mt-2">
               <label htmlFor="<R>-email" className="form-label">
                 EMAIL
               </label>
@@ -107,7 +107,7 @@ export const Register = () => {
                 className="form-control"
               />
             </div>
-            <div>
+            <div className="mt-2">
               <label htmlFor="<R>-password" className="form-label">
                 PASSWORD
               </label>
@@ -122,7 +122,7 @@ export const Register = () => {
                 className="form-control"
               />
             </div>
-            <div>
+            <div className="mt-2">
               <label htmlFor="<R>-confirmPassword" className="form-label">
                 CONFIRM PASSWORD
               </label>
@@ -138,24 +138,14 @@ export const Register = () => {
               />
             </div>
           </fieldset>
-          <div>
-            <input
-              id="<R>-submit"
-              name="submit"
-              type="submit"
-              value="CREATE MY ACCOUNT"
-              className="btn btn-dark"
-            />
-          </div>
+          <input
+            id="<R>-submit"
+            name="submit"
+            type="submit"
+            value="CREATE MY ACCOUNT"
+            className="btn btn-dark mt-2"
+          />
         </form>
-      </div>
-      <div>
-        <small>
-          ALREADY HAVE AN ACCOUNT?{" "}
-          <Link to="/login" className="btn btn-dark">
-            CLICK HERE TO LOG IN
-          </Link>
-        </small>
       </div>
     </React.Fragment>
   );

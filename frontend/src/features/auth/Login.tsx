@@ -66,7 +66,7 @@ export const Login = () => {
   return (
     <React.Fragment>
       {"<Login>"}
-      <div>
+      <div className="mx-auto" style={{ width: "40%" }}>
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
@@ -87,7 +87,7 @@ export const Login = () => {
                 className="form-control"
               />
             </div>
-            <div>
+            <div className="mt-2">
               <label htmlFor="<L>-password" className="form-label">
                 PASSWORD
               </label>
@@ -103,29 +103,17 @@ export const Login = () => {
               />
             </div>
           </fieldset>
-          <div>
-            <input
-              id="<L>-submit"
-              name="submit"
-              type="submit"
-              value="LOG INTO MY ACCOUNT"
-              className="btn btn-dark"
-            />
-            <small>
-              <Link to="/request_password_reset" className="btn btn-dark">
-                FORGOT PASSWORD?
-              </Link>
-            </small>
-          </div>
+          <input
+            id="<L>-submit"
+            name="submit"
+            type="submit"
+            value="LOG INTO MY ACCOUNT"
+            className="btn btn-dark mt-2"
+          />
         </form>
-      </div>
-      <div>
-        <small>
-          NEED AN ACCOUNT?{" "}
-          <Link to="/register" className="btn btn-dark">
-            CLICK HERE TO REGISTER
-          </Link>
-        </small>
+        <Link to="/request_password_reset" className="btn btn-dark mt-2">
+          FORGOT PASSWORD?
+        </Link>
       </div>
     </React.Fragment>
   );

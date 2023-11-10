@@ -100,7 +100,7 @@ export const RecordNewExample = () => {
   return (
     <React.Fragment>
       {"<RecordNewExample>"}
-      <div>
+      <div className="mx-auto" style={{ width: "40%" }}>
         <form
           onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         >
@@ -122,7 +122,7 @@ export const RecordNewExample = () => {
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-new_word" className="form-label">
+              <label htmlFor="<RNE>-new_word" className="form-label mt-2">
                 NEW WORD
               </label>
               <input
@@ -137,7 +137,7 @@ export const RecordNewExample = () => {
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-content" className="form-label">
+              <label htmlFor="<RNE>-content" className="form-label mt-2">
                 EXAMPLE
               </label>
               <textarea
@@ -151,7 +151,10 @@ export const RecordNewExample = () => {
               />
             </div>
             <div>
-              <label htmlFor="<RNE>-content_translation" className="form-label">
+              <label
+                htmlFor="<RNE>-content_translation"
+                className="form-label mt-2"
+              >
                 TRANSLATION
               </label>
               <textarea
@@ -164,15 +167,13 @@ export const RecordNewExample = () => {
                 className="form-control"
               />
             </div>
-            <div>
-              <input
-                id="<RNE>-submit"
-                name="submit"
-                type="submit"
-                value="RECORD THIS EXAMPLE"
-                className="btn btn-dark"
-              />
-            </div>
+            <input
+              id="<RNE>-submit"
+              name="submit"
+              type="submit"
+              value="RECORD THIS EXAMPLE"
+              className="btn btn-dark mt-2"
+            />
           </fieldset>
         </form>
       </div>

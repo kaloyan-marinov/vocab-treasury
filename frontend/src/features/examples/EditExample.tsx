@@ -122,11 +122,21 @@ export const EditExample = () => {
     }
   };
 
+  /*
+  TODO: (2023/11/10, 08:40)
+
+        before submitting a pull request for review,
+        make all other forms look like the one in this component
+        (by removing their top-level <div> elements)
+  */
+
   return (
     <React.Fragment>
       {"<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        className="mx-auto"
+        style={{ width: "40%" }}
       >
         <fieldset>
           <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
@@ -145,7 +155,7 @@ export const EditExample = () => {
               className="form-control"
             />
           </div>
-          <div>
+          <div className="mt-2">
             <label htmlFor="<EE>-new_word" className="form-label">
               NEW WORD
             </label>
@@ -160,7 +170,7 @@ export const EditExample = () => {
               className="form-control"
             />
           </div>
-          <div>
+          <div className="mt-2">
             <label htmlFor="<EE>-content" className="form-label">
               EXAMPLE
             </label>
@@ -174,7 +184,7 @@ export const EditExample = () => {
               className="form-control"
             />
           </div>
-          <div>
+          <div className="mt-2">
             <label htmlFor="<EE>-content_translation" className="form-label">
               TRANSLATION
             </label>
@@ -188,15 +198,13 @@ export const EditExample = () => {
               className="form-control"
             />
           </div>
-          <div>
-            <input
-              id="<EE>-submit"
-              name="submit"
-              type="submit"
-              value="EDIT THIS EXAMPLE"
-              className="btn btn-dark"
-            />
-          </div>
+          <input
+            id="<EE>-submit"
+            name="submit"
+            type="submit"
+            value="EDIT THIS EXAMPLE"
+            className="btn btn-dark mt-2"
+          />
         </fieldset>
       </form>
     </React.Fragment>

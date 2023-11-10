@@ -132,6 +132,13 @@ export const SingleExample = () => {
     }
   };
 
+  /*
+  TODO: (2023/11/10, 08:39)
+
+        before submitting a pull request for review,
+        consider converting the <form> tag below into a <button>
+  */
+
   return (
     <React.Fragment>
       {"<SingleExample>"}
