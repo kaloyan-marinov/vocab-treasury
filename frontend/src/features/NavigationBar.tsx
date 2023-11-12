@@ -14,59 +14,54 @@ export const NavigationBar = () => {
 
   const dispatch = useDispatch();
 
-  const alwaysVisibleLinks = (
+  const linksForGuestUser = (
     <React.Fragment>
       <div>
         <Link to="/" className="btn btn-dark">
-          VocabTreasury
-        </Link>
-      </div>
-      <div>
-        <Link to="/home" className="btn btn-dark">
-          Home
+          VocabTreasury: Home
         </Link>{" "}
         <Link to="/about" className="btn btn-dark">
           About
         </Link>
       </div>
+      <div>
+        <Link to="/login" className="btn btn-dark">
+          Log in
+        </Link>{" "}
+        <Link to="/register" className="btn btn-dark">
+          Register
+        </Link>
+      </div>
     </React.Fragment>
   );
 
-  const guestUserLinks = (
-    <div>
-      <Link to="/login" className="btn btn-dark">
-        Log in
-      </Link>{" "}
-      <Link to="/register" className="btn btn-dark">
-        Register
-      </Link>
-    </div>
-  );
-
-  const loggedInUserLinks = (
-    <div>
-      <Link to="/own-vocabtreasury" className="btn btn-dark">
-        Own VocabTreasury
-      </Link>{" "}
-      <Link to="/account" className="btn btn-dark">
-        Account
-      </Link>{" "}
-      <a
-        href="#!"
-        onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}
-        className="btn btn-dark"
-      >
-        Log out
-      </a>
-    </div>
+  const linksForLoggedInUser = (
+    <React.Fragment>
+      <div>
+        <Link to="/own-vocabtreasury" className="btn btn-dark">
+          Own VocabTreasury
+        </Link>{" "}
+        <Link to="/account" className="btn btn-dark">
+          Account
+        </Link>
+      </div>
+      <div>
+        <a
+          href="#!"
+          onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}
+          className="btn btn-dark"
+        >
+          Log out
+        </a>
+      </div>
+    </React.Fragment>
   );
 
   return (
     <React.Fragment>
       {"<NavigationBar>"}
       <nav className="navbar navbar-light bg-light">
-        {alwaysVisibleLinks}
-        {!hasValidToken ? guestUserLinks : loggedInUserLinks}
+        {!hasValidToken ? linksForGuestUser : linksForLoggedInUser}
       </nav>
     </React.Fragment>
   );
