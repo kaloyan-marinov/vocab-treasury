@@ -64,36 +64,35 @@ export const RequestPasswordReset = () => {
   return (
     <React.Fragment>
       {"<RequestPasswordReset>"}
-      <div className="mx-auto w-25">
-        <form
-          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <div>
-            <label htmlFor="<RPR>-email" className="form-label">
-              EMAIL
-            </label>
-            <input
-              id="<RPR>-email"
-              name="email"
-              type="text"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-              className="form-control"
-            />
-          </div>
-          <div className="d-grid">
-            <input
-              id="<RPR>-submit"
-              name="submit"
-              type="submit"
-              value="REQUEST PASSWORD RESET"
-              className="btn btn-dark mt-2"
-            />
-          </div>
-        </form>
-      </div>
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        className="mx-auto w-25"
+      >
+        <div>
+          <label htmlFor="<RPR>-email" className="form-label">
+            EMAIL
+          </label>
+          <input
+            id="<RPR>-email"
+            name="email"
+            type="text"
+            value={email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="d-grid">
+          <input
+            id="<RPR>-submit"
+            name="submit"
+            type="submit"
+            value="REQUEST PASSWORD RESET"
+            className="btn btn-dark mt-2"
+          />
+        </div>
+      </form>
     </React.Fragment>
   );
 };

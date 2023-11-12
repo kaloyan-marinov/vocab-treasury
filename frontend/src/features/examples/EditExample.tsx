@@ -122,14 +122,6 @@ export const EditExample = () => {
     }
   };
 
-  /*
-  TODO: (2023/11/10, 08:40)
-
-        before submitting a pull request for review,
-        make all other forms look like the one in this component
-        (by removing their top-level <div> elements)
-  */
-
   return (
     <React.Fragment>
       {"<EditExample>"}

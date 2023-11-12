@@ -102,66 +102,59 @@ export const Search = () => {
   };
 
   const searchForm = (
-    <div className="mx-auto w-50">
-      <form
-        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      >
-        <div>
-          <label htmlFor="<S>-new_word" className="form-label">
-            NEW WORD
-          </label>
-          <input
-            id="<S>-new_word"
-            name="newWord"
-            type="text"
-            value={formData.newWord}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              handleChange(e)
-            }
-            className="form-control"
-          />
-        </div>
-        <div>
-          <label htmlFor="<S>-content" className="form-label mt-2">
-            EXAMPLE
-          </label>
-          <input
-            id="<S>-content"
-            name="content"
-            type="text"
-            value={formData.content}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              handleChange(e)
-            }
-            className="form-control"
-          />
-        </div>
-        <div>
-          <label htmlFor="<S>-content_translation" className="form-label mt-2">
-            TRANSLATION
-          </label>
-          <input
-            id="<S>-content_translation"
-            name="contentTranslation"
-            type="text"
-            value={formData.contentTranslation}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              handleChange(e)
-            }
-            className="form-control"
-          />
-        </div>
-        <div className="d-grid">
-          <input
-            id="<S>-submit"
-            name="submit"
-            type="submit"
-            value="SEARCH"
-            className="btn btn-primary mt-2"
-          />
-        </div>
-      </form>
-    </div>
+    <form
+      onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      className="mx-auto w-50"
+    >
+      <div>
+        <label htmlFor="<S>-new_word" className="form-label">
+          NEW WORD
+        </label>
+        <input
+          id="<S>-new_word"
+          name="newWord"
+          type="text"
+          value={formData.newWord}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div>
+        <label htmlFor="<S>-content" className="form-label mt-2">
+          EXAMPLE
+        </label>
+        <input
+          id="<S>-content"
+          name="content"
+          type="text"
+          value={formData.content}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div>
+        <label htmlFor="<S>-content_translation" className="form-label mt-2">
+          TRANSLATION
+        </label>
+        <input
+          id="<S>-content_translation"
+          name="contentTranslation"
+          type="text"
+          value={formData.contentTranslation}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div className="d-grid">
+        <input
+          id="<S>-submit"
+          name="submit"
+          type="submit"
+          value="SEARCH"
+          className="btn btn-primary mt-2"
+        />
+      </div>
+    </form>
   );
 
   /*

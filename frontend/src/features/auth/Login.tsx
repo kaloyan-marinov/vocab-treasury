@@ -110,6 +110,7 @@ export const Login = () => {
             />
           </div>
         </form>
+        <hr />
         <div className="d-grid">
           <Link to="/request_password_reset" className="btn btn-dark mt-2">
             FORGOT PASSWORD?
