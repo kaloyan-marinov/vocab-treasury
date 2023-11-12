@@ -43,53 +43,51 @@ export const App = () => {
   }, [dispatch]);
 
   return (
-    <React.Fragment>
-      <section className="container font-monospace">
-        {"<App>"}
-        <hr />
-        <NavigationBar />
-        <hr />
-        <Alerts />
-        <hr />
-        <Switch>
-          <Route exact path="/">
-            <Home />
-          </Route>
-          <Route exact path="/home">
-            <Home />
-          </Route>
-          <Route exact path="/about">
-            <About />
-          </Route>
-          <Route exact path="/register">
-            <Register />
-          </Route>
-          <Route exact path="/login">
-            <Login />
-          </Route>
-          <Route exact path="/request_password_reset">
-            <RequestPasswordReset />
-          </Route>
-          <PrivateRoute exact path="/account">
-            <Account />
-          </PrivateRoute>
-          <PrivateRoute exact path="/own-vocabtreasury">
-            <OwnVocabTreasury />
-          </PrivateRoute>
-          <PrivateRoute exact path="/example/new">
-            <RecordNewExample />
-          </PrivateRoute>
-          <PrivateRoute exact path="/example/:id">
-            <SingleExample />
-          </PrivateRoute>
-          <PrivateRoute exact path="/example/:id/edit">
-            <EditExample />
-          </PrivateRoute>
-          <PrivateRoute exact path="/own-vocabtreasury/search">
-            <Search />
-          </PrivateRoute>
-        </Switch>
-      </section>
-    </React.Fragment>
+    <section className="container font-monospace">
+      {"<App>"}
+      <hr />
+      <NavigationBar />
+      <hr />
+      <Alerts />
+      <hr />
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route exact path="/home">
+          <Home />
+        </Route>
+        <Route exact path="/about">
+          <About />
+        </Route>
+        <Route exact path="/register">
+          <Register />
+        </Route>
+        <Route exact path="/login">
+          <Login />
+        </Route>
+        <Route exact path="/request_password_reset">
+          <RequestPasswordReset />
+        </Route>
+        <PrivateRoute exact path="/account">
+          <Account />
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury">
+          <OwnVocabTreasury />
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/new">
+          <RecordNewExample />
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id">
+          <SingleExample />
+        </PrivateRoute>
+        <PrivateRoute exact path="/example/:id/edit">
+          <EditExample />
+        </PrivateRoute>
+        <PrivateRoute exact path="/own-vocabtreasury/search">
+          <Search />
+        </PrivateRoute>
+      </Switch>
+    </section>
   );
 };
