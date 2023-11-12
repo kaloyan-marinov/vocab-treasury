@@ -68,23 +68,21 @@ export const RequestPasswordReset = () => {
         <form
           onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         >
-          <fieldset>
-            <div>
-              <label htmlFor="<RPR>-email" className="form-label">
-                EMAIL
-              </label>
-              <input
-                id="<RPR>-email"
-                name="email"
-                type="text"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-                className="form-control"
-              />
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="<RPR>-email" className="form-label">
+              EMAIL
+            </label>
+            <input
+              id="<RPR>-email"
+              name="email"
+              type="text"
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
           <div className="d-grid">
             <input
               id="<RPR>-submit"

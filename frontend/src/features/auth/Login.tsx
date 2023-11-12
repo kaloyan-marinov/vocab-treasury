@@ -70,38 +70,36 @@ export const Login = () => {
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
-          <fieldset>
-            <div>
-              <label htmlFor="<L>-email" className="form-label">
-                EMAIL
-              </label>
-              <input
-                id="<L>-email"
-                name="email"
-                type="text"
-                value={formData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-                className="form-control"
-              />
-            </div>
-            <div className="mt-2">
-              <label htmlFor="<L>-password" className="form-label">
-                PASSWORD
-              </label>
-              <input
-                id="<L>-password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-                className="form-control"
-              />
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="<L>-email" className="form-label">
+              EMAIL
+            </label>
+            <input
+              id="<L>-email"
+              name="email"
+              type="text"
+              value={formData.email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div className="mt-2">
+            <label htmlFor="<L>-password" className="form-label">
+              PASSWORD
+            </label>
+            <input
+              id="<L>-password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
           <div className="d-grid">
             <input
               id="<L>-submit"
