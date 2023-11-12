@@ -104,37 +104,74 @@ export const Search = () => {
     setFilteredExamplesUrl(url);
   };
 
-  /*
-    TODO: address/eliminate/reduce the duplication between
-          the value assigned to the next variable "in the else"
-          and the value assigned to the variable of the same name in <OwnVocabTreasury>
-    */
-  const exampleTableRows =
-    filteredExamplesUrl === ""
-      ? null
-      : examplesIds.map((eId: number) => {
-          const e: IExample = examplesEntities[eId];
+  const searchForm = (
+    <div className="mx-auto" style={{ width: "40%" }}>
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      >
+        <div>
+          <label htmlFor="<S>-new_word" className="form-label">
+            NEW WORD
+          </label>
+          <input
+            id="<S>-new_word"
+            name="newWord"
+            type="text"
+            value={formData.newWord}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div>
+          <label htmlFor="<S>-content" className="form-label mt-2">
+            EXAMPLE
+          </label>
+          <input
+            id="<S>-content"
+            name="content"
+            type="text"
+            value={formData.content}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div>
+          <label htmlFor="<S>-content_translation" className="form-label mt-2">
+            TRANSLATION
+          </label>
+          <input
+            id="<S>-content_translation"
+            name="contentTranslation"
+            type="text"
+            value={formData.contentTranslation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="d-grid">
+          <input
+            id="<S>-submit"
+            name="submit"
+            type="submit"
+            value="SEARCH"
+            className="btn btn-primary mt-2"
+          />
+        </div>
+      </form>
+    </div>
+  );
 
-          return (
-            <tr key={e.id}>
-              <td>
-                <Link to={`/example/${e.id}`} className="btn btn-dark">
-                  {e.id}
-                </Link>
-              </td>
-              <td>{e.sourceLanguage}</td>
-              <td>{e.newWord}</td>
-              <td>{e.content}</td>
-              <td>{e.contentTranslation}</td>
-            </tr>
-          );
-        });
-
   /*
-    TODO: address/eliminate/reduce the duplication between
-          the value assigned to the next variable "in the else"
-          and the value assigned to the variable of the same name in <OwnVocabTreasury>
-    */
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
   let paginationControllingButtons: null | JSX.Element;
   if (examplesMeta.page === null) {
     paginationControllingButtons = (
@@ -224,72 +261,36 @@ export const Search = () => {
     paginationControllingButtons = null;
   }
 
+  /*
+  TODO: address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  const exampleTableRows =
+    filteredExamplesUrl === ""
+      ? null
+      : examplesIds.map((eId: number) => {
+          const e: IExample = examplesEntities[eId];
+
+          return (
+            <tr key={e.id}>
+              <td>
+                <Link to={`/example/${e.id}`} className="btn btn-dark">
+                  {e.id}
+                </Link>
+              </td>
+              <td>{e.sourceLanguage}</td>
+              <td>{e.newWord}</td>
+              <td>{e.content}</td>
+              <td>{e.contentTranslation}</td>
+            </tr>
+          );
+        });
+
   return (
     <React.Fragment>
       {"<Search>"}
-      <div className="mx-auto" style={{ width: "40%" }}>
-        <form
-          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <div>
-            <label htmlFor="<S>-new_word" className="form-label">
-              NEW WORD
-            </label>
-            <input
-              id="<S>-new_word"
-              name="newWord"
-              type="text"
-              value={formData.newWord}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-              className="form-control"
-            />
-          </div>
-          <div>
-            <label htmlFor="<S>-content" className="form-label mt-2">
-              EXAMPLE
-            </label>
-            <input
-              id="<S>-content"
-              name="content"
-              type="text"
-              value={formData.content}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-              className="form-control"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="<S>-content_translation"
-              className="form-label mt-2"
-            >
-              TRANSLATION
-            </label>
-            <input
-              id="<S>-content_translation"
-              name="contentTranslation"
-              type="text"
-              value={formData.contentTranslation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-              className="form-control"
-            />
-          </div>
-          <div>
-            <input
-              id="<S>-submit"
-              name="submit"
-              type="submit"
-              value="SEARCH"
-              className="btn btn-primary mt-2"
-            />
-          </div>
-        </form>
-      </div>
+      {searchForm}
       {paginationControllingButtons && (
         <React.Fragment>
           {paginationControllingButtons}
