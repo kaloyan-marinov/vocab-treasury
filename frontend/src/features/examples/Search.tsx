@@ -102,7 +102,7 @@ export const Search = () => {
   };
 
   const searchForm = (
-    <div className="mx-auto" style={{ width: "40%" }}>
+    <div className="mx-auto w-50">
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
       >

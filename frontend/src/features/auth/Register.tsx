@@ -71,7 +71,7 @@ export const Register = () => {
   return (
     <React.Fragment>
       {"<Register>"}
-      <div className="mx-auto" style={{ width: "40%" }}>
+      <div className="mx-auto w-25">
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >

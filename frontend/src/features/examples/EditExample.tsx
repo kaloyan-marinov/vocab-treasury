@@ -135,8 +135,7 @@ export const EditExample = () => {
       {"<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        className="mx-auto"
-        style={{ width: "40%" }}
+        className="mx-auto w-50"
       >
         <div>
           <label htmlFor="<EE>-source_language" className="form-label">
