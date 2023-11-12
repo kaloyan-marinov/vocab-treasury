@@ -4,10 +4,7 @@ import { Link } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_CENTER,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import { IExample, IState } from "../../types";
 import {
   logOut,
@@ -168,7 +165,9 @@ export const Search = () => {
   );
 
   /*
-  TODO: address/eliminate/reduce the duplication between
+  TODO: (2023/11/12, 14:34)
+  
+        address/eliminate/reduce the duplication between
         the value assigned to the next variable "in the else"
         and the value assigned to the variable of the same name in <OwnVocabTreasury>
   */
@@ -179,14 +178,16 @@ export const Search = () => {
     );
   } else {
     /*
-      TODO: find out why
-            this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
-            despite the fact this block appears to be in line with the recommendation on
-            https://stackoverflow.com/a/46915314
-  
-            the "Non-null Assertion Operator (Postfix !)" is described on
-            https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
-      */
+    TODO: (2023/11/12, 14:34)
+
+          find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
     const paginationCtrlBtnPrev: JSX.Element =
       examplesLinks.prev !== null ? (
         <button
@@ -262,7 +263,9 @@ export const Search = () => {
   }
 
   /*
-  TODO: address/eliminate/reduce the duplication between
+  TODO: (2023/11/12, 14:34)
+  
+        address/eliminate/reduce the duplication between
         the value assigned to the next variable "in the else"
         and the value assigned to the variable of the same name in <OwnVocabTreasury>
   */

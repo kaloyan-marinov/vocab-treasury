@@ -41,7 +41,3 @@ export const INITIAL_STATE_EXAMPLES: IStateExamples = {
   ids: [],
   entities: {},
 };
-
-// The source for the next definition is
-// https://reactgo.com/horizontally-center-elements-css/
-export const STYLE_FOR_CENTER = { display: "flex", justifyContent: "center" };
