@@ -103,17 +103,21 @@ export const Login = () => {
               />
             </div>
           </fieldset>
-          <input
-            id="<L>-submit"
-            name="submit"
-            type="submit"
-            value="LOG INTO MY ACCOUNT"
-            className="btn btn-dark mt-2"
-          />
+          <div className="d-grid">
+            <input
+              id="<L>-submit"
+              name="submit"
+              type="submit"
+              value="LOG INTO MY ACCOUNT"
+              className="btn btn-dark mt-2"
+            />
+          </div>
         </form>
-        <Link to="/request_password_reset" className="btn btn-dark mt-2">
-          FORGOT PASSWORD?
-        </Link>
+        <div className="d-grid">
+          <Link to="/request_password_reset" className="btn btn-dark mt-2">
+            FORGOT PASSWORD?
+          </Link>
+        </div>
       </div>
     </React.Fragment>
   );

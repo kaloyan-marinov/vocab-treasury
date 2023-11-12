@@ -167,13 +167,15 @@ export const RecordNewExample = () => {
                 className="form-control"
               />
             </div>
-            <input
-              id="<RNE>-submit"
-              name="submit"
-              type="submit"
-              value="RECORD THIS EXAMPLE"
-              className="btn btn-dark mt-2"
-            />
+            <div className="d-grid">
+              <input
+                id="<RNE>-submit"
+                name="submit"
+                type="submit"
+                value="RECORD THIS EXAMPLE"
+                className="btn btn-dark mt-2"
+              />
+            </div>
           </fieldset>
         </form>
       </div>

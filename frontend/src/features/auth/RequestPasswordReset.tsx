@@ -86,13 +86,15 @@ export const RequestPasswordReset = () => {
               />
             </div>
           </fieldset>
-          <input
-            id="<RPR>-submit"
-            name="submit"
-            type="submit"
-            value="REQUEST PASSWORD RESET"
-            className="btn btn-dark mt-2"
-          />
+          <div className="d-grid">
+            <input
+              id="<RPR>-submit"
+              name="submit"
+              type="submit"
+              value="REQUEST PASSWORD RESET"
+              className="btn btn-dark mt-2"
+            />
+          </div>
         </form>
       </div>
     </React.Fragment>

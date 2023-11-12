@@ -198,13 +198,15 @@ export const EditExample = () => {
               className="form-control"
             />
           </div>
-          <input
-            id="<EE>-submit"
-            name="submit"
-            type="submit"
-            value="EDIT THIS EXAMPLE"
-            className="btn btn-dark mt-2"
-          />
+          <div className="d-grid">
+            <input
+              id="<EE>-submit"
+              name="submit"
+              type="submit"
+              value="EDIT THIS EXAMPLE"
+              className="btn btn-dark mt-2"
+            />
+          </div>
         </fieldset>
       </form>
     </React.Fragment>

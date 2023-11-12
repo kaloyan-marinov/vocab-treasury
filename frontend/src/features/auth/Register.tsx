@@ -138,13 +138,15 @@ export const Register = () => {
               />
             </div>
           </fieldset>
-          <input
-            id="<R>-submit"
-            name="submit"
-            type="submit"
-            value="CREATE MY ACCOUNT"
-            className="btn btn-dark mt-2"
-          />
+          <div className="d-grid">
+            <input
+              id="<R>-submit"
+              name="submit"
+              type="submit"
+              value="CREATE MY ACCOUNT"
+              className="btn btn-dark mt-2"
+            />
+          </div>
         </form>
       </div>
     </React.Fragment>
