@@ -138,7 +138,7 @@ export const Search = () => {
   let paginationControllingButtons: null | JSX.Element;
   if (examplesMeta.page === null) {
     paginationControllingButtons = (
-      <div>Building pagination-controlling buttons...</div>
+      <div className="mt-2">Building pagination-controlling buttons...</div>
     );
   } else {
     /*
@@ -213,7 +213,7 @@ export const Search = () => {
     the content will be centered horizontally.
     */
     paginationControllingButtons = (
-      <div className="mx-auto" style={{ width: "60%" }}>
+      <div className="mx-auto mt-2" style={{ width: "60%" }}>
         {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}
         <span className="bg-warning">Current page: {examplesMeta.page} </span>
         {paginationCtrlBtnNext} {paginationCtrlBtnLast}
@@ -227,83 +227,69 @@ export const Search = () => {
   return (
     <React.Fragment>
       {"<Search>"}
-      <form
-        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      >
-        <table className="table table-bordered table-primary">
-          <thead>
-            <tr>
-              <th>
-                <label htmlFor="<S>-new_word" className="form-label">
-                  NEW WORD
-                </label>
-              </th>
-              <th>
-                <label htmlFor="<S>-content" className="form-label">
-                  EXAMPLE
-                </label>
-              </th>
-              <th>
-                <label htmlFor="<S>-content_translation" className="form-label">
-                  TRANSLATION
-                </label>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  id="<S>-new_word"
-                  name="newWord"
-                  type="text"
-                  value={formData.newWord}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                  className="form-control"
-                />
-              </td>
-              <td>
-                <input
-                  id="<S>-content"
-                  name="content"
-                  type="text"
-                  value={formData.content}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                  className="form-control"
-                />
-              </td>
-              <td>
-                <input
-                  id="<S>-content_translation"
-                  name="contentTranslation"
-                  type="text"
-                  value={formData.contentTranslation}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                  className="form-control"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <br />
-        <div style={STYLE_FOR_CENTER}>
-          <input
-            id="<S>-submit"
-            name="submit"
-            type="submit"
-            value="SEARCH"
-            className="btn btn-primary"
-          />
-        </div>
-        <br />
-      </form>
+      <div className="mx-auto" style={{ width: "40%" }}>
+        <form
+          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        >
+          <div>
+            <label htmlFor="<S>-new_word" className="form-label">
+              NEW WORD
+            </label>
+            <input
+              id="<S>-new_word"
+              name="newWord"
+              type="text"
+              value={formData.newWord}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div>
+            <label htmlFor="<S>-content" className="form-label mt-2">
+              EXAMPLE
+            </label>
+            <input
+              id="<S>-content"
+              name="content"
+              type="text"
+              value={formData.content}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="<S>-content_translation"
+              className="form-label mt-2"
+            >
+              TRANSLATION
+            </label>
+            <input
+              id="<S>-content_translation"
+              name="contentTranslation"
+              type="text"
+              value={formData.contentTranslation}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div>
+            <input
+              id="<S>-submit"
+              name="submit"
+              type="submit"
+              value="SEARCH"
+              className="btn btn-primary mt-2"
+            />
+          </div>
+        </form>
+      </div>
       {paginationControllingButtons && (
         <React.Fragment>
           {paginationControllingButtons}
