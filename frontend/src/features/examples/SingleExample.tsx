@@ -83,14 +83,12 @@ export const SingleExample = () => {
 
   const linkToEditExample =
     example === undefined ? null : (
-      <div>
-        <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
-          Edit this example
-        </Link>
-      </div>
+      <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
+        Edit this example
+      </Link>
     );
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     console.log("    submitting <SingleExample>'s form");
@@ -132,13 +130,6 @@ export const SingleExample = () => {
     }
   };
 
-  /*
-  TODO: (2023/11/10, 08:39)
-
-        before submitting a pull request for review,
-        consider converting the <form> tag below into a <button>
-  */
-
   return (
     <React.Fragment>
       {"<SingleExample>"}
@@ -148,22 +139,16 @@ export const SingleExample = () => {
 
       {exampleTable}
 
-      <br />
-      <div>{linkToOwnVocabTreasury}</div>
-
-      <br />
-      {linkToEditExample}
-
-      <br />
-      <form
-        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      >
-        <input
-          type="submit"
-          value="Delete this example"
+      <div className="mx-auto w-50 d-grid gap-2">
+        {linkToOwnVocabTreasury}
+        {linkToEditExample}
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
           className="btn btn-danger"
-        />
-      </form>
+        >
+          Delete this example
+        </button>
+      </div>
     </React.Fragment>
   );
 };
