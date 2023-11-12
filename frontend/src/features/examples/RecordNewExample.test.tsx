@@ -19,9 +19,6 @@ test("renders the fields of a form for creating a new Example resource", () => {
   );
 
   /* Assert. */
-  const legendElement = screen.getByText("[legend-tag: CREATE NEW EXAMPLE]");
-  expect(legendElement).toBeInTheDocument();
-
   const sourceLanguageLabelElement = screen.getByText("SOURCE LANGUAGE");
   expect(sourceLanguageLabelElement).toBeInTheDocument();
 

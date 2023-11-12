@@ -17,7 +17,7 @@ import {
 } from "../../testHelpers";
 
 describe("<Login>", () => {
-  test("renders (a <legend> tag and) a login form", () => {
+  test("renders a login form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
@@ -32,9 +32,6 @@ describe("<Login>", () => {
     );
 
     /* Assert. */
-    const legendElement = screen.getByText("[legend-tag: LOG IN]");
-    expect(legendElement).toBeInTheDocument();
-
     const emailLabelElement = screen.getByText("EMAIL");
     expect(emailLabelElement).toBeInTheDocument();
 

@@ -76,7 +76,6 @@ export const Register = () => {
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
           <fieldset>
-            <legend>[legend-tag: JOIN TODAY]</legend>
             <div>
               <label htmlFor="<R>-username" className="form-label">
                 USERNAME

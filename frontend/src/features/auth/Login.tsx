@@ -71,7 +71,6 @@ export const Login = () => {
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
           <fieldset>
-            <legend>[legend-tag: LOG IN]</legend>
             <div>
               <label htmlFor="<L>-email" className="form-label">
                 EMAIL

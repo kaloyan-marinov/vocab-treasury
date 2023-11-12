@@ -105,7 +105,6 @@ export const RecordNewExample = () => {
           onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         >
           <fieldset>
-            <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
             <div>
               <label htmlFor="<RNE>-source_language" className="form-label">
                 SOURCE LANGUAGE

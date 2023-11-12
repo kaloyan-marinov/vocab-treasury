@@ -139,7 +139,6 @@ export const EditExample = () => {
         style={{ width: "40%" }}
       >
         <fieldset>
-          <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
           <div>
             <label htmlFor="<EE>-source_language" className="form-label">
               SOURCE LANGUAGE

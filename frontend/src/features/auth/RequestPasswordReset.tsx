@@ -69,7 +69,6 @@ export const RequestPasswordReset = () => {
           onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         >
           <fieldset>
-            <legend>[legend-tag: RESET PASSWORD]</legend>
             <div>
               <label htmlFor="<RPR>-email" className="form-label">
                 EMAIL
