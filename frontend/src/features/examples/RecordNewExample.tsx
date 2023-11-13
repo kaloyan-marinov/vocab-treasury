@@ -100,69 +100,81 @@ export const RecordNewExample = () => {
   return (
     <React.Fragment>
       {"<RecordNewExample>"}
-      <div>
-        <form
-          onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <fieldset>
-            <legend>[legend-tag: CREATE NEW EXAMPLE]</legend>
-            <div>
-              <label htmlFor="<RNE>-source_language">SOURCE LANGUAGE</label>
-              <input
-                id="<RNE>-source_language"
-                name="sourceLanguage"
-                type="text"
-                value={formData.sourceLanguage}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<RNE>-new_word">NEW WORD</label>
-              <input
-                id="<RNE>-new_word"
-                name="newWord"
-                type="text"
-                value={formData.newWord}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<RNE>-content">EXAMPLE</label>
-              <textarea
-                id="<RNE>-content"
-                name="content"
-                value={formData.content}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<RNE>-content_translation">TRANSLATION</label>
-              <textarea
-                id="<RNE>-content_translation"
-                name="contentTranslation"
-                value={formData.contentTranslation}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <input
-                id="<RNE>-submit"
-                name="submit"
-                type="submit"
-                value="RECORD THIS EXAMPLE"
-              />
-            </div>
-          </fieldset>
-        </form>
-      </div>
+      <form
+        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        className="mx-auto w-50"
+      >
+        <div>
+          <label htmlFor="<RNE>-source_language" className="form-label">
+            SOURCE LANGUAGE
+          </label>
+          <input
+            id="<RNE>-source_language"
+            name="sourceLanguage"
+            type="text"
+            value={formData.sourceLanguage}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div>
+          <label htmlFor="<RNE>-new_word" className="form-label mt-2">
+            NEW WORD
+          </label>
+          <input
+            id="<RNE>-new_word"
+            name="newWord"
+            type="text"
+            value={formData.newWord}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div>
+          <label htmlFor="<RNE>-content" className="form-label mt-2">
+            EXAMPLE
+          </label>
+          <textarea
+            id="<RNE>-content"
+            name="content"
+            value={formData.content}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="<RNE>-content_translation"
+            className="form-label mt-2"
+          >
+            TRANSLATION
+          </label>
+          <textarea
+            id="<RNE>-content_translation"
+            name="contentTranslation"
+            value={formData.contentTranslation}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="d-grid">
+          <input
+            id="<RNE>-submit"
+            name="submit"
+            type="submit"
+            value="RECORD THIS EXAMPLE"
+            className="btn btn-dark mt-2"
+          />
+        </div>
+      </form>
     </React.Fragment>
   );
 };

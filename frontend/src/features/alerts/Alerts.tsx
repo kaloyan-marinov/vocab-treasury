@@ -21,22 +21,23 @@ export const Alerts = () => {
   };
 
   const alertsDivs = alertsIds.map((aId: string) => (
-    <div key={aId} style={{ color: "red" }}>
+    <div key={aId} className="text-warning">
       <button
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           handleClick(aId, e)
         }
+        className="btn btn-light"
       >
         Clear alert
       </button>
-      {alertsEntities[aId].message}
+      <span className="ms-2">{alertsEntities[aId].message}</span>
     </div>
   ));
 
   return (
     <React.Fragment>
       {"<Alerts>"}
-      {alertsDivs}
+      <div className="d-grid gap-2">{alertsDivs}</div>
     </React.Fragment>
   );
 };

@@ -40,7 +40,7 @@ describe("<Register>", () => {
     expect(history.location.pathname).toEqual("/home");
   });
 
-  test("renders (a <legend> tag and) a registration form", () => {
+  test("renders a registration form", () => {
     /* Arrange. */
     const realStore = createStore(rootReducer);
     const history = createMemoryHistory();
@@ -55,9 +55,6 @@ describe("<Register>", () => {
     );
 
     /* Assert. */
-    const legendElement = screen.getByText("[legend-tag: JOIN TODAY]");
-    expect(legendElement).toBeInTheDocument();
-
     const usernameLabelElement = screen.getByText("USERNAME");
     expect(usernameLabelElement).toBeInTheDocument();
 

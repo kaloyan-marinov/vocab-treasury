@@ -127,3 +127,24 @@ v2.3.1 (2023/03/31)
   ``backend/scripts/script_2023_03_17_06_58_require_existing_users_to_confirm_email_addresses.py```
   script sleep for a certain amount of time
   after sending each email message
+
+v2.4.0 (2023/11/13)
+--------------------
+
+- enable each confirmed user to edit their email address
+
+- augment the GitHub workflow
+  to get (not only the backend's tests but) also the frontend's tests
+  to be executed on every push event
+
+- address
+  `this TODO <https://github.com/kaloyan-marinov/vocab-treasury/commit/45ff1c40260e4be6849b191cf2dc0d2d49a43817>`_,
+  which was added to the
+  ``"renders a heading, manipulation links," +
+  " and a page of the logged-in user's Example resources"``
+  test
+  on 2021/08/05
+
+- modularize the frontend sub-project
+
+- make the frontend look nicer by utilizing (CSS styling based on) Bootstrap 5

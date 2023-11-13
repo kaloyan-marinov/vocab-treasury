@@ -4,12 +4,7 @@ import { Link } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
-  STYLE_FOR_TABLE,
-  STYLE_FOR_CENTER,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import { IExample, IState } from "../../types";
 import {
   logOut,
@@ -106,61 +101,100 @@ export const Search = () => {
     setFilteredExamplesUrl(url);
   };
 
-  /*
-    TODO: address/eliminate/reduce the duplication between
-          the value assigned to the next variable "in the else"
-          and the value assigned to the variable of the same name in <OwnVocabTreasury>
-    */
-  const exampleTableRows =
-    filteredExamplesUrl === ""
-      ? null
-      : examplesIds.map((eId: number) => {
-          const e: IExample = examplesEntities[eId];
+  const searchForm = (
+    <form
+      onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+      className="mx-auto w-50"
+    >
+      <div>
+        <label htmlFor="<S>-new_word" className="form-label">
+          NEW WORD
+        </label>
+        <input
+          id="<S>-new_word"
+          name="newWord"
+          type="text"
+          value={formData.newWord}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div>
+        <label htmlFor="<S>-content" className="form-label mt-2">
+          EXAMPLE
+        </label>
+        <input
+          id="<S>-content"
+          name="content"
+          type="text"
+          value={formData.content}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div>
+        <label htmlFor="<S>-content_translation" className="form-label mt-2">
+          TRANSLATION
+        </label>
+        <input
+          id="<S>-content_translation"
+          name="contentTranslation"
+          type="text"
+          value={formData.contentTranslation}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+          className="form-control"
+        />
+      </div>
+      <div className="d-grid">
+        <input
+          id="<S>-submit"
+          name="submit"
+          type="submit"
+          value="SEARCH"
+          className="btn btn-primary mt-2"
+        />
+      </div>
+    </form>
+  );
 
-          return (
-            <tr key={e.id}>
-              <th style={STYLE_FOR_BORDER}>
-                <Link to={`/example/${e.id}`}>{e.id}</Link>
-              </th>
-              <th style={STYLE_FOR_BORDER}>{e.sourceLanguage}</th>
-              <th style={STYLE_FOR_BORDER}>{e.newWord}</th>
-              <th style={STYLE_FOR_BORDER}>{e.content}</th>
-              <th style={STYLE_FOR_BORDER}>{e.contentTranslation}</th>
-            </tr>
-          );
-        });
-
   /*
-    TODO: address/eliminate/reduce the duplication between
-          the value assigned to the next variable "in the else"
-          and the value assigned to the variable of the same name in <OwnVocabTreasury>
-    */
+  TODO: (2023/11/12, 14:34)
+  
+        address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
   let paginationControllingButtons: null | JSX.Element;
   if (examplesMeta.page === null) {
     paginationControllingButtons = (
-      <div>Building pagination-controlling buttons...</div>
+      <div className="mt-2">Building pagination-controlling buttons...</div>
     );
   } else {
     /*
-      TODO: find out why
-            this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
-            despite the fact this block appears to be in line with the recommendation on
-            https://stackoverflow.com/a/46915314
-  
-            the "Non-null Assertion Operator (Postfix !)" is described on
-            https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
-      */
+    TODO: (2023/11/12, 14:34)
+
+          find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    */
     const paginationCtrlBtnPrev: JSX.Element =
       examplesLinks.prev !== null ? (
         <button
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setFilteredExamplesUrl(examplesLinks.prev!)
           }
+          className="btn btn-dark"
         >
           Previous page
         </button>
       ) : (
-        <button disabled>Previous page</button>
+        <button disabled className="btn btn-dark">
+          Previous page
+        </button>
       );
 
     const paginationCtrlBtnNext: JSX.Element =
@@ -169,11 +203,14 @@ export const Search = () => {
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setFilteredExamplesUrl(examplesLinks.next!)
           }
+          className="btn btn-dark"
         >
           Next page
         </button>
       ) : (
-        <button disabled>Next page</button>
+        <button disabled className="btn btn-dark">
+          Next page
+        </button>
       );
 
     const paginationCtrlBtnFirst: JSX.Element = (
@@ -182,6 +219,7 @@ export const Search = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setFilteredExamplesUrl(examplesLinks.first!)
         }
+        className="btn btn-dark"
       >
         First page: 1
       </button>
@@ -193,104 +231,76 @@ export const Search = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setFilteredExamplesUrl(examplesLinks.last!)
         }
+        className="btn btn-dark"
       >
         Last page: {examplesMeta.totalPages}
       </button>
     );
 
+    /*
+    According to
+    https://getbootstrap.com/docs/5.3/utilities/spacing/#horizontal-centering ,
+    the CSS styling of the following content ensures that
+    the content will be centered horizontally.
+    */
     paginationControllingButtons = (
-      <React.Fragment>
-        <div>
-          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span style={{ color: "red" }}>
-            Current page: {examplesMeta.page}{" "}
-          </span>
-          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
-        </div>
-      </React.Fragment>
+      <div className="mx-auto mt-2" style={{ width: "60%" }}>
+        {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}
+        <span className="bg-warning">Current page: {examplesMeta.page} </span>
+        {paginationCtrlBtnNext} {paginationCtrlBtnLast}
+      </div>
     );
   }
   if (filteredExamplesUrl === "") {
     paginationControllingButtons = null;
   }
 
+  /*
+  TODO: (2023/11/12, 14:34)
+  
+        address/eliminate/reduce the duplication between
+        the value assigned to the next variable "in the else"
+        and the value assigned to the variable of the same name in <OwnVocabTreasury>
+  */
+  const exampleTableRows =
+    filteredExamplesUrl === ""
+      ? null
+      : examplesIds.map((eId: number) => {
+          const e: IExample = examplesEntities[eId];
+
+          return (
+            <tr key={e.id}>
+              <td>
+                <Link to={`/example/${e.id}`} className="btn btn-dark">
+                  {e.id}
+                </Link>
+              </td>
+              <td>{e.sourceLanguage}</td>
+              <td>{e.newWord}</td>
+              <td>{e.content}</td>
+              <td>{e.contentTranslation}</td>
+            </tr>
+          );
+        });
+
   return (
     <React.Fragment>
       {"<Search>"}
-      <form
-        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      >
-        <table style={STYLE_FOR_TABLE}>
-          <tbody>
-            <tr>
-              <th style={STYLE_FOR_BORDER}>
-                <label htmlFor="<S>-new_word">NEW WORD</label>
-              </th>
-              <th style={STYLE_FOR_BORDER}>
-                <label htmlFor="<S>-content">EXAMPLE</label>
-              </th>
-              <th style={STYLE_FOR_BORDER}>
-                <label htmlFor="<S>-content_translation">TRANSLATION</label>
-              </th>
-            </tr>
-            <tr>
-              <th style={STYLE_FOR_BORDER}>
-                <input
-                  id="<S>-new_word"
-                  name="newWord"
-                  type="text"
-                  value={formData.newWord}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                />
-              </th>
-              <th style={STYLE_FOR_BORDER}>
-                <input
-                  id="<S>-content"
-                  name="content"
-                  type="text"
-                  value={formData.content}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                />
-              </th>
-              <th style={STYLE_FOR_BORDER}>
-                <input
-                  id="<S>-content_translation"
-                  name="contentTranslation"
-                  type="text"
-                  value={formData.contentTranslation}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e)
-                  }
-                />
-              </th>
-            </tr>
-          </tbody>
-        </table>
-
-        <br />
-        <div style={STYLE_FOR_CENTER}>
-          <input id="<S>-submit" name="submit" type="submit" value="SEARCH" />
-        </div>
-        <br />
-      </form>
+      {searchForm}
       {paginationControllingButtons && (
         <React.Fragment>
           {paginationControllingButtons}
-          <table style={STYLE_FOR_TABLE}>
-            <tbody>
+          <table className="table table-striped">
+            <thead>
               <tr>
-                <th style={STYLE_FOR_BORDER}>ID</th>
-                <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-                <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-                <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-                <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
+                <th>ID</th>
+                <th>SOURCE LANGUAGE</th>
+                <th>NEW WORD</th>
+                <th>EXAMPLE</th>
+                <th>TRANSLATION</th>
               </tr>
-              {exampleTableRows}
-            </tbody>
+            </thead>
+            <tbody className="table-group-divider">{exampleTableRows}</tbody>
           </table>
         </React.Fragment>
       )}

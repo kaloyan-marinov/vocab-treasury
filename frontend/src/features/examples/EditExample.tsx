@@ -127,64 +127,75 @@ export const EditExample = () => {
       {"<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
+        className="mx-auto w-50"
       >
-        <fieldset>
-          <legend>[legend-tag: EDIT EXISTING EXAMPLE]</legend>
-          <div>
-            <label htmlFor="<EE>-source_language">SOURCE LANGUAGE</label>
-            <input
-              id="<EE>-source_language"
-              name="sourceLanguage"
-              type="text"
-              value={formData.sourceLanguage}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="<EE>-new_word">NEW WORD</label>
-            <input
-              id="<EE>-new_word"
-              name="newWord"
-              type="text"
-              value={formData.newWord}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange(e)
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="<EE>-content">EXAMPLE</label>
-            <textarea
-              id="<EE>-content"
-              name="content"
-              value={formData.content}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                handleChange(e)
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="<EE>-content_translation">TRANSLATION</label>
-            <textarea
-              id="<EE>-content_translation"
-              name="contentTranslation"
-              value={formData.contentTranslation}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                handleChange(e)
-              }
-            />
-          </div>
-          <div>
-            <input
-              id="<EE>-submit"
-              name="submit"
-              type="submit"
-              value="EDIT THIS EXAMPLE"
-            />
-          </div>
-        </fieldset>
+        <div>
+          <label htmlFor="<EE>-source_language" className="form-label">
+            SOURCE LANGUAGE
+          </label>
+          <input
+            id="<EE>-source_language"
+            name="sourceLanguage"
+            type="text"
+            value={formData.sourceLanguage}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<EE>-new_word" className="form-label">
+            NEW WORD
+          </label>
+          <input
+            id="<EE>-new_word"
+            name="newWord"
+            type="text"
+            value={formData.newWord}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<EE>-content" className="form-label">
+            EXAMPLE
+          </label>
+          <textarea
+            id="<EE>-content"
+            name="content"
+            value={formData.content}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<EE>-content_translation" className="form-label">
+            TRANSLATION
+          </label>
+          <textarea
+            id="<EE>-content_translation"
+            name="contentTranslation"
+            value={formData.contentTranslation}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="d-grid">
+          <input
+            id="<EE>-submit"
+            name="submit"
+            type="submit"
+            value="EDIT THIS EXAMPLE"
+            className="btn btn-dark mt-2"
+          />
+        </div>
       </form>
     </React.Fragment>
   );

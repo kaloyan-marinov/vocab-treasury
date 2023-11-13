@@ -14,38 +14,55 @@ export const NavigationBar = () => {
 
   const dispatch = useDispatch();
 
-  const alwaysVisibleLinks = (
+  const linksForGuestUser = (
     <React.Fragment>
       <div>
-        <Link to="/">VocabTreasury</Link>
+        <Link to="/" className="btn btn-dark">
+          VocabTreasury: Home
+        </Link>{" "}
+        <Link to="/about" className="btn btn-dark">
+          About
+        </Link>
       </div>
       <div>
-        <Link to="/home">Home</Link> <Link to="/about">About</Link>
+        <Link to="/login" className="btn btn-dark">
+          Log in
+        </Link>{" "}
+        <Link to="/register" className="btn btn-dark">
+          Register
+        </Link>
       </div>
     </React.Fragment>
   );
 
-  const guestUserLinks = (
-    <div>
-      <Link to="/login">Log in</Link> <Link to="/register">Register</Link>
-    </div>
-  );
-
-  const loggedInUserLinks = (
-    <div>
-      <Link to="/own-vocabtreasury">Own VocabTreasury</Link>{" "}
-      <Link to="/account">Account</Link>{" "}
-      <a href="#!" onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}>
-        Log out
-      </a>
-    </div>
+  const linksForLoggedInUser = (
+    <React.Fragment>
+      <div>
+        <Link to="/own-vocabtreasury" className="btn btn-dark">
+          Own VocabTreasury
+        </Link>{" "}
+        <Link to="/account" className="btn btn-dark">
+          Account
+        </Link>
+      </div>
+      <div>
+        <a
+          href="#!"
+          onClick={() => dispatch(logOut("LOGOUT SUCCESSFUL"))}
+          className="btn btn-dark"
+        >
+          Log out
+        </a>
+      </div>
+    </React.Fragment>
   );
 
   return (
     <React.Fragment>
       {"<NavigationBar>"}
-      {alwaysVisibleLinks}
-      {!hasValidToken ? guestUserLinks : loggedInUserLinks}
+      <nav className="navbar navbar-light bg-light">
+        {!hasValidToken ? linksForGuestUser : linksForLoggedInUser}
+      </nav>
     </React.Fragment>
   );
 };

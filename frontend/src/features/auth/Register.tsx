@@ -71,76 +71,80 @@ export const Register = () => {
   return (
     <React.Fragment>
       {"<Register>"}
-      <div>
-        <form
-          onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
-        >
-          <fieldset>
-            <legend>[legend-tag: JOIN TODAY]</legend>
-            <div>
-              <label htmlFor="<R>-username">USERNAME</label>
-              <input
-                id="<R>-username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-email">EMAIL</label>
-              <input
-                id="<R>-email"
-                name="email"
-                type="text"
-                value={formData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-password">PASSWORD</label>
-              <input
-                id="<R>-password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<R>-confirmPassword">CONFIRM PASSWORD</label>
-              <input
-                id="<R>-confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-          </fieldset>
-          <div>
-            <input
-              id="<R>-submit"
-              name="submit"
-              type="submit"
-              value="CREATE MY ACCOUNT"
-            />
-          </div>
-        </form>
-      </div>
-      <div>
-        <small>
-          ALREADY HAVE AN ACCOUNT? <Link to="/login">CLICK HERE TO LOG IN</Link>
-        </small>
-      </div>
+      <form
+        onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
+        className="mx-auto w-25"
+      >
+        <div>
+          <label htmlFor="<R>-username" className="form-label">
+            USERNAME
+          </label>
+          <input
+            id="<R>-username"
+            name="username"
+            type="text"
+            value={formData.username}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<R>-email" className="form-label">
+            EMAIL
+          </label>
+          <input
+            id="<R>-email"
+            name="email"
+            type="text"
+            value={formData.email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<R>-password" className="form-label">
+            PASSWORD
+          </label>
+          <input
+            id="<R>-password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="<R>-confirmPassword" className="form-label">
+            CONFIRM PASSWORD
+          </label>
+          <input
+            id="<R>-confirmPassword"
+            name="confirmPassword"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange(e)
+            }
+            className="form-control"
+          />
+        </div>
+        <div className="d-grid">
+          <input
+            id="<R>-submit"
+            name="submit"
+            type="submit"
+            value="CREATE MY ACCOUNT"
+            className="btn btn-dark mt-2"
+          />
+        </div>
+      </form>
     </React.Fragment>
   );
 };

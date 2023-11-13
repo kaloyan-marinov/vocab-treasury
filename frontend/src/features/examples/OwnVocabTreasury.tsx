@@ -11,11 +11,7 @@ import {
   IPaginationLinks,
   IState,
 } from "../../types";
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_BORDER,
-  STYLE_FOR_TABLE,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import {
   logOut,
   selectLoggedInUserProfile,
@@ -149,13 +145,15 @@ export const OwnVocabTreasury = () => {
 
     return (
       <tr key={e.id}>
-        <th style={STYLE_FOR_BORDER}>
-          <Link to={`/example/${e.id}`}>{e.id}</Link>
-        </th>
-        <th style={STYLE_FOR_BORDER}>{e.sourceLanguage}</th>
-        <th style={STYLE_FOR_BORDER}>{e.newWord}</th>
-        <th style={STYLE_FOR_BORDER}>{e.content}</th>
-        <th style={STYLE_FOR_BORDER}>{e.contentTranslation}</th>
+        <td>
+          <Link to={`/example/${e.id}`} className="btn btn-dark">
+            {e.id}
+          </Link>
+        </td>
+        <td>{e.sourceLanguage}</td>
+        <td>{e.newWord}</td>
+        <td>{e.content}</td>
+        <td>{e.contentTranslation}</td>
       </tr>
     );
   });
@@ -185,11 +183,14 @@ export const OwnVocabTreasury = () => {
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setExamplesUrl(examplesLinks.prev!)
           }
+          className="btn btn-dark"
         >
           Previous page
         </button>
       ) : (
-        <button disabled>Previous page</button>
+        <button disabled className="btn btn-dark">
+          Previous page
+        </button>
       );
 
     const paginationCtrlBtnNext: JSX.Element =
@@ -198,11 +199,14 @@ export const OwnVocabTreasury = () => {
           onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             setExamplesUrl(examplesLinks.next!)
           }
+          className="btn btn-dark"
         >
           Next page
         </button>
       ) : (
-        <button disabled>Next page</button>
+        <button disabled className="btn btn-dark">
+          Next page
+        </button>
       );
 
     const paginationCtrlBtnFirst: JSX.Element = (
@@ -211,6 +215,7 @@ export const OwnVocabTreasury = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setExamplesUrl(examplesLinks.first!)
         }
+        className="btn btn-dark"
       >
         First page: 1
       </button>
@@ -222,21 +227,24 @@ export const OwnVocabTreasury = () => {
         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
           setExamplesUrl(examplesLinks.last!)
         }
+        className="btn btn-dark"
       >
         Last page: {examplesMeta.totalPages}
       </button>
     );
 
+    /*
+    According to
+    https://getbootstrap.com/docs/5.3/utilities/spacing/#horizontal-centering ,
+    the CSS styling of the following content ensures that
+    the content will be centered horizontally.
+    */
     paginationControllingButtons = (
-      <React.Fragment>
-        <div>
-          {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}{" "}
-          <span style={{ color: "red" }}>
-            Current page: {examplesMeta.page}{" "}
-          </span>
-          {paginationCtrlBtnNext} {paginationCtrlBtnLast}{" "}
-        </div>
-      </React.Fragment>
+      <div className="mx-auto" style={{ width: "60%" }}>
+        {paginationCtrlBtnFirst} {paginationCtrlBtnPrev}
+        <span className="bg-warning">Current page: {examplesMeta.page} </span>
+        {paginationCtrlBtnNext} {paginationCtrlBtnLast}
+      </div>
     );
   }
 
@@ -248,25 +256,31 @@ export const OwnVocabTreasury = () => {
           ? "Something went wrong..."
           : `${loggedInUserProfile.username}'s Own VocabTreasury`}
       </h1>
-      <div>
-        <Link to="/example/new">Record new example</Link>
-      </div>
-      <div>
-        <Link to="/own-vocabtreasury/search">Search</Link>
-      </div>
+      <ul className="nav nav-justified">
+        <li className="nav-item">
+          <Link to="/example/new" className="btn btn-dark">
+            Record new example
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to="/own-vocabtreasury/search" className="btn btn-dark">
+            Search
+          </Link>
+        </li>
+      </ul>
       <br />
       {paginationControllingButtons}
-      <table style={STYLE_FOR_TABLE}>
-        <tbody>
+      <table className="table table-striped">
+        <thead>
           <tr>
-            <th style={STYLE_FOR_BORDER}>ID</th>
-            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
           </tr>
-          {exampleTableRows}
-        </tbody>
+        </thead>
+        <tbody className="table-group-divider">{exampleTableRows}</tbody>
       </table>
     </React.Fragment>
   );

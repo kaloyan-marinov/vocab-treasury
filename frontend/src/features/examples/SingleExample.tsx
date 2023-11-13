@@ -5,11 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import { IExample, IState } from "../../types";
-import {
-  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
-  STYLE_FOR_TABLE,
-  STYLE_FOR_BORDER,
-} from "../../constants";
+import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
 import {
   logOut,
   selectExamplesEntities,
@@ -57,40 +53,42 @@ export const SingleExample = () => {
 
   const exampleTable =
     example === undefined ? null : (
-      <table style={STYLE_FOR_TABLE}>
+      <table className="table table-bordered table-primary">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>SOURCE LANGUAGE</th>
+            <th>NEW WORD</th>
+            <th>EXAMPLE</th>
+            <th>TRANSLATION</th>
+          </tr>
+        </thead>
         <tbody>
           <tr>
-            <th style={STYLE_FOR_BORDER}>ID</th>
-            <th style={STYLE_FOR_BORDER}>SOURCE LANGUAGE</th>
-            <th style={STYLE_FOR_BORDER}>NEW WORD</th>
-            <th style={STYLE_FOR_BORDER}>EXAMPLE</th>
-            <th style={STYLE_FOR_BORDER}>TRANSLATION</th>
-          </tr>
-          <tr>
-            <th style={STYLE_FOR_BORDER}>{example.id}</th>
-            <th style={STYLE_FOR_BORDER}>{example.sourceLanguage}</th>
-            <th style={STYLE_FOR_BORDER}>{example.newWord}</th>
-            <th style={STYLE_FOR_BORDER}>{example.content}</th>
-            <th style={STYLE_FOR_BORDER}>{example.contentTranslation}</th>
+            <td>{example.id}</td>
+            <td>{example.sourceLanguage}</td>
+            <td>{example.newWord}</td>
+            <td>{example.content}</td>
+            <td>{example.contentTranslation}</td>
           </tr>
         </tbody>
       </table>
     );
 
   const linkToOwnVocabTreasury = (
-    <Link to={locationDescriptor}>
+    <Link to={locationDescriptor} className="btn btn-dark">
       Return to this example within my Own VocabTreasury
     </Link>
   );
 
   const linkToEditExample =
     example === undefined ? null : (
-      <div>
-        <Link to={`/example/${example.id}/edit`}>Edit this example</Link>
-      </div>
+      <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
+        Edit this example
+      </Link>
     );
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     console.log("    submitting <SingleExample>'s form");
@@ -141,18 +139,16 @@ export const SingleExample = () => {
 
       {exampleTable}
 
-      <br />
-      <div>{linkToOwnVocabTreasury}</div>
-
-      <br />
-      {linkToEditExample}
-
-      <br />
-      <form
-        onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      >
-        <input type="submit" value="Delete this example" />
-      </form>
+      <div className="mx-auto w-50 d-grid gap-2">
+        {linkToOwnVocabTreasury}
+        {linkToEditExample}
+        <button
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+          className="btn btn-danger"
+        >
+          Delete this example
+        </button>
+      </div>
     </React.Fragment>
   );
 };

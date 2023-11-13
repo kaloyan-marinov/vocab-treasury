@@ -10,9 +10,13 @@ import { INITIAL_STATE, rootReducer } from "../store";
 import { NavigationBar } from "./NavigationBar";
 import { Alerts } from "./alerts/Alerts";
 
-const alwaysVisibleLinks = ["VocabTreasury", "Home", "About"];
-const guestUserLinks = ["Log in", "Register"];
-const loggedInUserLinks = ["Own VocabTreasury", "Account", "Log out"];
+const linksForGuestUser = [
+  "VocabTreasury: Home",
+  "About",
+  "Log in",
+  "Register",
+];
+const linksForLoggedInUser = ["Own VocabTreasury", "Account", "Log out"];
 
 test("renders all of a guest user's navigation links", () => {
   /* Arrange. */
@@ -29,12 +33,12 @@ test("renders all of a guest user's navigation links", () => {
   );
 
   /* Assert. */
-  for (const navigationLinkText of alwaysVisibleLinks.concat(guestUserLinks)) {
+  for (const navigationLinkText of linksForGuestUser) {
     const element = screen.getByText(navigationLinkText);
     expect(element).toBeInTheDocument();
   }
 
-  for (const navigationLinkText of loggedInUserLinks) {
+  for (const navigationLinkText of linksForLoggedInUser) {
     const element = screen.queryByText(navigationLinkText);
     expect(element).not.toBeInTheDocument();
   }
@@ -62,14 +66,12 @@ test("renders all of a logged-in user's navigation links", () => {
   );
 
   /* Assert. */
-  for (const navigationLinkText of alwaysVisibleLinks.concat(
-    loggedInUserLinks
-  )) {
+  for (const navigationLinkText of linksForLoggedInUser) {
     const element = screen.getByText(navigationLinkText);
     expect(element).toBeInTheDocument();
   }
 
-  for (const navigationLinkText of guestUserLinks) {
+  for (const navigationLinkText of linksForGuestUser) {
     const element = screen.queryByText(navigationLinkText);
     expect(element).not.toBeInTheDocument();
   }

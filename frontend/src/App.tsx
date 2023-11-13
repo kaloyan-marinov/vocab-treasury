@@ -43,7 +43,7 @@ export const App = () => {
   }, [dispatch]);
 
   return (
-    <React.Fragment>
+    <section className="container">
       {"<App>"}
       <hr />
       <NavigationBar />
@@ -88,6 +88,6 @@ export const App = () => {
           <Search />
         </PrivateRoute>
       </Switch>
-    </React.Fragment>
+    </section>
   );
 };

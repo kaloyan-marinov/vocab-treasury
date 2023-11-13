@@ -66,54 +66,56 @@ export const Login = () => {
   return (
     <React.Fragment>
       {"<Login>"}
-      <div>
+      <div className="mx-auto w-25">
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         >
-          <fieldset>
-            <legend>[legend-tag: LOG IN]</legend>
-            <div>
-              <label htmlFor="<L>-email">EMAIL</label>
-              <input
-                id="<L>-email"
-                name="email"
-                type="text"
-                value={formData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-            <div>
-              <label htmlFor="<L>-password">PASSWORD</label>
-              <input
-                id="<L>-password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e)
-                }
-              />
-            </div>
-          </fieldset>
           <div>
+            <label htmlFor="<L>-email" className="form-label">
+              EMAIL
+            </label>
+            <input
+              id="<L>-email"
+              name="email"
+              type="text"
+              value={formData.email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div className="mt-2">
+            <label htmlFor="<L>-password" className="form-label">
+              PASSWORD
+            </label>
+            <input
+              id="<L>-password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange(e)
+              }
+              className="form-control"
+            />
+          </div>
+          <div className="d-grid">
             <input
               id="<L>-submit"
               name="submit"
               type="submit"
               value="LOG INTO MY ACCOUNT"
+              className="btn btn-dark mt-2"
             />
-            <small>
-              <Link to="/request_password_reset">FORGOT PASSWORD?</Link>
-            </small>
           </div>
         </form>
-      </div>
-      <div>
-        <small>
-          NEED AN ACCOUNT? <Link to="/register">CLICK HERE TO REGISTER</Link>
-        </small>
+        <hr />
+        <div className="d-grid">
+          <Link to="/request_password_reset" className="btn btn-dark mt-2">
+            FORGOT PASSWORD?
+          </Link>
+        </div>
       </div>
     </React.Fragment>
   );
