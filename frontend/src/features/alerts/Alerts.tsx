@@ -30,14 +30,14 @@ export const Alerts = () => {
       >
         Clear alert
       </button>
-      {alertsEntities[aId].message}
+      <span className="ms-2">{alertsEntities[aId].message}</span>
     </div>
   ));
 
   return (
     <React.Fragment>
       {"<Alerts>"}
-      {alertsDivs}
+      <div className="d-grid gap-2">{alertsDivs}</div>
     </React.Fragment>
   );
 };
