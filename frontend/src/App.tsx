@@ -43,7 +43,7 @@ export const App = () => {
   }, [dispatch]);
 
   return (
-    <section className="container font-monospace">
+    <section className="container">
       {"<App>"}
       <hr />
       <NavigationBar />
