@@ -5,7 +5,7 @@ export const Home = () => {
 
   return (
     <React.Fragment>
-      {"<Home>"}
+      {process.env.NODE_ENV === "development" && "<Home>"}
       <div>
         <h1>Welcome to VocabTreasury!</h1>
       </div>

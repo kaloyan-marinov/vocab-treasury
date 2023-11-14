@@ -285,7 +285,7 @@ export const Search = () => {
 
   return (
     <React.Fragment>
-      {"<Search>"}
+      {process.env.NODE_ENV === "development" && "<Search>"}
       {searchForm}
       {paginationControllingButtons && (
         <React.Fragment>

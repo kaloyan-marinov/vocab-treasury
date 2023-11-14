@@ -59,7 +59,7 @@ export const NavigationBar = () => {
 
   return (
     <React.Fragment>
-      {"<NavigationBar>"}
+      {process.env.NODE_ENV === "development" && "<NavigationBar>"}
       <nav className="navbar navbar-light bg-light">
         {!hasValidToken ? linksForGuestUser : linksForLoggedInUser}
       </nav>

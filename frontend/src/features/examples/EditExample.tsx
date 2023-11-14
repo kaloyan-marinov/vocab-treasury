@@ -124,7 +124,7 @@ export const EditExample = () => {
 
   return (
     <React.Fragment>
-      {"<EditExample>"}
+      {process.env.NODE_ENV === "development" && "<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         className="mx-auto w-50"

@@ -250,7 +250,7 @@ export const OwnVocabTreasury = () => {
 
   return (
     <React.Fragment>
-      {"<OwnVocabTreasury>"}
+      {process.env.NODE_ENV === "development" && "<OwnVocabTreasury>"}
       <h1>
         {loggedInUserProfile === null
           ? "Something went wrong..."
