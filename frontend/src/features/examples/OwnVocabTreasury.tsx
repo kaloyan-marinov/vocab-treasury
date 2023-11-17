@@ -251,11 +251,7 @@ export const OwnVocabTreasury = () => {
   return (
     <React.Fragment>
       {process.env.NODE_ENV === "development" && "<OwnVocabTreasury>"}
-      <h1>
-        {loggedInUserProfile === null
-          ? "Something went wrong..."
-          : `${loggedInUserProfile.username}'s Own VocabTreasury`}
-      </h1>
+      {loggedInUserProfile === null && <h1> "Something went wrong..."</h1>}
       <ul className="nav nav-justified">
         <li className="nav-item">
           <Link to="/example/new" className="btn btn-dark">

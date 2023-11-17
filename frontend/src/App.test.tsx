@@ -80,8 +80,7 @@ afterAll(() => {
 });
 
 test(
-  "<App> -" +
-    " if a user logs in and goes on to hit her browser's Reload button," +
+  "if a user logs in and goes on to hit her browser's Reload button," +
     " the frontend application should continue to display" +
     " a logged-in user's navigation links",
   async () => {
@@ -177,8 +176,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if the request issued by <App>'s useEffect hook fails," +
+  "if the request issued by <App>'s useEffect hook fails," +
     " the user should be (logged out and) prompted to log in",
   async () => {
     /* Arrange. */
@@ -214,7 +212,7 @@ test(
 );
 
 test(
-  "(<App> >>) <PrivateRoute> renders based on its 1st condition -" +
+  "<PrivateRoute> renders based on its 1st condition -" +
     " if the request issued by <App>'s useEffect hook succeeds," +
     " the user's clicking on the 'Account' navigation link" +
     " should navigate to the <PrivateRoute>, which wraps <Account>",
@@ -244,7 +242,7 @@ test(
 );
 
 test(
-  "(<App> >>) <PrivateRoute> renders based on its 2nd condition -" +
+  "<PrivateRoute> renders based on its 2nd condition -" +
     " if a user hasn't logged in" +
     " but manually changes the URL in her browser's address bar" +
     " to /account ," +
@@ -302,129 +300,116 @@ test(
   }
 );
 
-test(
-  "<App> -" +
-    " the user clicks the navigation-controlling button for 'Next page'",
-  async () => {
-    /* Arrange. */
-    const realStore = createStore(rootReducer, enhancer);
+test("the user clicks the navigation-controlling button for 'Next page'", async () => {
+  /* Arrange. */
+  const realStore = createStore(rootReducer, enhancer);
 
-    const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
-    requestInterceptionLayer.use(
-      rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+  const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+  requestInterceptionLayer.use(
+    rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
-      rest.get("/api/examples", rhf.createMockFetchExamples()),
-      rest.get("/api/examples", rhf.createMockFetchExamples())
-    );
+    rest.get("/api/examples", rhf.createMockFetchExamples()),
+    rest.get("/api/examples", rhf.createMockFetchExamples())
+  );
 
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <App />
-        </Router>
-      </Provider>
-    );
+  render(
+    <Provider store={realStore}>
+      <Router history={history}>
+        <App />
+      </Router>
+    </Provider>
+  );
 
-    const anchorToOwnVocabTreasury = await screen.findByText(
-      "Own VocabTreasury"
-    );
-    fireEvent.click(anchorToOwnVocabTreasury);
+  const anchorToOwnVocabTreasury = await screen.findByText("Own VocabTreasury");
+  fireEvent.click(anchorToOwnVocabTreasury);
 
-    /* Act. */
-    const paginationCtrlBtnNext = await screen.findByRole("button", {
-      name: "Next page",
-    });
-    fireEvent.click(paginationCtrlBtnNext);
+  /* Act. */
+  const paginationCtrlBtnNext = await screen.findByRole("button", {
+    name: "Next page",
+  });
+  fireEvent.click(paginationCtrlBtnNext);
 
-    /* Assert. */
-    /*    (a) [representations of] Example resources */
-    let element: HTMLElement;
-    element = await screen.findByText("3");
-    expect(element).toBeInTheDocument();
+  /* Assert. */
+  /*    (a) [representations of] Example resources */
+  let element: HTMLElement;
+  element = await screen.findByText("3");
+  expect(element).toBeInTheDocument();
 
-    for (const textFromExample3 of [
-      "sana numero-3",
-      "lause numero-3",
-      "käännös numero-3",
-    ]) {
-      element = screen.getByText(textFromExample3);
-      expect(element).toBeInTheDocument();
-    }
-
-    for (const textFromExample4 of [
-      "4",
-      "sana numero-4",
-      "lause numero-4",
-      "käännös numero-4",
-    ]) {
-      element = screen.getByText(textFromExample4);
-      expect(element).toBeInTheDocument();
-    }
-
-    /*    (b) elements for controlling pagination of Example resources */
-    element = screen.getByText("Current page: 2");
+  for (const textFromExample3 of [
+    "sana numero-3",
+    "lause numero-3",
+    "käännös numero-3",
+  ]) {
+    element = screen.getByText(textFromExample3);
     expect(element).toBeInTheDocument();
   }
-);
 
-test(
-  "<App> -" +
-    " the user clicks the navigation-controlling button for 'Last page: N'",
-  async () => {
-    /* Arrange. */
-    const realStore = createStore(rootReducer, enhancer);
-
-    const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
-    requestInterceptionLayer.use(
-      rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
-
-      rest.get("/api/examples", rhf.createMockFetchExamples()),
-      rest.get("/api/examples", rhf.createMockFetchExamples())
-    );
-
-    render(
-      <Provider store={realStore}>
-        <Router history={history}>
-          <App />
-        </Router>
-      </Provider>
-    );
-
-    const anchorToOwnVocabTreasury = await screen.findByText(
-      "Own VocabTreasury"
-    );
-    fireEvent.click(anchorToOwnVocabTreasury);
-
-    /* Act. */
-    const paginationCtrlBtnNext = await screen.findByRole("button", {
-      name: "Last page: 6",
-    });
-    fireEvent.click(paginationCtrlBtnNext);
-
-    /* Assert. */
-    /*    (a) [representations of] Example resources */
-    let element: HTMLElement;
-    element = await screen.findByText("11");
-    expect(element).toBeInTheDocument();
-
-    for (const textFromExample11 of [
-      "sana numero-11",
-      "lause numero-11",
-      "käännös numero-11",
-    ]) {
-      element = screen.getByText(textFromExample11);
-      expect(element).toBeInTheDocument();
-    }
-
-    /*    (b) elements for controlling pagination of Example resources */
-    element = screen.getByText("Current page: 6");
+  for (const textFromExample4 of [
+    "4",
+    "sana numero-4",
+    "lause numero-4",
+    "käännös numero-4",
+  ]) {
+    element = screen.getByText(textFromExample4);
     expect(element).toBeInTheDocument();
   }
-);
+
+  /*    (b) elements for controlling pagination of Example resources */
+  element = screen.getByText("Current page: 2");
+  expect(element).toBeInTheDocument();
+});
+
+test("the user clicks the navigation-controlling button for 'Last page: N'", async () => {
+  /* Arrange. */
+  const realStore = createStore(rootReducer, enhancer);
+
+  const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+  requestInterceptionLayer.use(
+    rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
+
+    rest.get("/api/examples", rhf.createMockFetchExamples()),
+    rest.get("/api/examples", rhf.createMockFetchExamples())
+  );
+
+  render(
+    <Provider store={realStore}>
+      <Router history={history}>
+        <App />
+      </Router>
+    </Provider>
+  );
+
+  const anchorToOwnVocabTreasury = await screen.findByText("Own VocabTreasury");
+  fireEvent.click(anchorToOwnVocabTreasury);
+
+  /* Act. */
+  const paginationCtrlBtnNext = await screen.findByRole("button", {
+    name: "Last page: 6",
+  });
+  fireEvent.click(paginationCtrlBtnNext);
+
+  /* Assert. */
+  /*    (a) [representations of] Example resources */
+  let element: HTMLElement;
+  element = await screen.findByText("11");
+  expect(element).toBeInTheDocument();
+
+  for (const textFromExample11 of [
+    "sana numero-11",
+    "lause numero-11",
+    "käännös numero-11",
+  ]) {
+    element = screen.getByText(textFromExample11);
+    expect(element).toBeInTheDocument();
+  }
+
+  /*    (b) elements for controlling pagination of Example resources */
+  element = screen.getByText("Current page: 6");
+  expect(element).toBeInTheDocument();
+});
 
 test(
-  "<App> -" +
-    " the user clicks first the navigation-controlling button for 'Last page: N'" +
+  "the user clicks first the navigation-controlling button for 'Last page: N'" +
     " and then that for 'Previous page'",
   async () => {
     /* Arrange. */
@@ -497,8 +482,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " the user clicks first the navigation-controlling button for 'Next page'" +
+  "the user clicks first the navigation-controlling button for 'Next page'" +
     " and then that for 'First page: 1'",
   async () => {
     /* Arrange. */
@@ -571,8 +555,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " the user fills out the form on /example/new and submits it," +
+  "the user fills out the form on /example/new and submits it," +
     " and the backend is _mocked_ to respond that" +
     " the form submission was accepted as valid and processed",
   async () => {
@@ -644,8 +627,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " the user fills out the form on /example/new and submits it," +
+  "the user fills out the form on /example/new and submits it," +
     " but the backend is _mocked_ to respond that" +
     " the form submission was determined to be invalid",
   async () => {
@@ -714,8 +696,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " the user fills out the form on /example/new and submits it," +
+  "the user fills out the form on /example/new and submits it," +
     " but the backend is _mocked_ to respond that" +
     " the user's access token has expired",
   async () => {
@@ -802,8 +783,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+  "if a logged-in user (a) clicks on 'Own VocabTreasury'," +
     " (b) navigates to a page [of examples] different from page 1," +
     " and (c) clicks on one of that page's examples," +
     " then by clicking on 'Return to this example within my Own VocabTreasury'" +
@@ -885,8 +865,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+  "if a logged-in user (a) clicks on 'Own VocabTreasury'," +
     " (b) navigates to the 1st page [of examples]," +
     " and (c) clicks on one of that page's examples," +
     " then by clicking on 'Delete this example'" +
@@ -965,8 +944,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if a logged-in user (a) clicks on 'Own VocabTreasury'," +
+  "if a logged-in user (a) clicks on 'Own VocabTreasury'," +
     " (b) navigates to the last page [of examples]" +
     " and there is only 1 example on that page," +
     " and (c) clicks that single example," +
@@ -1053,8 +1031,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " suppose that a logged-in user (a) clicks on 'Own VocabTreasury'" +
+  "suppose that a logged-in user (a) clicks on 'Own VocabTreasury'" +
     " and (b) clicks on some example;" +
     " if the user's access token expires" +
     " and then the user clicks on 'Delete this example'," +
@@ -1114,8 +1091,7 @@ test(
 );
 
 test(
-  "<App>" +
-    " - if a logged-in user selects one of her examples and edits it successfully," +
+  "if a logged-in user selects one of her examples and edits it successfully," +
     " the user should be re-directed to /own-vocabtreasury" +
     " (and, more specifically, to the page containing the selected example)" +
     " and the edited example should be displayed there",
@@ -1215,8 +1191,7 @@ test(
 );
 
 test(
-  "<App>" +
-    " - if a logged-in user selects one of her examples" +
+  "if a logged-in user selects one of her examples" +
     " and edits it in an invalid way," +
     " an alert about the error should be created",
   async () => {
@@ -1278,8 +1253,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " suppose that a logged-in user (a) selects one of her examples" +
+  "suppose that a logged-in user (a) selects one of her examples" +
     " and (b) clicks on the 'Edit this example' link;" +
     " if the user's access token expires" +
     " and then the user clicks on 'EDIT THIS EXAMPLE'," +
@@ -1339,8 +1313,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if a logged-in user searches her Own VocabTreasury for matching examples," +
+  "if a logged-in user searches her Own VocabTreasury for matching examples," +
     " a table of matching examples should be rendered," +
     " together with pagination-controlling buttons that can be used",
   async () => {
@@ -1410,8 +1383,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " suppose that a logged-in user (a) clicks on Own VocabTreasury" +
+  "suppose that a logged-in user (a) clicks on Own VocabTreasury" +
     " and (b) clicks on the Search anchor tag;" +
     " if the user's access token expires" +
     " and then the user submits the 'search form' by clicking 'SEARCH'," +
@@ -1465,8 +1437,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " suppose that a user, who is not logged in," +
+  "suppose that a user, who is not logged in," +
     " (a) clicks on 'Log in' and (b) clicks on 'FORGOT PASSWORD?';" +
     " if the user submits the form without filling it out," +
     " an alert should be created",
@@ -1516,8 +1487,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " suppose that a user, who is not logged in," +
+  "suppose that a user, who is not logged in," +
     " (a) clicks on 'Log in' and (b) clicks on 'FORGOT PASSWORD?';" +
     " if the user fills out the form and submits it," +
     " an alert should be created",
@@ -1571,8 +1541,7 @@ test(
 );
 
 test(
-  "<App> -" +
-    " if a logged-in user manually changes" +
+  "if a logged-in user manually changes" +
     " the URL in her browser's address bar to /request_password_reset ," +
     " the frontend application should redirect the user to /home",
   async () => {
