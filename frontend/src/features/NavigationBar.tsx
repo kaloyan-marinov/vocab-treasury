@@ -1,8 +1,9 @@
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import { logOut, selectHasValidToken } from "../store";
+import { NavigationBarLink } from "./NavigationBarLink";
 
 export const NavigationBar = () => {
   console.log(
@@ -19,38 +20,28 @@ export const NavigationBar = () => {
   const linksForGuestUser = (
     <React.Fragment>
       <div>
-        <Link
-          to="/"
-          className={`btn btn-dark ${location.pathname === "/" && "active"}`}
-        >
-          VocabTreasury: Home
-        </Link>{" "}
-        <Link
-          to="/about"
-          className={`btn btn-dark ${
-            location.pathname === "/about" && "active"
-          }`}
-        >
-          About
-        </Link>
+        <NavigationBarLink
+          destination="/"
+          isActive={location.pathname === "/"}
+          text="VocabTreasury: Home"
+        />{" "}
+        <NavigationBarLink
+          destination="/about"
+          isActive={location.pathname === "/about"}
+          text={"About"}
+        />
       </div>
       <div>
-        <Link
-          to="/login"
-          className={`btn btn-dark ${
-            location.pathname === "/login" && "active"
-          }`}
-        >
-          Log in
-        </Link>{" "}
-        <Link
-          to="/register"
-          className={`btn btn-dark ${
-            location.pathname === "/register" && "active"
-          }`}
-        >
-          Register
-        </Link>
+        <NavigationBarLink
+          destination="/login"
+          isActive={location.pathname === "/login"}
+          text={"Log in"}
+        />{" "}
+        <NavigationBarLink
+          destination="/register"
+          isActive={location.pathname === "/register"}
+          text={"Register"}
+        />
       </div>
     </React.Fragment>
   );
@@ -58,22 +49,16 @@ export const NavigationBar = () => {
   const linksForLoggedInUser = (
     <React.Fragment>
       <div>
-        <Link
-          to="/own-vocabtreasury"
-          className={`btn btn-dark ${
-            location.pathname === "/own-vocabtreasury" && "active"
-          }`}
-        >
-          Own VocabTreasury
-        </Link>{" "}
-        <Link
-          to="/account"
-          className={`btn btn-dark ${
-            location.pathname === "/account" && "active"
-          }`}
-        >
-          Account
-        </Link>
+        <NavigationBarLink
+          destination="/own-vocabtreasury"
+          isActive={location.pathname === "/own-vocabtreasury"}
+          text={"Own VocabTreasury"}
+        />{" "}
+        <NavigationBarLink
+          destination="/account"
+          isActive={location.pathname === "/account"}
+          text={"Account"}
+        />
       </div>
       <div>
         <a
