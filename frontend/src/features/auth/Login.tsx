@@ -13,7 +13,6 @@ import {
   ActionFetchProfile,
 } from "./authSlice";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
-// import "./Login.css";
 
 export const Login = () => {
   console.log(`${new Date().toISOString()} - React is rendering <Login>`);
@@ -67,9 +66,6 @@ export const Login = () => {
   return (
     <React.Fragment>
       {process.env.NODE_ENV === "development" && "<Login>"}
-      {/* <div className="mx-auto w-25"> */}
-      {/* <div className="mx-auto login-container"> */}
-      {/* <div className="mx-auto col-xs-12 col-md-6"> */}
       <div className="mx-auto col-md-6">
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}

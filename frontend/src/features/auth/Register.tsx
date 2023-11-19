@@ -73,7 +73,6 @@ export const Register = () => {
       {process.env.NODE_ENV === "development" && "<Register>"}
       <form
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
-        // className="mx-auto w-25"
         className="mx-auto col-md-6"
       >
         <div>
