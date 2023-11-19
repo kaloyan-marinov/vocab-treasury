@@ -163,7 +163,7 @@ test(
       fireEvent.click(element);
       expect(element.classList).toContain("active");
 
-      /* Ensure that all other guest-user links are not active. */
+      /* Ensure that all other logged-in-user links are not active. */
       for (const textInOtherNavLink of linksForLoggedInUser) {
         if (textInOtherNavLink !== textInNavLink) {
           element = screen.getByText(textInOtherNavLink);
