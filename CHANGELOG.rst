@@ -148,14 +148,3 @@ v2.4.0 (2023/11/13)
 - modularize the frontend sub-project
 
 - make the frontend look nicer by utilizing (CSS styling based on) Bootstrap 5
-
-v2.4.1 (2023/11/17)
--------------------
-
-- control whether or not the component name should render
-  (based on the value of the `NODE_ENV` environment variable)
-
-- make the frontend sub-project use a custom-made (albeit simple) favicon
-
-- ensure that, if one of the links in the navigation bar is clicked,
-  it will be highlighted as "active"
