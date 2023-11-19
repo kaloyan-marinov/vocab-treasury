@@ -45,8 +45,8 @@ export const INITIAL_STATE_EXAMPLES: IStateExamples = {
 /*
 TODO: (2023/11/19, 21:54)
 
-      resolving (v-t-i-79) the following quantity
-      will eliminate all usages of the quantity defined in the next statement
+      resolving (v-t-i-79) will eliminate
+      all usages of the quantity defined in the next statement
 
       so, part of the resolution of (v-t-i-79) is to remove the next statement
 */
