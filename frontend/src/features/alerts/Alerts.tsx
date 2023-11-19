@@ -36,7 +36,7 @@ export const Alerts = () => {
 
   return (
     <React.Fragment>
-      {"<Alerts>"}
+      {process.env.NODE_ENV === "development" && "<Alerts>"}
       <div className="d-grid gap-2">{alertsDivs}</div>
     </React.Fragment>
   );

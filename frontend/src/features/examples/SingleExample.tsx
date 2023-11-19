@@ -132,7 +132,7 @@ export const SingleExample = () => {
 
   return (
     <React.Fragment>
-      {"<SingleExample>"}
+      {process.env.NODE_ENV === "development" && "<SingleExample>"}
       <div>
         You have selected the following Example from your Own VocabTreasury:
       </div>

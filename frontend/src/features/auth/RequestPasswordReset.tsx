@@ -63,7 +63,7 @@ export const RequestPasswordReset = () => {
 
   return (
     <React.Fragment>
-      {"<RequestPasswordReset>"}
+      {process.env.NODE_ENV === "development" && "<RequestPasswordReset>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         className="mx-auto w-25"

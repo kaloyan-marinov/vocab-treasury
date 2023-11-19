@@ -65,7 +65,7 @@ export const Login = () => {
 
   return (
     <React.Fragment>
-      {"<Login>"}
+      {process.env.NODE_ENV === "development" && "<Login>"}
       <div className="mx-auto w-25">
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}

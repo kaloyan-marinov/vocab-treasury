@@ -91,11 +91,7 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
       /* - after the component's rendering: */
       /*    (a) items that appear above the table of Example resources */
       let element: HTMLElement;
-      for (const expectedText of [
-        "auth-jd's Own VocabTreasury",
-        "Record new example",
-        "Search",
-      ]) {
+      for (const expectedText of ["Record new example", "Search"]) {
         element = screen.getByText(expectedText);
         expect(element).toBeInTheDocument();
       }

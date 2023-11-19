@@ -99,7 +99,7 @@ export const RecordNewExample = () => {
 
   return (
     <React.Fragment>
-      {"<RecordNewExample>"}
+      {process.env.NODE_ENV === "development" && "<RecordNewExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
         className="mx-auto w-50"

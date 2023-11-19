@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Redirect, Link } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 import { IState } from "../../types";
@@ -70,7 +70,7 @@ export const Register = () => {
 
   return (
     <React.Fragment>
-      {"<Register>"}
+      {process.env.NODE_ENV === "development" && "<Register>"}
       <form
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e)}
         className="mx-auto w-25"

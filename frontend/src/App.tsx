@@ -44,7 +44,7 @@ export const App = () => {
 
   return (
     <section className="container">
-      {"<App>"}
+      {process.env.NODE_ENV === "development" && "<App>"}
       <hr />
       <NavigationBar />
       <hr />

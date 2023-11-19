@@ -5,7 +5,7 @@ export const About = () => {
 
   return (
     <React.Fragment>
-      {"<About>"}
+      {process.env.NODE_ENV === "development" && "<About>"}
       <h1>About VocabTreasury...</h1>
     </React.Fragment>
   );

@@ -39,7 +39,7 @@ export const Account = () => {
 
   return (
     <React.Fragment>
-      {"<Account>"}
+      {process.env.NODE_ENV === "development" && "<Account>"}
       {accountDetails}
     </React.Fragment>
   );
