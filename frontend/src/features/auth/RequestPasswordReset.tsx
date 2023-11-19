@@ -66,7 +66,7 @@ export const RequestPasswordReset = () => {
       {process.env.NODE_ENV === "development" && "<RequestPasswordReset>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        className="mx-auto w-25"
+        className="mx-auto col-md-6"
       >
         <div>
           <label htmlFor="<RPR>-email" className="form-label">

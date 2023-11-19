@@ -127,7 +127,7 @@ export const EditExample = () => {
       {process.env.NODE_ENV === "development" && "<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        className="mx-auto w-50"
+        className="mx-auto col-md-6"
       >
         <div>
           <label htmlFor="<EE>-source_language" className="form-label">
@@ -171,6 +171,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={3}
           />
         </div>
         <div className="mt-2">
@@ -185,6 +186,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={3}
           />
         </div>
         <div className="d-grid">

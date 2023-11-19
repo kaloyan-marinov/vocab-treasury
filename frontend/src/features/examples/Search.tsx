@@ -104,7 +104,7 @@ export const Search = () => {
   const searchForm = (
     <form
       onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-      className="mx-auto w-50"
+      className="mx-auto col-md-6"
     >
       <div>
         <label htmlFor="<S>-new_word" className="form-label">

@@ -102,7 +102,7 @@ export const RecordNewExample = () => {
       {process.env.NODE_ENV === "development" && "<RecordNewExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        className="mx-auto w-50"
+        className="mx-auto col-md-6"
       >
         <div>
           <label htmlFor="<RNE>-source_language" className="form-label">
@@ -146,6 +146,7 @@ export const RecordNewExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={3}
           />
         </div>
         <div>
@@ -163,6 +164,7 @@ export const RecordNewExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={3}
           />
         </div>
         <div className="d-grid">
