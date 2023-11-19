@@ -5,7 +5,10 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import { IState } from "../../types";
-import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
+import {
+  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
+  NUM_ROWS_FOR_TEXTAREA,
+} from "../../constants";
 import { logOut } from "../../store";
 import {
   ActionFetchExamples,
@@ -146,7 +149,7 @@ export const RecordNewExample = () => {
               handleChange(e)
             }
             className="form-control"
-            rows={3}
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div>
@@ -164,7 +167,7 @@ export const RecordNewExample = () => {
               handleChange(e)
             }
             className="form-control"
-            rows={3}
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div className="d-grid">

@@ -5,7 +5,10 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import { IExample, IState } from "../../types";
-import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
+import {
+  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
+  NUM_ROWS_FOR_TEXTAREA,
+} from "../../constants";
 import {
   logOut,
   selectExamplesEntities,
@@ -171,7 +174,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
-            rows={3}
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div className="mt-2">
@@ -186,7 +189,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
-            rows={3}
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div className="d-grid">
