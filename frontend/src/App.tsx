@@ -43,7 +43,7 @@ export const App = () => {
   }, [dispatch]);
 
   return (
-    <section className="container">
+    <section className="container-sm">
       {process.env.NODE_ENV === "development" && "<App>"}
       <hr />
       <NavigationBar />

@@ -5,7 +5,10 @@ import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
 
 import { IExample, IState } from "../../types";
-import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
+import {
+  URL_FOR_FIRST_PAGE_OF_EXAMPLES,
+  NUM_ROWS_FOR_TEXTAREA,
+} from "../../constants";
 import {
   logOut,
   selectExamplesEntities,
@@ -127,7 +130,7 @@ export const EditExample = () => {
       {process.env.NODE_ENV === "development" && "<EditExample>"}
       <form
         onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSubmit(e)}
-        className="mx-auto w-50"
+        className="mx-auto col-md-6"
       >
         <div>
           <label htmlFor="<EE>-source_language" className="form-label">
@@ -171,6 +174,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div className="mt-2">
@@ -185,6 +189,7 @@ export const EditExample = () => {
               handleChange(e)
             }
             className="form-control"
+            rows={NUM_ROWS_FOR_TEXTAREA}
           />
         </div>
         <div className="d-grid">
