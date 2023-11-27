@@ -1542,7 +1542,7 @@ test(
 
 test(
   "if a logged-in user manually changes" +
-    " the URL in her browser's address bar to /request_password_reset ," +
+    " the URL in her browser's address bar to /request-password-reset ," +
     " the frontend application should redirect the user to /home",
   async () => {
     /* Arrange. */
@@ -1569,7 +1569,7 @@ test(
 
     /* Act. */
     /* Simulate the user's manually changing the URL in her browser's address bar. */
-    history.push("/request_password_reset");
+    history.push("/request-password-reset");
 
     /* Assert. */
     expect(history.location.pathname).toEqual("/home");
