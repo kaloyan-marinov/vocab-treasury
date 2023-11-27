@@ -8,6 +8,7 @@ import { NavigationBar } from "./features/NavigationBar";
 import { About } from "./features/About";
 import { Account } from "./features/Account";
 import { Register } from "./features/auth/Register";
+import { ConfirmEmailAddress } from "./features/auth/ConfirmEmailAddress";
 import { Login } from "./features/auth/Login";
 import { RequestPasswordReset } from "./features/auth/RequestPasswordReset";
 import { fetchProfile } from "./features/auth/authSlice";
@@ -63,10 +64,16 @@ export const App = () => {
         <Route exact path="/register">
           <Register />
         </Route>
+        <Route
+          exact
+          path="/confirm-email-address/:token_for_confirming_email_address"
+        >
+          <ConfirmEmailAddress />
+        </Route>
         <Route exact path="/login">
           <Login />
         </Route>
-        <Route exact path="/request_password_reset">
+        <Route exact path="/request-password-reset">
           <RequestPasswordReset />
         </Route>
         <PrivateRoute exact path="/account">
