@@ -51,12 +51,13 @@ jobs:
           coverage run \
               --source=src/ \
               --omit=venv/*,tests/* \
+              --branch \
               -m unittest \
               discover -v \
               tests/
           coverage report > line-with-the-TOTAL.txt
           read -r -a arr <<< $(grep TOTAL line-with-the-TOTAL.txt)
-          echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
+          echo "coverage-percentage=${arr[5]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
   report-coverage-for-backend:
