@@ -68,11 +68,6 @@ jobs:
 
     steps:
 
-      # - name: Report coverage percentage
-      #   run: |
-      #     echo "coverage percentage:" \
-      #       " ${{ needs.run-tests-for-backend.outputs.coverage-percentage }}"
-
       - id: create-badge-url
         name: Create badge with (test-)coverage percentage
         run: |
@@ -127,11 +122,6 @@ jobs:
     needs: run-tests-for-frontend
 
     steps:
-
-      # - name: Report coverage percentage
-      #   run: |
-      #     echo "coverage percentage:" \
-      #       " ${{ needs.run-tests-for-frontend.outputs.coverage-percentage }}%"
 
       - id: create-badge-url
         name: Create badge with (test-)coverage percentage
