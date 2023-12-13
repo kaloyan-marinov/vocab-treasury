@@ -51,12 +51,13 @@ jobs:
           coverage run \
               --source=src/ \
               --omit=venv/*,tests/* \
+              --branch \
               -m unittest \
               discover -v \
               tests/
           coverage report > line-with-the-TOTAL.txt
           read -r -a arr <<< $(grep TOTAL line-with-the-TOTAL.txt)
-          echo "coverage-percentage=${arr[3]}" >> $GITHUB_OUTPUT
+          echo "coverage-percentage=${arr[5]}" >> $GITHUB_OUTPUT
   # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
   report-coverage-for-backend:
@@ -67,12 +68,20 @@ jobs:
 
     steps:
 
-      - name: Report coverage percentage
+      - id: create-badge-url
+        name: Create badge with (test-)coverage percentage
         run: |
-          echo "coverage percentage:" \
-            " ${{ needs.run-tests-for-backend.outputs.coverage-percentage }}"
+          coverage_percentage="${{ needs.run-tests-for-backend.outputs.coverage-percentage }}"
+          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=test-coverage-backend&message=${coverage_percentage}25&color=black)"
+          echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
 
-  run-test-suite-for-frontend:
+      # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
+      - name: Post comment (containing coverage-percentage badge) on commit
+        uses: peter-evans/commit-comment@v3
+        with:
+          body: ${{ steps.create-badge-url.outputs.badge_url }}
+
+  run-tests-for-frontend:
 
     runs-on: ubuntu-20.04
 
@@ -110,11 +119,19 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    needs: run-test-suite-for-frontend
+    needs: run-tests-for-frontend
 
     steps:
 
-      - name: Report coverage percentage
+      - id: create-badge-url
+        name: Create badge with (test-)coverage percentage
         run: |
-          echo "coverage percentage:" \
-            " ${{ needs.run-test-suite-for-frontend.outputs.coverage-percentage }}%"
+          coverage_percentage="${{ needs.run-tests-for-frontend.outputs.coverage-percentage }}%"
+          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=test-coverage-frontend&message=${coverage_percentage}25&color=black)"
+          echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
+
+      # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
+      - name: Post comment (containing coverage-percentage badge) on commit
+        uses: peter-evans/commit-comment@v3
+        with:
+          body: ${{ steps.create-badge-url.outputs.badge_url }}

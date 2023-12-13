@@ -95,6 +95,7 @@ and use `localhost` to serve a frontend application.
         (venv) backend $ coverage run \
             --source=src/ \
             --omit=venv/*,tests/* \
+            --branch  \
             -m unittest \
             discover -v \
             tests/
