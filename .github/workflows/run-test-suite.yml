@@ -81,12 +81,12 @@ jobs:
           echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
 
       # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
-      - name: Post comment on commit containing coverage-percentage badge
+      - name: Post comment (containing coverage-percentage badge) on commit
         uses: peter-evans/commit-comment@v3
         with:
           body: ${{ steps.create-badge-url.outputs.badge_url }}
 
-  run-test-suite-for-frontend:
+  run-tests-for-frontend:
 
     runs-on: ubuntu-20.04
 
@@ -124,14 +124,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    needs: run-test-suite-for-frontend
+    needs: run-tests-for-frontend
 
     steps:
 
       # - name: Report coverage percentage
       #   run: |
       #     echo "coverage percentage:" \
-      #       " ${{ needs.run-test-suite-for-frontend.outputs.coverage-percentage }}%"
+      #       " ${{ needs.run-tests-for-frontend.outputs.coverage-percentage }}%"
 
       - id: create-badge-url
         name: Create badge with (test-)coverage percentage
@@ -141,7 +141,7 @@ jobs:
           echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
 
       # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
-      - name: Post comment on commit containing coverage-percentage badge
+      - name: Post comment (containing coverage-percentage badge) on commit
         uses: peter-evans/commit-comment@v3
         with:
           body: ${{ steps.create-badge-url.outputs.badge_url }}
