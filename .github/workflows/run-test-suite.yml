@@ -77,7 +77,7 @@ jobs:
         name: Create badge with (test-)coverage percentage
         run: |
           coverage_percentage="${{ needs.run-tests-for-backend.outputs.coverage-percentage }}"
-          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=backend-test-coverage&message=${coverage_percentage}25&color=black)"
+          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=test-coverage-backend&message=${coverage_percentage}25&color=black)"
           echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
 
       # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
@@ -136,8 +136,8 @@ jobs:
       - id: create-badge-url
         name: Create badge with (test-)coverage percentage
         run: |
-          coverage_percentage="${{ needs.run-tests-for-frontend.outputs.coverage-percentage }}"
-          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=frontend-test-coverage&message=${coverage_percentage}25&color=black)"
+          coverage_percentage="${{ needs.run-tests-for-frontend.outputs.coverage-percentage }}%"
+          badge_url="![badge-test-coverage](https://img.shields.io/static/v1?label=test-coverage-frontend&message=${coverage_percentage}25&color=black)"
           echo "badge_url=$badge_url" >> $GITHUB_OUTPUT
 
       # https://github.com/alexanderdamiani/pytester-cov/blame/main/entrypoint.sh
