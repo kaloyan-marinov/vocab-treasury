@@ -525,13 +525,19 @@ you can still use VocabTreasury by simply creating a new account.
 
 
 def send_password_reset_email(user):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        minutes=current_app.config["MINUTES_FOR_PASSWORD_RESET"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": PASSWORD_RESET,
         "user_id": user.id,
     }
-    password_reset_token = current_app.token_serializer_for_password_resets.dumps(
-        token_payload
-    ).decode("utf-8")
+    password_reset_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
+    )
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
 

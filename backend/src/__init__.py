@@ -74,11 +74,6 @@ def create_app(name_of_configuration=None):
         expires_in=app.config["MINUTES_FOR_TOKEN_VALIDITY"] * 60,
     )
 
-    app.token_serializer_for_password_resets = TimedJSONWebSignatureSerializer(
-        app.config["SECRET_KEY"],
-        expires_in=app.config["MINUTES_FOR_PASSWORD_RESET"] * 60,
-    )
-
     # Register `Blueprint`(s) with the application instance.
     # (By themselves, `Blueprint`s are "inactive".)
     from src.api import api_bp
