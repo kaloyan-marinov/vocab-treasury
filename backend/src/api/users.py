@@ -1,10 +1,12 @@
-import os
 import threading
 
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
 
 import sqlalchemy
+
+import datetime as dt
+import jwt
 
 from src import db, flsk_bcrpt, mail
 from src.models import User, EmailAddressChange
@@ -101,9 +103,7 @@ def confirm_email_address(token):
     but who is following up
     on an initiated request (of theirs) for an email-address change.
     """
-    reject_token, response_or_token_payload = validate_token(
-        token, EMAIL_ADDRESS_CONFIRMATION
-    )
+    reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:
         return response_or_token_payload
@@ -467,14 +467,18 @@ def request_password_reset():
 
 
 def send_email_requesting_that_email_address_should_be_confirmed(user):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
     }
-    email_address_confirmation_token = (
-        current_app.token_serializer_for_email_address_confirmation.dumps(
-            token_payload
-        ).decode("utf-8")
+    email_address_confirmation_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
     )
 
     msg_sender = current_app.config["ADMINS"][0]
@@ -583,15 +587,19 @@ def send_email_requesting_that_change_of_email_address_should_be_confirmed(
     user: User,
     email_address_change: EmailAddressChange,
 ):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
         "email_address_change_id": email_address_change.id,
     }
-    email_address_confirmation_token = (
-        current_app.token_serializer_for_email_address_confirmation.dumps(
-            token_payload
-        ).decode("utf-8")
+    email_address_confirmation_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
     )
 
     msg_sender = current_app.config["ADMINS"][0]
@@ -651,7 +659,7 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
-    reject_token, response_or_token_payload = validate_token(token, PASSWORD_RESET)
+    reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:
         return response_or_token_payload
