@@ -116,7 +116,7 @@ def verify_token(token):
         )
     except jwt.ExpiredSignatureError:
         return None  # valid token, but expired
-    except jwt.InvalidSignatureError:
+    except jwt.DecodeError:
         return None  # invalid token
 
     if token_payload["purpose"] != ACCESS:
@@ -166,7 +166,7 @@ def validate_token(token):
         )
     except jwt.ExpiredSignatureError as e:
         reject_token = True  # valid token, but expired
-    except jwt.InvalidSignatureError as e:
+    except jwt.DecodeError as e:
         reject_token = True  # invalid token
 
     if reject_token:
