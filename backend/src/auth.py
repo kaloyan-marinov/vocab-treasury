@@ -109,7 +109,11 @@ token_auth = HTTPTokenAuth()
 @token_auth.verify_token
 def verify_token(token):
     try:
-        token_payload = current_app.token_serializer.loads(token)
+        token_payload = jwt.decode(
+            token,
+            current_app.config["SECRET_KEY"],
+            algorithms=["HS256"],
+        )
     except jwt.ExpiredSignatureError:
         return None  # valid token, but expired
     except jwt.InvalidSignatureError:

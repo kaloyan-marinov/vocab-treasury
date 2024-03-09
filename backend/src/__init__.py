@@ -51,29 +51,6 @@ def create_app(name_of_configuration=None):
     mail.init_app(app)
     flsk_bcrpt.init_app(app)
 
-    # fmt: off
-    '''
-    For each `TimedJSONWebSignatureSerializer` object
-    that our application instance depends on:
-
-        (a) we don't have an extension to initialize in the global scope, so
-
-        (b) we are going to do things directly in the Application Factory Function;
-            namely, we are going to add a `TimedJSONWebSignatureSerializer` attribute
-            to the application instance itself.
-    
-    (This isn't the only way to do things,
-    but adding each `TimedJSONWebSignatureSerializer` object
-    as an attribute to the application instance ensures that,
-    wherever we have access to `current_app`,
-    we will also have access to the `TimedJSONWebSignatureSerializer` in question.)
-    '''
-    # fmt: on
-    app.token_serializer = TimedJSONWebSignatureSerializer(
-        app.config["SECRET_KEY"],
-        expires_in=app.config["MINUTES_FOR_TOKEN_VALIDITY"] * 60,
-    )
-
     # Register `Blueprint`(s) with the application instance.
     # (By themselves, `Blueprint`s are "inactive".)
     from src.api import api_bp
