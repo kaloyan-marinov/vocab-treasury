@@ -21,7 +21,7 @@ def issue_token():
     }
     token = jwt.encode(
         token_payload,
-        current_app.config["SECRET_APP"],
-        algorith="HS256",
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
     )
     return {"token": token}
