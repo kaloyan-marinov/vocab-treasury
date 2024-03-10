@@ -32,7 +32,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
 
         # Compute a valid token for the User resource, which was created just now.
         expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
-            hours=1,
+            minutes=current_app.config["MINUTES_FOR_TOKEN_VALIDITY"],
         )
         token_payload = {
             "exp": expiration_timestamp_for_token,

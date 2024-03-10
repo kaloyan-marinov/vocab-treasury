@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import unittest
+import datetime as dt
 import jwt
 
 from src import db, create_app
@@ -73,7 +74,11 @@ class TestBasePlusUtilities(TestBase):
         )
 
     def util_confirm_email_address(self, user_id):
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            minutes=self.app.config["MINUTES_FOR_TOKEN_VALIDITY"]
+        )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }

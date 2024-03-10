@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 import base64
+import datetime as dt
 import jwt
 
 from flask_sqlalchemy import BaseQuery
@@ -14,7 +15,11 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
     def _issue_valid_email_address_confirmation_token(
         self, user_id, email_address_change_id=None
     ):
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+        )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
@@ -277,16 +282,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_1 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=1
         )
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
         with patch(
-            "src.auth.jwt.decode",
-        ) as mock_4_jwt_decode:
-            mock_4_jwt_decode.side_effect = (
-                token_1,
-                token_2,
-            )
+            "src.auth.jwt.encode",
+        ) as mock_4_jwt_encode:
+            mock_4_jwt_encode.side_effect = token_1
 
             rv_1 = self.client.put(
                 f"/api/users/{u_r.id}",
@@ -298,15 +297,15 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             )
             self.assertEqual(rv_1.status_code, 202)
 
-            rv_2 = self.client.put(
-                f"/api/users/{u_r.id}",
-                data=json.dumps(data_2),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": authorization,
-                },
-            )
-            self.assertEqual(rv_2.status_code, 202)
+        rv_2 = self.client.put(
+            f"/api/users/{u_r.id}",
+            data=json.dumps(data_2),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_2.status_code, 202)
 
         # Act.
         rv = self.client.post(f"/api/confirm-email-address/{token_1}")
@@ -370,8 +369,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         with patch(
             "src.auth.jwt.encode",
         ) as mock_for_jwt_encode:
-            mock_for_jwt_encode.return_value = token_2.encode("utf-8")
-            # mock_for_jwt_encode.return_value = token_2
+            mock_for_jwt_encode.return_value = token_2
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",
