@@ -165,6 +165,9 @@ class Test_01_IssueToken(TestBasePlusUtilities):
                 body["token"],
                 key=self.app.config["SECRET_KEY"],
                 algorithms=["HS256"],
+                options={
+                    "require": ["exp"],
+                },
             )
             del observed_payload_dict["exp"]
 
@@ -172,6 +175,9 @@ class Test_01_IssueToken(TestBasePlusUtilities):
                 body["token"],
                 key=self.app.config["SECRET_KEY"],
                 algorithms=["HS256"],
+                options={
+                    "require": ["exp"],
+                },
             )
             del expected_payload_dict["exp"]
 

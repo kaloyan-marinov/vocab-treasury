@@ -113,6 +113,9 @@ def verify_token(token):
             token,
             current_app.config["SECRET_KEY"],
             algorithms=["HS256"],
+            options={
+                "require": ["exp"],
+            },
         )
     except jwt.ExpiredSignatureError:
         return None  # valid token, but expired
@@ -163,6 +166,9 @@ def validate_token(token):
             token,
             current_app.config["SECRET_KEY"],
             algorithms=["HS256"],
+            options={
+                "require": ["exp"],
+            },
         )
     except jwt.ExpiredSignatureError as e:
         reject_token = True  # valid token, but expired
