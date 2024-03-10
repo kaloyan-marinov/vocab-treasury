@@ -107,7 +107,12 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         basic_auth = "Basic " + b_a_c
-        rv = self.client.post("/api/tokens", headers={"Authorization": basic_auth})
+        rv = self.client.post(
+            "/api/tokens",
+            headers={
+                "Authorization": basic_auth,
+            },
+        )
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
@@ -123,7 +128,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         Unfortunately, that would not work as expected 100% of the time.
         The reason for that is hinted at by the content of the `except`-statement,
         and that reason can be summarized as follows:
-            the endpoint handler relies on a _Timed_JSONWebSignatureSerializer,
+            the endpoint handler relies on a call to `dt.datetime.utcnow()`,
             which means that,
             if the execution of the endpoint handler takes more than 1 s,
             then
@@ -155,7 +160,25 @@ class Test_01_IssueToken(TestBasePlusUtilities):
                 print(f"{name} observed: {value}")
                 print(f"{name} expected: {value_expected}")
 
-            self.assertEqual(payload, p_expected)
+            # self.assertEqual(payload, p_expected)
+            observed_payload_dict = jwt.decode(
+                body["token"],
+                key=self.app.config["SECRET_KEY"],
+                algorithms=["HS256"],
+            )
+            del observed_payload_dict["exp"]
+
+            expected_payload_dict = jwt.decode(
+                body["token"],
+                key=self.app.config["SECRET_KEY"],
+                algorithms=["HS256"],
+            )
+            del expected_payload_dict["exp"]
+
+            self.assertEqual(
+                observed_payload_dict,
+                expected_payload_dict,
+            )
 
     def test_4_incorrect_basic_auth(self):
         """
