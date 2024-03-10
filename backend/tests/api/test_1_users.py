@@ -1922,7 +1922,7 @@ class Test_08_ResetPassword(TestBase):
     def test_6_reset_password(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
             expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
-                days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
             )
             mock_4_jwt_decode.return_value = {
                 "exp": expiration_timestamp_for_token,

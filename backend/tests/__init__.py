@@ -75,7 +75,7 @@ class TestBasePlusUtilities(TestBase):
 
     def util_confirm_email_address(self, user_id):
         expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
-            minutes=self.app.config["MINUTES_FOR_TOKEN_VALIDITY"]
+            days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
         )
         token_payload = {
             "exp": expiration_timestamp_for_token,
