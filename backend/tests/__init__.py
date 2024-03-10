@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import unittest
+import jwt
 
 from src import db, create_app
 from src.constants import EMAIL_ADDRESS_CONFIRMATION
@@ -76,10 +77,10 @@ class TestBasePlusUtilities(TestBase):
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
-        email_address_confirmation_token = (
-            self.app.token_serializer_for_email_address_confirmation.dumps(
-                token_payload
-            ).decode("utf-8")
+        email_address_confirmation_token = jwt.encode(
+            token_payload,
+            key=self.app.config["SECRET_KEY"],
+            algorithm="HS256",
         )
 
         self.client.post(

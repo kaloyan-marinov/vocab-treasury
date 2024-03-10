@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 import base64
+import jwt
 
 from flask_sqlalchemy import BaseQuery
 
@@ -19,10 +20,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         }
         if email_address_change_id is not None:
             token_payload["email_address_change_id"] = email_address_change_id
-        valid_token_correct_purpose = (
-            self.app.token_serializer_for_email_address_confirmation.dumps(
-                token_payload
-            ).decode("utf-8")
+        valid_token_correct_purpose = jwt.encode(
+            token_payload,
+            key=self.app.config["SECRET_KEY"],
+            algorithm="HS256",
         )
         return valid_token_correct_purpose
 
@@ -280,11 +281,11 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             u_r.id, email_address_change_id=2
         )
         with patch(
-            "src.TimedJSONWebSignatureSerializer.dumps",
-        ) as serializer_dumps_mock:
-            serializer_dumps_mock.side_effect = (
-                token_1.encode("utf-8"),
-                token_2.encode("utf-8"),
+            "src.auth.jwt.decode",
+        ) as mock_4_jwt_decode:
+            mock_4_jwt_decode.side_effect = (
+                token_1,
+                token_2,
             )
 
             rv_1 = self.client.put(
@@ -367,9 +368,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             u_r.id, email_address_change_id=2
         )
         with patch(
-            "src.TimedJSONWebSignatureSerializer.dumps",
-        ) as serializer_dumps_mock:
-            serializer_dumps_mock.return_value = token_2.encode("utf-8")
+            "src.auth.jwt.encode",
+        ) as mock_for_jwt_encode:
+            mock_for_jwt_encode.return_value = token_2.encode("utf-8")
+            # mock_for_jwt_encode.return_value = token_2
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",

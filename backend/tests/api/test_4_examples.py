@@ -1,11 +1,10 @@
 import json
 from unittest.mock import patch
 import base64
-import unittest
+import jwt
 
 from typing import Optional
 
-from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import User, Example
@@ -265,8 +264,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
 
         # Simulate a request, in which a client provides an expired Bearer Token.
         with patch(
-            "src.TimedJSONWebSignatureSerializer.loads",
-            side_effect=SignatureExpired("forced via mocking/patching"),
+            "src.auth.jwt.decode",
+            side_effect=jwt.ExpiredSignatureError("forced via mocking/patching"),
         ):
             rv = self.client.post(
                 "/api/examples",
@@ -307,8 +306,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # Simulate a request, in which a client provides a Bearer Token,
         # whose cryptographic signature has been tampered with.
         with patch(
-            "src.TimedJSONWebSignatureSerializer.loads",
-            side_effect=BadSignature("forced via mocking/patching"),
+            "src.auth.jwt.decode",
+            side_effect=jwt.DecodeError("forced via mocking/patching"),
         ):
             rv = self.client.post(
                 "/api/examples",
@@ -352,7 +351,7 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # whose payload specifies a non-existent user ID.
         nonexistent_user_id = 17
         with patch(
-            "src.TimedJSONWebSignatureSerializer.loads",
+            "src.auth.jwt.decode",
             return_value={
                 "purpose": ACCESS,
                 "user_id": nonexistent_user_id,

@@ -1,7 +1,8 @@
 import json
 import base64
+import datetime as dt
+import jwt
 
-from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities, UserResource
@@ -30,14 +31,19 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         )
 
         # Compute a valid token for the User resource, which was created just now.
-        token_serializer = TimedJSONWebSignatureSerializer(
-            current_app.config["SECRET_KEY"], expires_in=3600
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            hours=1,
         )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": ACCESS,
             "user_id": self._u_r.id,
         }
-        token = token_serializer.dumps(token_payload).decode("utf-8")
+        token = jwt.encode(
+            token_payload,
+            self.app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
         self._expected_body = {"token": token}
 
     def test_1_missing_basic_auth(self):
