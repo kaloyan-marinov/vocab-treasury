@@ -235,13 +235,19 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET):
             with self.subTest():
                 # Arrange.
+                expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                    minutes=self.app.config["MINUTES_FOR_TOKEN_VALIDITY"]
+                )
                 token_payload = {
+                    "exp": expiration_timestamp_for_token,
                     "purpose": wrong_purpose,
                     "user_id": self._u_r.id,
                 }
-                valid_token_wrong_purpose = self.app.token_serializer.dumps(
-                    token_payload
-                ).decode("utf-8")
+                valid_token_wrong_purpose = jwt.encode(
+                    token_payload,
+                    key=self.app.config["SECRET_KEY"],
+                    algorithm="HS256",
+                )
 
                 # Act.
                 authorization = "Bearer " + valid_token_wrong_purpose

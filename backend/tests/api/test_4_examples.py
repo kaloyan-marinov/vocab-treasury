@@ -2,6 +2,7 @@ import json
 from unittest.mock import patch
 import base64
 import jwt
+import unittest
 
 from typing import Optional
 
@@ -102,6 +103,12 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
             },
         )
 
+    @unittest.skip(
+        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
+        " passing a dict to `data=...` is used to send form data;"
+        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
+        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
+    )
     def test_2_missing_content_type(self):
         """
         Ensure that it is impossible to create an `Example` resource
@@ -200,7 +207,7 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         self.assertEqual(rv.status_code, 201)
         self.assertEqual(
             rv.headers["Location"],
-            "http://localhost/api/examples/1",
+            "/api/examples/1",
         )
         self.assertEqual(
             body,
@@ -1051,6 +1058,12 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
             },
         )
 
+    @unittest.skip(
+        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
+        " passing a dict to `data=...` is used to send form data;"
+        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
+        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
+    )
     def test_2_missing_content_type(self):
         """
         Ensure that it is impossible to edit a specific `Example` resource
