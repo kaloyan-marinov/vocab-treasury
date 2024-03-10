@@ -1808,7 +1808,14 @@ class Test_08_ResetPassword(TestBase):
                     "src.auth.jwt.decode",
                 ) as mock_4_jwt_decode:
                     # Arrange.
+                    expiration_timestamp_for_token = (
+                        dt.datetime.utcnow()
+                        + dt.timedelta(
+                            minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+                        )
+                    )
                     mock_4_jwt_decode.return_value = {
+                        "exp": expiration_timestamp_for_token,
                         "purpose": wrong_purpose,
                         "user_id": 1,
                     }
@@ -1847,7 +1854,11 @@ class Test_08_ResetPassword(TestBase):
     def test_4_missing_content_type(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
             # Arrange.
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+            )
             mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
@@ -1879,7 +1890,11 @@ class Test_08_ResetPassword(TestBase):
 
     def test_5_incomplete_request_body(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+            )
             mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
@@ -1906,7 +1921,11 @@ class Test_08_ResetPassword(TestBase):
 
     def test_6_reset_password(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+            )
             mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }

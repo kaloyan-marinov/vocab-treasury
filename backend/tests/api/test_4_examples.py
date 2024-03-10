@@ -3,6 +3,7 @@ from unittest.mock import patch
 import base64
 import jwt
 import unittest
+import datetime as dt
 
 from typing import Optional
 
@@ -356,10 +357,14 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
 
         # Simulate a request, in which a client provides a Bearer Token,
         # whose payload specifies a non-existent user ID.
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            minutes=self.app.config["MINUTES_FOR_TOKEN_VALIDITY"]
+        )
         nonexistent_user_id = 17
         with patch(
             "src.auth.jwt.decode",
             return_value={
+                "exp": expiration_timestamp_for_token,
                 "purpose": ACCESS,
                 "user_id": nonexistent_user_id,
             },
