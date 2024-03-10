@@ -311,7 +311,23 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         rv = self.client.post(f"/api/confirm-email-address/{token_1}")
 
         # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "You have initiated a request,"
+                    " or several consecutive such requests,"
+                    " for editing the email address associated with your account;"
+                    " you may only follow up on the instructions"
+                    " that you received for the most recently initiated request."
+                ),
+            },
+        )
 
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, u_r.email)
@@ -385,7 +401,19 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         rv = self.client.post(f"/api/confirm-email-address/{token_2}")
 
         # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
+        self.assertEqual(
+            body,
+            {
+                "message": (
+                    "You have confirmed your email address successfully."
+                    " You may now log in."
+                )
+            },
+        )
 
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, data_2["email"])
