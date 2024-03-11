@@ -3,6 +3,7 @@ import { useHistory, useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 import { IExample, IState } from "../../types";
 import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
@@ -103,29 +104,39 @@ export const SingleExample = () => {
         await dispatch(fetchExamples(examplesLinks.self));
       } else {
         /*
-          It _should_ be impossible for this block of code to ever be executed.
-  
-          Why?
-  
-          Because this component may only be rendered
-          after the user's browser has loaded the /own-vocabtreasury URL,
-          which causes React
-          to first render <OwnVocabTreasury>
-          and to then run its effect function.
-          */
+        It _should_ be impossible for this block of code to ever be executed.
+
+        Why?
+
+        Because this component may only be rendered
+        after the user's browser has loaded the /own-vocabtreasury URL,
+        which causes React
+        to first render <OwnVocabTreasury>
+        and to then run its effect function.
+        */
         await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
       }
 
       console.log(`    re-directing to ${locationDescriptor.pathname}`);
       history.push(locationDescriptor);
     } catch (err) {
-      if (err.response.status === 401) {
-        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // https://bobbyhadz.com/blog/typescript-http-request-axios
+          console.log("error message: ", err.message);
+
+          if (err.response.status === 401) {
+            dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+          } else {
+            const message: string =
+              err.response.data.message ||
+              "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+            dispatch(alertsCreate(id, message));
+          }
+        }
       } else {
-        const message: string =
-          err.response.data.message ||
-          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-        dispatch(alertsCreate(id, message));
+        console.log("unexpected error: ", err);
+        return "An unexpected error occurred";
       }
     }
   };
