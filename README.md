@@ -108,9 +108,10 @@ and use `localhost` to serve a frontend application.
     - create an empty database:
 
         ```
-        $ podman run \
+        $ docker run \
             --name container-v-t-mysql \
-            --mount type=volume,source=volume-v-t-mysql,destination=/var/lib/mysql \
+            --add-host host.docker.internal:host-gateway \
+            --mount source=volume-v-t-mysql,destination=/var/lib/mysql \
             --env-file backend/.env \
             --publish 3306:3306 \
             mysql:8.0.26 \
@@ -123,7 +124,7 @@ and use `localhost` to serve a frontend application.
         ```
         # Verify that the new database does not contain any tables.
         
-        $ podman container exec -it container-v-t-mysql /bin/bash
+        $ docker container exec -it container-v-t-mysql /bin/bash
 
         root@<container_id>:/# mysql \
             -u <enter-the-value-of-MYSQL_USER-specified-within-backend/.env> \
