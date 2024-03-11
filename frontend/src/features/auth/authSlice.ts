@@ -1,14 +1,7 @@
 import { Dispatch } from "redux";
 import axios from "axios";
 
-import {
-  RequestStatus,
-  IProfile,
-  IStateAuth,
-  IUserFromBackend,
-  ITokenFromBackend,
-  IProfileFromBackend,
-} from "../../types";
+import { RequestStatus, IProfile, IStateAuth } from "../../types";
 import { VOCAB_TREASURY_APP_TOKEN, INITIAL_STATE_AUTH } from "../../constants";
 
 /* "auth/createUser/" action creators */
@@ -78,35 +71,15 @@ export const createUser = (
 
     dispatch(createUserPending());
     try {
-      const response = await axios.post<IUserFromBackend>(
-        "/api/users",
-        body,
-        config
-      );
+      const response = await axios.post("/api/users", body, config);
       dispatch(createUserFulfilled());
       return Promise.resolve();
     } catch (err) {
-      let responseBodyMessage: string;
-
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
-          console.log("error message: ", err.message);
-
-          const responseBody = err.response.data;
-          responseBodyMessage =
-            responseBody.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(createUserRejected(responseBodyMessage));
-        } else {
-          // https://axios-http.com/docs/handling_errors
-          responseBodyMessage = "no response was received";
-        }
-      } else {
-        responseBodyMessage = `unexpected error: ${err}`;
-        console.log(responseBodyMessage);
-      }
-
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(createUserRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -183,36 +156,16 @@ export const issueJWSToken = (email: string, password: string) => {
 
     dispatch(issueJWSTokenPending());
     try {
-      const response = await axios.post<ITokenFromBackend>(
-        "/api/tokens",
-        body,
-        config
-      );
+      const response = await axios.post("/api/tokens", body, config);
       localStorage.setItem(VOCAB_TREASURY_APP_TOKEN, response.data.token);
       dispatch(issueJWSTokenFulfilled(response.data.token));
       return Promise.resolve();
     } catch (err) {
-      let responseBodyMessage: string;
-
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
-          console.log("error message: ", err.message);
-
-          const responseBody = err.response.data;
-          responseBodyMessage =
-            responseBody.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(issueJWSTokenRejected(responseBodyMessage));
-        } else {
-          // https://axios-http.com/docs/handling_errors
-          responseBodyMessage = "no response was received";
-        }
-      } else {
-        responseBodyMessage = `unexpected error: ${err}`;
-        console.log(responseBodyMessage);
-      }
-
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(issueJWSTokenRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -284,34 +237,15 @@ export const fetchProfile = () => {
 
     dispatch(fetchProfilePending());
     try {
-      const response = await axios.get<IProfileFromBackend>(
-        "/api/user-profile",
-        config
-      );
+      const response = await axios.get("/api/user-profile", config);
       dispatch(fetchProfileFulfilled(response.data));
       return Promise.resolve();
     } catch (err) {
-      let responseBodyMessage: string;
-
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
-          console.log("error message: ", err.message);
-
-          const responseBody = err.response.data;
-          responseBodyMessage =
-            responseBody.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(fetchProfileRejected(responseBodyMessage));
-        } else {
-          // https://axios-http.com/docs/handling_errors
-          responseBodyMessage = "no response was received";
-        }
-      } else {
-        responseBodyMessage = `unexpected error: ${err}`;
-        console.log(responseBodyMessage);
-      }
-
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(fetchProfileRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -388,27 +322,11 @@ export const requestPasswordReset = (email: string) => {
       dispatch(requestPasswordResetFulfilled());
       return Promise.resolve();
     } catch (err) {
-      let responseBodyMessage: string;
-
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
-          console.log("error message: ", err.message);
-
-          const responseBody = err.response.data;
-          responseBodyMessage =
-            responseBody.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(requestPasswordResetRejected(responseBodyMessage));
-        } else {
-          // https://axios-http.com/docs/handling_errors
-          responseBodyMessage = "no response was received";
-        }
-      } else {
-        responseBodyMessage = `unexpected error: ${err}`;
-        console.log(responseBodyMessage);
-      }
-
+      const responseBody = err.response.data;
+      const responseBodyMessage =
+        responseBody.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(requestPasswordResetRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };

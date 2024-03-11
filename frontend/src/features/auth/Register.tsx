@@ -63,14 +63,7 @@ export const Register = () => {
         );
         dispatch(alertsCreate(id, "REGISTRATION SUCCESSFUL"));
       } catch (thunkActionError) {
-        // According to
-        // https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
-        // "Sometimes you will have information about the type of a value that TypeScript can’t know about."
-        // So go on to follow the approach described in
-        // https://bobbyhadz.com/blog/typescript-catch-clause-variable-type-annotation-must-be#using-a-type-assertion-to-solve-the-error .
-        const typedThunkActionError = thunkActionError as string;
-
-        dispatch(alertsCreate(id, typedThunkActionError));
+        dispatch(alertsCreate(id, thunkActionError));
       }
     }
   };
