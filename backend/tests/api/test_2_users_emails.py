@@ -282,9 +282,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_1 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=1
         )
-        with patch(
-            "src.auth.jwt.encode",
-        ) as mock_4_jwt_encode:
+        with patch("src.auth.jwt.encode") as mock_4_jwt_encode:
             mock_4_jwt_encode.side_effect = token_1
 
             rv_1 = self.client.put(
@@ -382,10 +380,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_2 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=2
         )
-        with patch(
-            "src.auth.jwt.encode",
-        ) as mock_for_jwt_encode:
-            mock_for_jwt_encode.return_value = token_2
+        with patch("src.auth.jwt.encode") as mock_4_jwt_encode:
+            mock_4_jwt_encode.return_value = token_2
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",

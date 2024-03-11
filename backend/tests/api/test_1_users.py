@@ -1804,9 +1804,7 @@ class Test_08_ResetPassword(TestBase):
     def test_3_valid_token_wrong_purpose(self):
         for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, ACCESS):
             with self.subTest():
-                with patch(
-                    "src.auth.jwt.decode",
-                ) as mock_4_jwt_decode:
+                with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
                     # Arrange.
                     expiration_timestamp_for_token = (
                         dt.datetime.utcnow()
