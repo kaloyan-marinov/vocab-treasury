@@ -303,32 +303,7 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
         )
         return valid_token_correct_purpose
 
-    @unittest.skip(
-        "this pull request's refactoring of `validate_token`"
-        " renders this test both invalid and unnecessary"
-    )
-    def test_1_validate_token(self):
-        # Arrange.
-        token = "this-value-is-immaterial-for-this-test-case"
-        inadmissible_purpose = (
-            f"{EMAIL_ADDRESS_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
-        )
-
-        # Act.
-        with self.assertRaises(ValueError) as context_manager:
-            __ = validate_token(token, inadmissible_purpose)
-
-        # Assert.
-        self.assertEqual(
-            str(context_manager.exception),
-            (
-                "`purpose` must be one of"
-                " \"to reset account's password\", 'to confirm email address',"
-                f" but it is equal to {repr(inadmissible_purpose)} instead"
-            ),
-        )
-
-    def test_2_invalid_token(self):
+    def test_1_invalid_token(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username, self.email, self.password
@@ -357,7 +332,7 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
             },
         )
 
-    def test_3_valid_token_wrong_purpose(self):
+    def test_2_valid_token_wrong_purpose(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username, self.email, self.password
@@ -400,7 +375,7 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
                     },
                 )
 
-    def test_4_valid_token(self):
+    def test_3_valid_token(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username,
