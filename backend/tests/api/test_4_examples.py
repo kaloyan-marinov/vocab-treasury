@@ -104,23 +104,18 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
             },
         )
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_2_missing_content_type(self):
+    def test_2_wrong_content_type(self):
         """
         Ensure that it is impossible to create an `Example` resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
 
         # Act.
         rv = self.client.post(
             "/api/examples",
-            data=self._example_data_str,
+            json=self._example_data,
             headers={
+                "Content-Type": "text/plain",
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
@@ -1063,16 +1058,10 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
             },
         )
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_2_missing_content_type(self):
+    def test_2_wrong_content_type(self):
         """
         Ensure that it is impossible to edit a specific `Example` resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
 
         # Arrange.
@@ -1105,8 +1094,9 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
 
         rv = self.client.put(
             f"/api/examples/{example.id}",
-            data=data_str,
+            json=data,
             headers={
+                "Content-Type": "text/plain",
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
         )

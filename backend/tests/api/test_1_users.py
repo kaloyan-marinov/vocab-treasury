@@ -25,25 +25,21 @@ class Test_01_CreateUser(TestBase):
         self.data_str = json.dumps(self.data_dict)
         super().setUp()
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_1_missing_content_type(self):
+    def test_1_wrong_content_type(self):
         """
         Ensure that it is impossible to create a User resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
-
-        # import sys
-
-        # print(sys.path)
 
         # Attempt to create a User resource
         # without providing a 'Content-Type: application/json' header.
-        rv = self.client.post("/api/users", json=self.data_dict)
+        rv = self.client.post(
+            "/api/users",
+            json=self.data_dict,
+            headers={
+                "Content-Type": "text/plain",
+            },
+        )
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
@@ -765,16 +761,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_03_missing_content_type(self):
+    def test_03_wrong_content_type(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
 
         # TODO: (2023/03/06, 07:29)
@@ -803,9 +793,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             "/api/users/1",
-            data=self.data_str,
+            json=self.data,
             headers={
                 "Authorization": authorization,
+                "Content-Type": "text/plain",
             },
         )
 
@@ -1538,13 +1529,7 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
         password_1 = "123"
         self._u_r_1 = self.util_create_user(username_1, email_1, password_1)
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_1_missing_content_type(self):
+    def test_1_wrong_content_type(self):
         # Act.
         payload = {
             "email": self._u_r_1.email,
@@ -1553,7 +1538,10 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
 
         rv = self.client.post(
             "/api/request-password-reset",
-            data=payload_str,
+            json=payload,
+            headers={
+                "Content-Type": "text/plain",
+            },
         )
 
         # Assert.
@@ -1818,13 +1806,7 @@ class Test_08_ResetPassword(TestBase):
                         },
                     )
 
-    @unittest.skip(
-        "as per https://flask.palletsprojects.com/en/2.3.x/testing/#form-data ,"
-        " passing a dict to `data=...` is used to send form data;"
-        " as per https://flask.palletsprojects.com/en/2.3.x/testing/#json-data ,"
-        " passing an object to `json=...` sets the 'Content-Type' header equal to 'application/json'"
-    )
-    def test_4_missing_content_type(self):
+    def test_4_wrong_content_type(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
             # Arrange.
             expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
@@ -1842,7 +1824,10 @@ class Test_08_ResetPassword(TestBase):
 
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=payload_str,
+                json=payload,
+                headers={
+                    "Content-Type": "text/plain",
+                },
             )
 
             # Assert.

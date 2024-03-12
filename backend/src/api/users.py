@@ -17,7 +17,7 @@ from src.constants import EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET
 
 @api_bp.route("/users", methods=["POST"])
 def create_user():
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -241,11 +241,11 @@ def edit_user(user_id):
     # TODO: (2023-05-30, 07:48)
     #       resolve v-t-i-77
     #       :=
-    #       extract the `if not request.json:` logic from the request-handling functions
+    #       extract the `if request.headers["Content-Type"] != "application/json":` logic from the request-handling functions
     #       into a stand-alone utility function, which can be and is used
     #       as a Python decorator within `users.py` and `examples.py`
     #       (this is almost completely implemented within `git stash`!)
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -404,7 +404,7 @@ def delete_user(user_id):
 
 @api_bp.route("/request-password-reset", methods=["POST"])
 def request_password_reset():
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -686,7 +686,7 @@ def reset_password(token):
     user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
 
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
