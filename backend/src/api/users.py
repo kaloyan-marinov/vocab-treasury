@@ -665,6 +665,8 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
+    # TODO: (2024/03/11, 06:55)
+    #       consider whether this handler should begin by checking the "Content-Type"
     reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:

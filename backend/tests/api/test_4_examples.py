@@ -2,7 +2,6 @@ import json
 from unittest.mock import patch
 import base64
 import jwt
-import unittest
 import datetime as dt
 
 from typing import Optional
@@ -69,13 +68,12 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
 
         # Prepare a JSON payload, which is required for creating an `Example` resource
         # associated with the above-created `User` resource.
-        self._example_data = {
+        self._example_data_dict = {
             "source_language": "Finnish",
             "new_word": "osallistua [+ MIHIN]",
             "content": "Kuka haluaa osallistua kilpailuun?",
             "content_translation": "Who wants to participate in the competition?",
         }
-        self._example_data_str = json.dumps(self._example_data)
 
     def test_1_missing_token_auth(self):
         """
@@ -86,7 +84,7 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # Act.
         rv = self.client.post(
             "/api/examples",
-            data=self._example_data_str,
+            json=self._example_data_dict,
         )
 
         # Assert.
@@ -113,7 +111,7 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # Act.
         rv = self.client.post(
             "/api/examples",
-            json=self._example_data,
+            json=self._example_data_dict,
             headers={
                 "Content-Type": "text/plain",
                 "Authorization": "Bearer " + self._u_r_1.token,
@@ -147,15 +145,13 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
 
             # Attempt to create an `Example` resource
             # without providing a value for `field` in the request body.
-            data_dict = {k: v for k, v in self._example_data.items() if k != field}
-            data_str = json.dumps(data_dict)
+            data_dict = {k: v for k, v in self._example_data_dict.items() if k != field}
 
             # Act.
             rv = self.client.post(
                 "/api/examples",
-                data=data_str,
+                json=data_dict,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
@@ -189,9 +185,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # Act.
         rv = self.client.post(
             "/api/examples",
-            data=self._example_data_str,
+            json=self._example_data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
@@ -235,9 +230,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         # Act.
         rv = self.client.post(
             "/api/examples",
-            data=self._example_data_str,
+            json=self._example_data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": wrong_authorization,
             },
         )
@@ -272,9 +266,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         ):
             rv = self.client.post(
                 "/api/examples",
-                data=self._example_data_str,
+                json=self._example_data_dict,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
@@ -314,9 +307,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         ):
             rv = self.client.post(
                 "/api/examples",
-                data=self._example_data_str,
+                json=self._example_data_dict,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
@@ -366,9 +358,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         ):
             rv = self.client.post(
                 "/api/examples",
-                data=self._example_data_str,
+                json=self._example_data_dict,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + self._u_r_1.token,
                 },
             )
@@ -403,20 +394,18 @@ class TestBaseForExampleResources_2(TestBaseForExampleResources_1):
         content,
         content_translation: Optional[str],
     ):
-        example_data = {
+        example_data_dict = {
             "source_language": source_language,
             "new_word": new_word,
             "content": content,
         }
         if content_translation is not None:
-            example_data["content_translation"] = content_translation
-        example_data_str = json.dumps(example_data)
+            example_data_dict["content_translation"] = content_translation
 
         rv = self.client.post(
             "/api/examples",
-            data=example_data_str,
+            json=example_data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": "Bearer " + access_token_for_specific_user,
             },
         )
@@ -1018,17 +1007,16 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
 
         # Attempt to edit the `Example` resource, which was created just now,
         # without providing a Bearer-Token Auth credential.
-        data = {
+        data_dict = {
             "source_language": "English",
             "new_word": "participate [in sth]",
             "content": "Who wants to participate in the competition?",
             "content_translation": "Kuka haluaa osallistua kilpailuun?",
         }
-        data_str = json.dumps(data)
 
         rv = self.client.put(
             f"/api/examples/{example.id}",
-            data=data_str,
+            json=data_dict,
         )
 
         # Assert.
@@ -1155,19 +1143,17 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         # Act.
 
         # Edit the `Example` resource, which was created just now.
-        data = {
+        data_dict = {
             "source_language": "English",
             "new_word": "participate [in sth]",
             "content": "Who wants to participate in the competition?",
             "content_translation": "Kuka haluaa osallistua kilpailuun?",
         }
-        data_str = json.dumps(data)
 
         rv = self.client.put(
             f"/api/examples/{example.id}",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
         )
@@ -1242,18 +1228,16 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
         # Ensure that
         # the 1st `User` cannot edit a specific `Example` resource,
         # which belongs to the 2nd `User`.
-        data = {
+        data_dict = {
             "source_language": "English",
             "new_word": "participate [in sth]",
             "content": "Who wants to participate in the competition?",
             "content_translation": "Kuka haluaa osallistua kilpailuun?",
         }
-        data_str = json.dumps(data)
         rv = self.client.put(
             f"/api/examples/{example_2.id}",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
         )

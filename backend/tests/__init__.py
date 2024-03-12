@@ -44,18 +44,14 @@ class TestBasePlusUtilities(TestBase):
         password,
         should_confirm_email_address=False,
     ) -> UserResource:
-        data = {
+        data_dict = {
             "username": username,
             "email": email,
             "password": password,
         }
-        data_str = json.dumps(data)
         rv = self.client.post(
             "/api/users",
-            data=data_str,
-            headers={
-                "Content-Type": "application/json",
-            },
+            json=data_dict,
         )
 
         body_str = rv.get_data(as_text=True)

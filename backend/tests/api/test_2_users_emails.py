@@ -69,14 +69,14 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {"email": "mary.smith@protonmail.com"}
-        data_str = json.dumps(data)
+        data_dict = {
+            "email": "mary.smith@protonmail.com",
+        }
 
         rv = self.client.put(
             "/api/users/1",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -126,7 +126,9 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         password = "123"
         u_r: UserResource = self.util_create_user(username, email, password)
 
-        data = {"email": "john.doe.2@protonmail.com"}
+        data_dict = {
+            "email": "john.doe.2@protonmail.com",
+        }
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
@@ -134,9 +136,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=json.dumps(data),
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -190,16 +191,14 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {
+        data_dict = {
             "email": "JOHN.DOE@PROTONMAIL.COM",
         }
-        data_str = json.dumps(data)
 
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -242,7 +241,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         # (Reach directly into the application's persistence layer to)
         # Ensure that the User resource, which was targeted, got edited successfully.
         user = User.query.get(u_r.id)
-        self.assertEqual(user.email, data["email"])
+        self.assertEqual(user.email, data_dict["email"])
 
     def test_04_consecutive_email_edits(self):
         """
@@ -267,10 +266,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        data_1 = {
+        data_dict_1 = {
             "email": "john.doe.1@protonmail.com",
         }
-        data_2 = {
+        data_dict_2 = {
             "email": "john.doe.2@protonmail.com",
         }
 
@@ -287,9 +286,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
             rv_1 = self.client.put(
                 f"/api/users/{u_r.id}",
-                data=json.dumps(data_1),
+                json=data_dict_1,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": authorization,
                 },
             )
@@ -297,9 +295,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
         rv_2 = self.client.put(
             f"/api/users/{u_r.id}",
-            data=json.dumps(data_2),
+            json=data_dict_2,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -355,10 +352,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        data_1 = {
+        data_dict_1 = {
             "email": "john.doe.1@protonmail.com",
         }
-        data_2 = {
+        data_dict_2 = {
             "email": "john.doe.2@protonmail.com",
         }
 
@@ -369,9 +366,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
         rv_1 = self.client.put(
             f"/api/users/{u_r.id}",
-            data=json.dumps(data_1),
+            json=data_dict_1,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -385,9 +381,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",
-                data=json.dumps(data_2),
+                json=data_dict_2,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": authorization,
                 },
             )
@@ -412,7 +407,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         )
 
         user = User.query.get(u_r.id)
-        self.assertEqual(user.email, data_2["email"])
+        self.assertEqual(user.email, data_dict_2["email"])
 
         email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
             user_id=u_r.id
@@ -423,4 +418,4 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
         e_a_c = email_address_changes.first()
         self.assertEqual(e_a_c.id, 2)
-        self.assertEqual(e_a_c.new, data_2["email"])
+        self.assertEqual(e_a_c.new, data_dict_2["email"])
