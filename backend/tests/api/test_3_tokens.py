@@ -172,7 +172,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
             del observed_payload_dict["exp"]
 
             expected_payload_dict = jwt.decode(
-                body["token"],
+                self._expected_body["token"],
                 key=self.app.config["SECRET_KEY"],
                 algorithms=["HS256"],
                 options={
