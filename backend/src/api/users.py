@@ -1,10 +1,12 @@
-import os
 import threading
 
 from flask import request, jsonify, url_for, current_app
 from flask_mail import Message
 
 import sqlalchemy
+
+import datetime as dt
+import jwt
 
 from src import db, flsk_bcrpt, mail
 from src.models import User, EmailAddressChange
@@ -15,7 +17,7 @@ from src.constants import EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET
 
 @api_bp.route("/users", methods=["POST"])
 def create_user():
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -101,9 +103,7 @@ def confirm_email_address(token):
     but who is following up
     on an initiated request (of theirs) for an email-address change.
     """
-    reject_token, response_or_token_payload = validate_token(
-        token, EMAIL_ADDRESS_CONFIRMATION
-    )
+    reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:
         return response_or_token_payload
@@ -241,11 +241,11 @@ def edit_user(user_id):
     # TODO: (2023-05-30, 07:48)
     #       resolve v-t-i-77
     #       :=
-    #       extract the `if not request.json:` logic from the request-handling functions
+    #       extract the `if request.headers["Content-Type"] != "application/json":` logic from the request-handling functions
     #       into a stand-alone utility function, which can be and is used
     #       as a Python decorator within `users.py` and `examples.py`
     #       (this is almost completely implemented within `git stash`!)
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -404,7 +404,7 @@ def delete_user(user_id):
 
 @api_bp.route("/request-password-reset", methods=["POST"])
 def request_password_reset():
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -467,14 +467,18 @@ def request_password_reset():
 
 
 def send_email_requesting_that_email_address_should_be_confirmed(user):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
     }
-    email_address_confirmation_token = (
-        current_app.token_serializer_for_email_address_confirmation.dumps(
-            token_payload
-        ).decode("utf-8")
+    email_address_confirmation_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
     )
 
     msg_sender = current_app.config["ADMINS"][0]
@@ -521,13 +525,19 @@ you can still use VocabTreasury by simply creating a new account.
 
 
 def send_password_reset_email(user):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        minutes=current_app.config["MINUTES_FOR_PASSWORD_RESET"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": PASSWORD_RESET,
         "user_id": user.id,
     }
-    password_reset_token = current_app.token_serializer_for_password_resets.dumps(
-        token_payload
-    ).decode("utf-8")
+    password_reset_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
+    )
 
     minutes_for_password_reset = current_app.config["MINUTES_FOR_PASSWORD_RESET"]
 
@@ -583,15 +593,19 @@ def send_email_requesting_that_change_of_email_address_should_be_confirmed(
     user: User,
     email_address_change: EmailAddressChange,
 ):
+    expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+        days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+    )
     token_payload = {
+        "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
         "email_address_change_id": email_address_change.id,
     }
-    email_address_confirmation_token = (
-        current_app.token_serializer_for_email_address_confirmation.dumps(
-            token_payload
-        ).decode("utf-8")
+    email_address_confirmation_token = jwt.encode(
+        token_payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
     )
 
     msg_sender = current_app.config["ADMINS"][0]
@@ -651,7 +665,20 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
-    reject_token, response_or_token_payload = validate_token(token, PASSWORD_RESET)
+    if request.headers["Content-Type"] != "application/json":
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
+    reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:
         return response_or_token_payload
@@ -671,19 +698,6 @@ def reset_password(token):
 
     user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
-
-    if not request.json:
-        r = jsonify(
-            {
-                "error": "Bad Request",
-                "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
-                ),
-            }
-        )
-        r.status_code = 400
-        return r
 
     new_password = request.json.get("new_password")
     if new_password is None:

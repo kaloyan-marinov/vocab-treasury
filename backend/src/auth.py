@@ -1,6 +1,6 @@
 from flask import jsonify, current_app, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
-from itsdangerous import BadSignature, SignatureExpired
+import jwt
 
 from src import flsk_bcrpt
 from src.models import User
@@ -109,10 +109,17 @@ token_auth = HTTPTokenAuth()
 @token_auth.verify_token
 def verify_token(token):
     try:
-        token_payload = current_app.token_serializer.loads(token)
-    except SignatureExpired:
+        token_payload = jwt.decode(
+            token,
+            current_app.config["SECRET_KEY"],
+            algorithms=["HS256"],
+            options={
+                "require": ["exp"],
+            },
+        )
+    except jwt.ExpiredSignatureError:
         return None  # valid token, but expired
-    except BadSignature:
+    except jwt.DecodeError:
         return None  # invalid token
 
     if token_payload["purpose"] != ACCESS:
@@ -152,23 +159,20 @@ def token_auth_error():
     return r
 
 
-def validate_token(token, purpose):
-    if purpose == PASSWORD_RESET:
-        t_s = current_app.token_serializer_for_password_resets
-    elif purpose == EMAIL_ADDRESS_CONFIRMATION:
-        t_s = current_app.token_serializer_for_email_address_confirmation
-    else:
-        raise ValueError(
-            f"`purpose` must be one of {repr(PASSWORD_RESET)}, {repr(EMAIL_ADDRESS_CONFIRMATION)},"
-            f" but it is equal to {repr(purpose)} instead"
-        )
-
+def validate_token(token):
     reject_token = False
     try:
-        token_payload = t_s.loads(token)
-    except SignatureExpired as e:
+        token_payload = jwt.decode(
+            token,
+            current_app.config["SECRET_KEY"],
+            algorithms=["HS256"],
+            options={
+                "require": ["exp"],
+            },
+        )
+    except jwt.ExpiredSignatureError as e:
         reject_token = True  # valid token, but expired
-    except BadSignature as e:
+    except jwt.DecodeError as e:
         reject_token = True  # invalid token
 
     if reject_token:

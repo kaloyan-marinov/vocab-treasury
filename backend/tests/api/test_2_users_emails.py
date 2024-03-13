@@ -1,6 +1,8 @@
 import json
 from unittest.mock import patch
 import base64
+import datetime as dt
+import jwt
 
 from flask_sqlalchemy import BaseQuery
 
@@ -13,16 +15,20 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
     def _issue_valid_email_address_confirmation_token(
         self, user_id, email_address_change_id=None
     ):
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+        )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
         if email_address_change_id is not None:
             token_payload["email_address_change_id"] = email_address_change_id
-        valid_token_correct_purpose = (
-            self.app.token_serializer_for_email_address_confirmation.dumps(
-                token_payload
-            ).decode("utf-8")
+        valid_token_correct_purpose = jwt.encode(
+            token_payload,
+            key=self.app.config["SECRET_KEY"],
+            algorithm="HS256",
         )
         return valid_token_correct_purpose
 
@@ -33,6 +39,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         - regardless of whether the latter User resource is confirmed or not.
         """
 
+        # Arrange.
         # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
@@ -57,26 +64,29 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             data_0_2["password"],
         )
 
+        # Act.
         # Attempt to edit the 1st User resource in such a way that
         # its email should end up being identical to the 2nd User resource's email.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {"email": "mary.smith@protonmail.com"}
-        data_str = json.dumps(data)
+        data_dict = {
+            "email": "mary.smith@protonmail.com",
+        }
 
         rv = self.client.put(
             "/api/users/1",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -114,13 +124,16 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
+
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         u_r: UserResource = self.util_create_user(username, email, password)
 
-        data = {"email": "john.doe.2@protonmail.com"}
+        data_dict = {
+            "email": "john.doe.2@protonmail.com",
+        }
 
         # Act.
         basic_auth_credentials = f"{email}:{password}"
@@ -128,9 +141,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=json.dumps(data),
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -184,16 +196,14 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        data = {
+        data_dict = {
             "email": "JOHN.DOE@PROTONMAIL.COM",
         }
-        data_str = json.dumps(data)
 
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=data_str,
+            json=data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -236,7 +246,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         # (Reach directly into the application's persistence layer to)
         # Ensure that the User resource, which was targeted, got edited successfully.
         user = User.query.get(u_r.id)
-        self.assertEqual(user.email, data["email"])
+        self.assertEqual(user.email, data_dict["email"])
 
     def test_04_consecutive_email_edits(self):
         """
@@ -248,6 +258,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         then their email address on record will not get edited
         in the application's persistence layer.
         """
+
         # Arrange.
         #   (1) create a user + prepare for initiating 2 email-address changes
         username = "jd"
@@ -261,10 +272,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        data_1 = {
+        data_dict_1 = {
             "email": "john.doe.1@protonmail.com",
         }
-        data_2 = {
+        data_dict_2 = {
             "email": "john.doe.2@protonmail.com",
         }
 
@@ -276,42 +287,48 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_1 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=1
         )
-        token_2 = self._issue_valid_email_address_confirmation_token(
-            u_r.id, email_address_change_id=2
-        )
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.dumps",
-        ) as serializer_dumps_mock:
-            serializer_dumps_mock.side_effect = (
-                token_1.encode("utf-8"),
-                token_2.encode("utf-8"),
-            )
+        with patch("src.auth.jwt.encode") as mock_4_jwt_encode:
+            mock_4_jwt_encode.side_effect = token_1
 
             rv_1 = self.client.put(
                 f"/api/users/{u_r.id}",
-                data=json.dumps(data_1),
+                json=data_dict_1,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": authorization,
                 },
             )
             self.assertEqual(rv_1.status_code, 202)
 
-            rv_2 = self.client.put(
-                f"/api/users/{u_r.id}",
-                data=json.dumps(data_2),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": authorization,
-                },
-            )
-            self.assertEqual(rv_2.status_code, 202)
+        rv_2 = self.client.put(
+            f"/api/users/{u_r.id}",
+            json=data_dict_2,
+            headers={
+                "Authorization": authorization,
+            },
+        )
+        self.assertEqual(rv_2.status_code, 202)
 
         # Act.
         rv = self.client.post(f"/api/confirm-email-address/{token_1}")
 
         # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
+        self.assertEqual(
+            body,
+            {
+                "error": "Unauthorized",
+                "message": (
+                    "You have initiated a request,"
+                    " or several consecutive such requests,"
+                    " for editing the email address associated with your account;"
+                    " you may only follow up on the instructions"
+                    " that you received for the most recently initiated request."
+                ),
+            },
+        )
 
         user = User.query.get(u_r.id)
         self.assertEqual(user.email, u_r.email)
@@ -341,10 +358,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        data_1 = {
+        data_dict_1 = {
             "email": "john.doe.1@protonmail.com",
         }
-        data_2 = {
+        data_dict_2 = {
             "email": "john.doe.2@protonmail.com",
         }
 
@@ -355,9 +372,8 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
         rv_1 = self.client.put(
             f"/api/users/{u_r.id}",
-            data=json.dumps(data_1),
+            json=data_dict_1,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -366,16 +382,13 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         token_2 = self._issue_valid_email_address_confirmation_token(
             u_r.id, email_address_change_id=2
         )
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.dumps",
-        ) as serializer_dumps_mock:
-            serializer_dumps_mock.return_value = token_2.encode("utf-8")
+        with patch("src.auth.jwt.encode") as mock_4_jwt_encode:
+            mock_4_jwt_encode.return_value = token_2
 
             rv_2 = self.client.put(
                 f"/api/users/{u_r.id}",
-                data=json.dumps(data_2),
+                json=data_dict_2,
                 headers={
-                    "Content-Type": "application/json",
                     "Authorization": authorization,
                 },
             )
@@ -385,10 +398,22 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         rv = self.client.post(f"/api/confirm-email-address/{token_2}")
 
         # Assert.
+        body_str = rv.get_data(as_text=True)
+        body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
+        self.assertEqual(
+            body,
+            {
+                "message": (
+                    "You have confirmed your email address successfully."
+                    " You may now log in."
+                )
+            },
+        )
 
         user = User.query.get(u_r.id)
-        self.assertEqual(user.email, data_2["email"])
+        self.assertEqual(user.email, data_dict_2["email"])
 
         email_address_changes: BaseQuery = EmailAddressChange.query.filter_by(
             user_id=u_r.id
@@ -399,4 +424,4 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
 
         e_a_c = email_address_changes.first()
         self.assertEqual(e_a_c.id, 2)
-        self.assertEqual(e_a_c.new, data_2["email"])
+        self.assertEqual(e_a_c.new, data_dict_2["email"])

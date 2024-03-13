@@ -1,14 +1,14 @@
 import json
 from unittest.mock import patch
 import base64
+import jwt
+import datetime as dt
 
-from itsdangerous import SignatureExpired, BadSignature
 from flask import url_for, current_app
 
 from src import flsk_bcrpt, User
 from tests import TestBase, TestBasePlusUtilities, UserResource
 from src.constants import EMAIL_ADDRESS_CONFIRMATION, ACCESS, PASSWORD_RESET
-from src.auth import validate_token
 
 
 class Test_01_CreateUser(TestBase):
@@ -20,25 +20,29 @@ class Test_01_CreateUser(TestBase):
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
-        self.data_str = json.dumps(self.data_dict)
         super().setUp()
 
-    def test_1_missing_content_type(self):
+    def test_1_wrong_content_type(self):
         """
         Ensure that it is impossible to create a User resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
 
-        # import sys
-
-        # print(sys.path)
-
+        # Act.
         # Attempt to create a User resource
         # without providing a 'Content-Type: application/json' header.
-        rv = self.client.post("api/users", data=self.data_str)
+        rv = self.client.post(
+            "/api/users",
+            json=self.data_dict,
+            headers={
+                "Content-Type": "text/plain",
+            },
+        )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -64,18 +68,19 @@ class Test_01_CreateUser(TestBase):
 
         for field in ("username", "email", "password"):
             with self.subTest():
+                # Act.
                 # Attempt to create a User resource
                 # without providing a value for `field` in the request body.
                 data_dict = {k: v for k, v in self.data_dict.items() if k != field}
-                data_str = json.dumps(data_dict)
                 rv = self.client.post(
                     "/api/users",
-                    data=data_str,
-                    headers={"Content-Type": "application/json"},
+                    json=data_dict,
                 )
 
+                # Assert.
                 body_str = rv.get_data(as_text=True)
                 body = json.loads(body_str)
+
                 self.assertEqual(rv.status_code, 400)
                 self.assertEqual(
                     body,
@@ -113,17 +118,19 @@ class Test_01_CreateUser(TestBase):
         )
         """
 
+        # Act.
         # Create a new User resource.
         rv = self.client.post(
             "/api/users",
-            data=self.data_str,
-            headers={"Content-Type": "application/json"},
+            json=self.data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 201)
-        self.assertEqual(rv.headers["Location"], "http://localhost/api/users/1")
+        self.assertEqual(rv.headers["Location"], "/api/users/1")
         self.assertEqual(
             body,
             {
@@ -158,27 +165,30 @@ class Test_01_CreateUser(TestBase):
         which has the same email as an existing User resource.
         """
 
+        # Arrange.
         # Create one User resource.
         rv_0 = self.client.post(
             "/api/users",
-            data=self.data_str,
-            headers={"Content-Type": "application/json"},
+            json=self.data_dict,
         )
 
+        # Act.
         # Attempt to create a second User resource with the same email as the User
         # resource that was created just now.
-        data = {
+        data_dict = {
             "username": "different-username",
             "email": "john.doe@protonmail.com",
             "password": "different-password",
         }
-        data_str = json.dumps(data)
         rv = self.client.post(
-            "/api/users", data=data_str, headers={"Content-Type": "application/json"}
+            "/api/users",
+            json=data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -214,29 +224,30 @@ class Test_01_CreateUser(TestBase):
         which has the same username as an existing User resource.
         """
 
+        # Arrange.
         # Create one User resource.
         rv_0 = self.client.post(
             "/api/users",
-            data=self.data_str,
-            headers={"Content-Type": "application/json"},
+            json=self.data_dict,
         )
 
+        # Act.
         # Attempt to create a second User resource with the same username as the User
         # resource that was created just now.
-        data = {
+        data_dict = {
             "username": "jd",
             "email": "different-email@protonmail.com",
             "password": "different-password",
         }
-        data_str = json.dumps(data)
         rv = self.client.post(
             "/api/users",
-            data=data_str,
-            headers={"Content-Type": "application/json"},
+            json=data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -280,39 +291,22 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
         super().setUp()
 
     def _issue_valid_email_address_confirmation_token(self, user_id):
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+        )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
-        valid_token_correct_purpose = (
-            self.app.token_serializer_for_email_address_confirmation.dumps(
-                token_payload
-            ).decode("utf-8")
+        valid_token_correct_purpose = jwt.encode(
+            token_payload,
+            key=self.app.config["SECRET_KEY"],
+            algorithm="HS256",
         )
         return valid_token_correct_purpose
 
-    def test_1_validate_token(self):
-        # Arrange.
-        token = "this-value-is-immaterial-for-this-test-case"
-        inadmissible_purpose = (
-            f"{EMAIL_ADDRESS_CONFIRMATION} + {ACCESS} + {PASSWORD_RESET}"
-        )
-
-        # Act.
-        with self.assertRaises(ValueError) as context_manager:
-            __ = validate_token(token, inadmissible_purpose)
-
-        # Assert.
-        self.assertEqual(
-            str(context_manager.exception),
-            (
-                "`purpose` must be one of"
-                " \"to reset account's password\", 'to confirm email address',"
-                f" but it is equal to {repr(inadmissible_purpose)} instead"
-            ),
-        )
-
-    def test_2_invalid_token(self):
+    def test_1_invalid_token(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username, self.email, self.password
@@ -341,7 +335,7 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
             },
         )
 
-    def test_3_valid_token_wrong_purpose(self):
+    def test_2_valid_token_wrong_purpose(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username, self.email, self.password
@@ -349,14 +343,18 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
 
         for wrong_purpose in (PASSWORD_RESET, ACCESS):
             with self.subTest():
+                expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                    days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+                )
                 token_payload = {
+                    "exp": expiration_timestamp_for_token,
                     "purpose": wrong_purpose,
                     "user_id": u_r.id,
                 }
-                valid_token_wrong_purpose = (
-                    self.app.token_serializer_for_email_address_confirmation.dumps(
-                        token_payload
-                    ).decode("utf-8")
+                valid_token_wrong_purpose = jwt.encode(
+                    token_payload,
+                    key=self.app.config["SECRET_KEY"],
+                    algorithm="HS256",
                 )
 
                 # Act.
@@ -380,7 +378,7 @@ class Test_02_ConfirmEmailAddressOfCreatedUser(TestBasePlusUtilities):
                     },
                 )
 
-    def test_4_valid_token(self):
+    def test_3_valid_token(self):
         # Arrange.
         u_r: UserResource = self.util_create_user(
             self.username,
@@ -443,11 +441,14 @@ class Test_03_GetUsers(TestBasePlusUtilities):
         getting a list of User resources doesn't return any.
         """
 
+        # Act.
         # Get all User resources.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -591,10 +592,14 @@ class Test_04_GetUser(TestBasePlusUtilities):
         Ensure that
         attempting to get a User resource, which doesn't exist, returns a 404.
         """
+
+        # Act.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(
             body,
@@ -611,17 +616,21 @@ class Test_04_GetUser(TestBasePlusUtilities):
         returns a 404.
         """
 
+        # Arrange.
         # Create one User resource.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
+        # Act.
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(
             body,
@@ -638,6 +647,7 @@ class Test_04_GetUser(TestBasePlusUtilities):
         it is possible to get a specific confirmed User resource.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -650,11 +660,14 @@ class Test_04_GetUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(
             body,
@@ -669,11 +682,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
     """Test the request responsible for editing a specific User resource."""
 
     def setUp(self):
-        self.data = {
+        self.data_dict = {
             "username": "JD",
             "password": "!@#",
         }
-        self.data_str = json.dumps(self.data)
         super().setUp()
 
     def test_01_missing_basic_auth(self):
@@ -693,7 +705,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
         # without prodiving Basic Auth credentials.
         rv = self.client.put(
             "/api/users/1",
-            data=self.data_str,
+            json=self.data_dict,
         )
 
         # Assert.
@@ -734,6 +746,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
+
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -746,9 +759,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -770,17 +782,11 @@ class Test_05_EditUser(TestBasePlusUtilities):
             },
         )
 
-    def test_03_missing_content_type(self):
+    def test_03_wrong_content_type(self):
         """
         Ensure that it is impossible to edit a confirmed User resource
-        without providing a 'Content-Type: application/json' header.
+        if the "Content-Type" header is set to something other than 'application/json'.
         """
-
-        # TODO: (2023/03/06, 07:29)
-        #       resolve v-t-i-67
-        #       :=
-        #       update the comments within test cases
-        #       to be organized around the "Arrange-Act-Assert" 'scaffolding'
 
         # Arrange.
         username = "jd"
@@ -802,9 +808,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             "/api/users/1",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
                 "Authorization": authorization,
+                "Content-Type": "text/plain",
             },
         )
 
@@ -891,18 +898,16 @@ class Test_05_EditUser(TestBasePlusUtilities):
 
         rv_2 = self.client.put(
             f"/api/users/{u_r_2.id}",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
 
         rv_3 = self.client.put(
             f"/api/users/{u_r_3.id}",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -983,7 +988,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
-        for data in (
+        for data_dict in (
             {
                 "email": "JOHN.DOE@PROTONMAIL.COM",
                 "username": "JD",
@@ -1006,13 +1011,10 @@ class Test_05_EditUser(TestBasePlusUtilities):
                 )
                 authorization = "Basic " + b_a_c
 
-                data_str = json.dumps(data)
-
                 rv = self.client.put(
                     f"/api/users/{u_r.id}",
-                    data=data_str,
+                    json=data_dict,
                     headers={
-                        "Content-Type": "application/json",
                         "Authorization": authorization,
                     },
                 )
@@ -1070,9 +1072,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             f"/api/users/{u_r.id}",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -1131,9 +1132,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
         authorization = "Basic " + b_a_c
         rv = self.client.put(
             "/api/users/1",
-            data=self.data_str,
+            json=self.data_dict,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -1215,24 +1215,24 @@ class Test_05_EditUser(TestBasePlusUtilities):
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         authorization = "Basic " + b_a_c
 
-        new_data_2 = {"username": u_r_2.username}
-        new_data_str_2 = json.dumps(new_data_2)
+        new_data_dict_2 = {
+            "username": u_r_2.username,
+        }
         rv_2 = self.client.put(
             f"/api/users/{u_r_1.id}",
-            data=new_data_str_2,
+            json=new_data_dict_2,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
 
-        new_data_3 = {"username": u_r_3.username}
-        new_data_str_3 = json.dumps(new_data_3)
+        new_data_dict_3 = {
+            "username": u_r_3.username,
+        }
         rv_3 = self.client.put(
             f"/api/users/{u_r_1.id}",
-            data=new_data_str_3,
+            json=new_data_dict_3,
             headers={
-                "Content-Type": "application/json",
                 "Authorization": authorization,
             },
         )
@@ -1280,18 +1280,22 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         Auth credentials.
         """
 
+        # Arrange.
         # Create one User resource.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
+        # Act.
         # Attempt to delete the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
         rv = self.client.delete("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -1363,11 +1367,12 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
 
     def test_3_prevent_deleting_of_another_user(self):
         """
-        Ensure that it is impossible to edit a User resource,
+        Ensure that it is impossible to delete a User resource,
         which does not correspond to
         the user authenticated by the issued request's header.
         """
 
+        # Arrange.
         # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
@@ -1392,6 +1397,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             data_0_2["password"],
         )
 
+        # Act.
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -1401,8 +1407,10 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/2", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 403)
         self.assertEqual(
             body,
@@ -1438,6 +1446,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         is able to delete his/her corresponding User resource.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -1450,6 +1459,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Delete a User resource.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
@@ -1458,7 +1468,9 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/1", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
+
         self.assertEqual(rv.status_code, 204)
         self.assertEqual(body_str, "")
 
@@ -1473,6 +1485,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -1485,6 +1498,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Attempt to delete a User resource
         # by providing an incorrect set of Basic Auth credentials.
         basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
@@ -1494,8 +1508,10 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/1", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -1537,16 +1553,18 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
         password_1 = "123"
         self._u_r_1 = self.util_create_user(username_1, email_1, password_1)
 
-    def test_1_missing_content_type(self):
+    def test_1_wrong_content_type(self):
         # Act.
         payload = {
             "email": self._u_r_1.email,
         }
-        payload_str = json.dumps(payload)
 
         rv = self.client.post(
             "/api/request-password-reset",
-            data=payload_str,
+            json=payload,
+            headers={
+                "Content-Type": "text/plain",
+            },
         )
 
         # Assert.
@@ -1567,17 +1585,13 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
 
     def test_2_incomplete_request_body(self):
         # Act.
-        payload = {
+        data_dict = {
             "not email": "john.doe@protonmail.com",
         }
-        payload_str = json.dumps(payload)
 
         rv = self.client.post(
             "/api/request-password-reset",
-            data=payload_str,
-            headers={
-                "Content-Type": "application/json",
-            },
+            json=data_dict,
         )
 
         # Assert.
@@ -1595,17 +1609,12 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
 
     def test_3_nonexistent_user(self):
         # Act.
-        payload = {
+        data_dict = {
             "email": "mary.smith@protonmail.com",
         }
-        payload_str = json.dumps(payload)
-
         rv = self.client.post(
             "/api/request-password-reset",
-            data=payload_str,
-            headers={
-                "Content-Type": "application/json",
-            },
+            json=data_dict,
         )
 
         # Assert.
@@ -1627,17 +1636,13 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
             return_value=None,
         ) as send_email_mock:
             # Act.
-            payload = {
+            data_dict = {
                 "email": self._u_r_1.email,
             }
-            payload_str = json.dumps(payload)
 
             rv = self.client.post(
                 "/api/request-password-reset",
-                data=payload_str,
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
 
             # Assert.
@@ -1672,17 +1677,13 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
             return_value=None,
         ) as send_email_mock:
             # Act.
-            payload = {
+            data_dict = {
                 "email": u_r_2.email,
             }
-            payload_str = json.dumps(payload)
 
             rv = self.client.post(
                 "/api/request-password-reset",
-                data=payload_str,
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
 
             # Assert.
@@ -1708,39 +1709,39 @@ class Test_08_ResetPassword(TestBase):
         super().setUp()
 
         # Create one user.
-        user_data = {
+        user_data_dict = {
             "username": "jd",
             "email": "john.doe@protonmail.com",
             "password": "123",
         }
         __ = self.client.post(
             "/api/users",
-            data=json.dumps(user_data),
-            headers={
-                "Content-Type": "application/json",
-            },
+            json=user_data_dict,
         )
 
     def test_1_expired_token(self):
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
-            serializer_loads_mock.side_effect = SignatureExpired(
+        with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
+            mock_4_jwt_decode.side_effect = jwt.ExpiredSignatureError(
                 "forced via mocking/patching"
             )
 
-            payload = {"new_password": "456"}
+            # Act.
+            data_dict = {
+                "new_password": "456",
+            }
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 401)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Unauthorized",
                     "message": "The provided token is invalid.",
@@ -1748,25 +1749,28 @@ class Test_08_ResetPassword(TestBase):
             )
 
     def test_2_bad_signature(self):
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
-            serializer_loads_mock.side_effect = BadSignature(
+        with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
+            mock_4_jwt_decode.side_effect = jwt.DecodeError(
                 "forced via mocking/patching"
             )
 
-            payload = {"new_password": "456"}
+            # Act.
+            data_dict = {
+                "new_password": "456",
+            }
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 401)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Unauthorized",
                     "message": "The provided token is invalid.",
@@ -1776,22 +1780,28 @@ class Test_08_ResetPassword(TestBase):
     def test_3_valid_token_wrong_purpose(self):
         for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, ACCESS):
             with self.subTest():
-                with patch(
-                    "src.TimedJSONWebSignatureSerializer.loads",
-                ) as serializer_loads_mock:
+                with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
                     # Arrange.
-                    serializer_loads_mock.return_value = {
+                    expiration_timestamp_for_token = (
+                        dt.datetime.utcnow()
+                        + dt.timedelta(
+                            minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+                        )
+                    )
+                    mock_4_jwt_decode.return_value = {
+                        "exp": expiration_timestamp_for_token,
                         "purpose": wrong_purpose,
                         "user_id": 1,
                     }
 
                     # Act.
-                    payload = {"new_password": "456"}
-                    payload_str = json.dumps(payload)
+                    data_dict = {
+                        "new_password": "456",
+                    }
 
                     rv = self.client.post(
                         "/api/reset-password/token-for-resetting-password",
-                        data=payload_str,
+                        json=data_dict,
                     )
 
                     # Assert.
@@ -1810,23 +1820,29 @@ class Test_08_ResetPassword(TestBase):
                         },
                     )
 
-    def test_4_missing_content_type(self):
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
+    def test_4_wrong_content_type(self):
+        with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
             # Arrange.
-            serializer_loads_mock.return_value = {
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+            )
+            mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
 
             # Act.
-            payload = {"new_password": "456"}
-            payload_str = json.dumps(payload)
+            data_dict = {
+                "new_password": "456",
+            }
 
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=payload_str,
+                json=data_dict,
+                headers={
+                    "Content-Type": "text/plain",
+                },
             )
 
             # Assert.
@@ -1846,26 +1862,33 @@ class Test_08_ResetPassword(TestBase):
             )
 
     def test_5_incomplete_request_body(self):
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {
+        with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+            )
+            mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
 
-            payload = {"not new_password": "456"}
+            # Act.
+            data_dict = {
+                "not new_password": "456",
+            }
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 400)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Bad Request",
                     "message": (
@@ -1875,26 +1898,33 @@ class Test_08_ResetPassword(TestBase):
             )
 
     def test_6_reset_password(self):
-        with patch(
-            "src.TimedJSONWebSignatureSerializer.loads"
-        ) as serializer_loads_mock:
-            serializer_loads_mock.return_value = {
+        with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
+            expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
+            )
+            mock_4_jwt_decode.return_value = {
+                "exp": expiration_timestamp_for_token,
                 "purpose": PASSWORD_RESET,
                 "user_id": 1,
             }
 
-            payload = {"new_password": "456"}
+            # Act.
+            data_dict = {
+                "new_password": "456",
+            }
             rv = self.client.post(
                 "/api/reset-password/token-for-resetting-password",
-                data=json.dumps(payload),
-                headers={
-                    "Content-Type": "application/json",
-                },
+                json=data_dict,
             )
+
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
 
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "message": "You have reset your password successfully.",
                 },

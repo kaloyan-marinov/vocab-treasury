@@ -1,7 +1,8 @@
 import json
 import base64
+import datetime as dt
+import jwt
 
-from itsdangerous import TimedJSONWebSignatureSerializer
 from flask import current_app
 
 from tests import TestBasePlusUtilities, UserResource
@@ -30,14 +31,19 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         )
 
         # Compute a valid token for the User resource, which was created just now.
-        token_serializer = TimedJSONWebSignatureSerializer(
-            current_app.config["SECRET_KEY"], expires_in=3600
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            minutes=current_app.config["MINUTES_FOR_TOKEN_VALIDITY"],
         )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": ACCESS,
             "user_id": self._u_r.id,
         }
-        token = token_serializer.dumps(token_payload).decode("utf-8")
+        token = jwt.encode(
+            token_payload,
+            self.app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
         self._expected_body = {"token": token}
 
     def test_1_missing_basic_auth(self):
@@ -46,10 +52,13 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         without providing Basic Auth credentials.
         """
 
+        # Act.
         rv = self.client.post("/api/tokens")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -101,7 +110,12 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
         basic_auth = "Basic " + b_a_c
-        rv = self.client.post("/api/tokens", headers={"Authorization": basic_auth})
+        rv = self.client.post(
+            "/api/tokens",
+            headers={
+                "Authorization": basic_auth,
+            },
+        )
 
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
@@ -117,7 +131,7 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         Unfortunately, that would not work as expected 100% of the time.
         The reason for that is hinted at by the content of the `except`-statement,
         and that reason can be summarized as follows:
-            the endpoint handler relies on a _Timed_JSONWebSignatureSerializer,
+            the endpoint handler relies on a call to `dt.datetime.utcnow()`,
             which means that,
             if the execution of the endpoint handler takes more than 1 s,
             then
@@ -149,7 +163,31 @@ class Test_01_IssueToken(TestBasePlusUtilities):
                 print(f"{name} observed: {value}")
                 print(f"{name} expected: {value_expected}")
 
-            self.assertEqual(payload, p_expected)
+            # self.assertEqual(payload, p_expected)
+            observed_payload_dict = jwt.decode(
+                body["token"],
+                key=self.app.config["SECRET_KEY"],
+                algorithms=["HS256"],
+                options={
+                    "require": ["exp"],
+                },
+            )
+            del observed_payload_dict["exp"]
+
+            expected_payload_dict = jwt.decode(
+                self._expected_body["token"],
+                key=self.app.config["SECRET_KEY"],
+                algorithms=["HS256"],
+                options={
+                    "require": ["exp"],
+                },
+            )
+            del expected_payload_dict["exp"]
+
+            self.assertEqual(
+                observed_payload_dict,
+                expected_payload_dict,
+            )
 
     def test_4_incorrect_basic_auth(self):
         """
@@ -210,10 +248,13 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         without providing a Bearer-Token Auth credential.
         """
 
+        # Act.
         rv = self.client.get("/api/user-profile")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -229,13 +270,19 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         for wrong_purpose in (EMAIL_ADDRESS_CONFIRMATION, PASSWORD_RESET):
             with self.subTest():
                 # Arrange.
+                expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+                    minutes=self.app.config["MINUTES_FOR_TOKEN_VALIDITY"]
+                )
                 token_payload = {
+                    "exp": expiration_timestamp_for_token,
                     "purpose": wrong_purpose,
                     "user_id": self._u_r.id,
                 }
-                valid_token_wrong_purpose = self.app.token_serializer.dumps(
-                    token_payload
-                ).decode("utf-8")
+                valid_token_wrong_purpose = jwt.encode(
+                    token_payload,
+                    key=self.app.config["SECRET_KEY"],
+                    algorithm="HS256",
+                )
 
                 # Act.
                 authorization = "Bearer " + valid_token_wrong_purpose
@@ -285,15 +332,19 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
 
         body_str_1 = rv_1.get_data(as_text=True)
         body_1 = json.loads(body_str_1)
+
         token = body_1["token"]
 
+        # Act.
         # Fetch the user's own User Profile resource.
         rv_2 = self.client.get(
             "/api/user-profile", headers={"Authorization": "Bearer " + token}
         )
 
+        # Assert.
         body_str_2 = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_str_2)
+
         self.assertEqual(rv_2.status_code, 200)
         self.assertEqual(
             body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}

@@ -9,7 +9,7 @@ from src.api import api_bp
 @api_bp.route("/examples", methods=["POST"])
 @token_auth.login_required
 def create_example():
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -134,7 +134,7 @@ def get_example(example_id):
 @api_bp.route("/examples/<int:example_id>", methods=["PUT"])
 @token_auth.login_required
 def edit_example(example_id):
-    if not request.json:
+    if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
                 "error": "Bad Request",

@@ -1,6 +1,8 @@
 import dataclasses
 import json
 import unittest
+import datetime as dt
+import jwt
 
 from src import db, create_app
 from src.constants import EMAIL_ADDRESS_CONFIRMATION
@@ -42,18 +44,14 @@ class TestBasePlusUtilities(TestBase):
         password,
         should_confirm_email_address=False,
     ) -> UserResource:
-        data = {
+        data_dict = {
             "username": username,
             "email": email,
             "password": password,
         }
-        data_str = json.dumps(data)
         rv = self.client.post(
             "/api/users",
-            data=data_str,
-            headers={
-                "Content-Type": "application/json",
-            },
+            json=data_dict,
         )
 
         body_str = rv.get_data(as_text=True)
@@ -72,14 +70,18 @@ class TestBasePlusUtilities(TestBase):
         )
 
     def util_confirm_email_address(self, user_id):
+        expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
+            days=self.app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
+        )
         token_payload = {
+            "exp": expiration_timestamp_for_token,
             "purpose": EMAIL_ADDRESS_CONFIRMATION,
             "user_id": user_id,
         }
-        email_address_confirmation_token = (
-            self.app.token_serializer_for_email_address_confirmation.dumps(
-                token_payload
-            ).decode("utf-8")
+        email_address_confirmation_token = jwt.encode(
+            token_payload,
+            key=self.app.config["SECRET_KEY"],
+            algorithm="HS256",
         )
 
         self.client.post(
