@@ -665,10 +665,6 @@ def send_async_email(app, msg):
 
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
-    # TODO: (2024/03/11, 06:55)
-    #       resolve v-t-i-83
-    #       :=
-    #       consider whether this handler should begin by checking the "Content-Type"
     if request.headers["Content-Type"] != "application/json":
         r = jsonify(
             {
