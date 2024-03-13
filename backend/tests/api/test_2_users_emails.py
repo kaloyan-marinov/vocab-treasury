@@ -39,6 +39,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         - regardless of whether the latter User resource is confirmed or not.
         """
 
+        # Arrange.
         # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
@@ -63,6 +64,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             data_0_2["password"],
         )
 
+        # Act.
         # Attempt to edit the 1st User resource in such a way that
         # its email should end up being identical to the 2nd User resource's email.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -81,8 +83,10 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             },
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -120,6 +124,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
+
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -253,6 +258,7 @@ class Test_01_EditUsersEmails(TestBasePlusUtilities):
         then their email address on record will not get edited
         in the application's persistence layer.
         """
+
         # Arrange.
         #   (1) create a user + prepare for initiating 2 email-address changes
         username = "jd"

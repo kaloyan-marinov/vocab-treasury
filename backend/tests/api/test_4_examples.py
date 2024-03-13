@@ -224,6 +224,7 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
         Ensure that it is impossible to create a new `Example` resource
         by providing an incorrect Bearer-Token Auth credential.
         """
+
         # Arrange.
         wrong_authorization = "Bearer " + self._u_r_1.token + "-wrong"
 
@@ -863,7 +864,9 @@ class Test_03_GetExample(TestBaseForExampleResources_2):
         )
 
     def test_3_example_that_exists(self):
-        """Ensure that a user is able to get a specific `Example` resource of her own."""
+        """
+        Ensure that a user is able to get a specific `Example` resource of her own.
+        """
 
         # Arrange.
 

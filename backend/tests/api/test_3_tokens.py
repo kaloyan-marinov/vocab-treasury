@@ -52,10 +52,13 @@ class Test_01_IssueToken(TestBasePlusUtilities):
         without providing Basic Auth credentials.
         """
 
+        # Act.
         rv = self.client.post("/api/tokens")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -245,10 +248,13 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
         without providing a Bearer-Token Auth credential.
         """
 
+        # Act.
         rv = self.client.get("/api/user-profile")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -326,15 +332,19 @@ class Test_02_GetUserProfile(TestBasePlusUtilities):
 
         body_str_1 = rv_1.get_data(as_text=True)
         body_1 = json.loads(body_str_1)
+
         token = body_1["token"]
 
+        # Act.
         # Fetch the user's own User Profile resource.
         rv_2 = self.client.get(
             "/api/user-profile", headers={"Authorization": "Bearer " + token}
         )
 
+        # Assert.
         body_str_2 = rv_2.get_data(as_text=True)
         body_2 = json.loads(body_str_2)
+
         self.assertEqual(rv_2.status_code, 200)
         self.assertEqual(
             body_2, {"id": 1, "username": "jd", "email": "john.doe@protonmail.com"}

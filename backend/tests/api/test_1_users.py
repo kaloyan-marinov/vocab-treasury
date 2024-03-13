@@ -28,6 +28,7 @@ class Test_01_CreateUser(TestBase):
         if the "Content-Type" header is set to something other than 'application/json'.
         """
 
+        # Act.
         # Attempt to create a User resource
         # without providing a 'Content-Type: application/json' header.
         rv = self.client.post(
@@ -38,8 +39,10 @@ class Test_01_CreateUser(TestBase):
             },
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -65,6 +68,7 @@ class Test_01_CreateUser(TestBase):
 
         for field in ("username", "email", "password"):
             with self.subTest():
+                # Act.
                 # Attempt to create a User resource
                 # without providing a value for `field` in the request body.
                 data_dict = {k: v for k, v in self.data_dict.items() if k != field}
@@ -73,8 +77,10 @@ class Test_01_CreateUser(TestBase):
                     json=data_dict,
                 )
 
+                # Assert.
                 body_str = rv.get_data(as_text=True)
                 body = json.loads(body_str)
+
                 self.assertEqual(rv.status_code, 400)
                 self.assertEqual(
                     body,
@@ -112,14 +118,17 @@ class Test_01_CreateUser(TestBase):
         )
         """
 
+        # Act.
         # Create a new User resource.
         rv = self.client.post(
             "/api/users",
             json=self.data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 201)
         self.assertEqual(rv.headers["Location"], "/api/users/1")
         self.assertEqual(
@@ -156,12 +165,14 @@ class Test_01_CreateUser(TestBase):
         which has the same email as an existing User resource.
         """
 
+        # Arrange.
         # Create one User resource.
         rv_0 = self.client.post(
             "/api/users",
             json=self.data_dict,
         )
 
+        # Act.
         # Attempt to create a second User resource with the same email as the User
         # resource that was created just now.
         data_dict = {
@@ -174,8 +185,10 @@ class Test_01_CreateUser(TestBase):
             json=data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -211,12 +224,14 @@ class Test_01_CreateUser(TestBase):
         which has the same username as an existing User resource.
         """
 
+        # Arrange.
         # Create one User resource.
         rv_0 = self.client.post(
             "/api/users",
             json=self.data_dict,
         )
 
+        # Act.
         # Attempt to create a second User resource with the same username as the User
         # resource that was created just now.
         data_dict = {
@@ -229,8 +244,10 @@ class Test_01_CreateUser(TestBase):
             json=data_dict,
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(
             body,
@@ -424,11 +441,14 @@ class Test_03_GetUsers(TestBasePlusUtilities):
         getting a list of User resources doesn't return any.
         """
 
+        # Act.
         # Get all User resources.
         rv = self.client.get("/api/users")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         with current_app.test_request_context():
             _links_self = url_for("api_blueprint.get_users", per_page=10, page=1)
@@ -572,10 +592,14 @@ class Test_04_GetUser(TestBasePlusUtilities):
         Ensure that
         attempting to get a User resource, which doesn't exist, returns a 404.
         """
+
+        # Act.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(
             body,
@@ -592,17 +616,21 @@ class Test_04_GetUser(TestBasePlusUtilities):
         returns a 404.
         """
 
+        # Arrange.
         # Create one User resource.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
+        # Act.
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(
             body,
@@ -619,6 +647,7 @@ class Test_04_GetUser(TestBasePlusUtilities):
         it is possible to get a specific confirmed User resource.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -631,11 +660,14 @@ class Test_04_GetUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Get the User resource that was created just now.
         rv = self.client.get("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(
             body,
@@ -714,6 +746,7 @@ class Test_05_EditUser(TestBasePlusUtilities):
             (c) has not confirmed his/her email address,
         then the response should be a 400.
         """
+
         # Arrange.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -754,12 +787,6 @@ class Test_05_EditUser(TestBasePlusUtilities):
         Ensure that it is impossible to edit a confirmed User resource
         if the "Content-Type" header is set to something other than 'application/json'.
         """
-
-        # TODO: (2023/03/06, 07:29)
-        #       resolve v-t-i-67
-        #       :=
-        #       update the comments within test cases
-        #       to be organized around the "Arrange-Act-Assert" 'scaffolding'
 
         # Arrange.
         username = "jd"
@@ -1253,18 +1280,22 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         Auth credentials.
         """
 
+        # Arrange.
         # Create one User resource.
         username = "jd"
         email = "john.doe@protonmail.com"
         password = "123"
         __ = self.util_create_user(username, email, password)
 
+        # Act.
         # Attempt to delete the User resource, which was created just now,
         # without prodiving Basic Auth credentials.
         rv = self.client.delete("/api/users/1")
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -1336,11 +1367,12 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
 
     def test_3_prevent_deleting_of_another_user(self):
         """
-        Ensure that it is impossible to edit a User resource,
+        Ensure that it is impossible to delete a User resource,
         which does not correspond to
         the user authenticated by the issued request's header.
         """
 
+        # Arrange.
         # Create two User resources, but confirm only the first one.
         data_0_1 = {
             "username": "jd",
@@ -1365,6 +1397,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             data_0_2["password"],
         )
 
+        # Act.
         # Attempt to delete a User resource, which does not correspond to
         # the user authenticated by the issued request's header.
         basic_auth_credentials = "john.doe@protonmail.com:123"
@@ -1374,8 +1407,10 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/2", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 403)
         self.assertEqual(
             body,
@@ -1411,6 +1446,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         is able to delete his/her corresponding User resource.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -1423,6 +1459,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Delete a User resource.
         basic_auth_credentials = "john.doe@protonmail.com:123"
         b_a_c = base64.b64encode(basic_auth_credentials.encode("utf-8")).decode("utf-8")
@@ -1431,7 +1468,9 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/1", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
+
         self.assertEqual(rv.status_code, 204)
         self.assertEqual(body_str, "")
 
@@ -1446,6 +1485,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
         by providing an incorrect set of Basic Auth credentials.
         """
 
+        # Arrange.
         # Create one User resource and confirm it.
         username = "jd"
         email = "john.doe@protonmail.com"
@@ -1458,6 +1498,7 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             should_confirm_email_address=True,
         )
 
+        # Act.
         # Attempt to delete a User resource
         # by providing an incorrect set of Basic Auth credentials.
         basic_auth_credentials = "john.doe@protonmail.com:wrong-password"
@@ -1467,8 +1508,10 @@ class Test_06_DeleteUser(TestBasePlusUtilities):
             "/api/users/1", headers={"Authorization": authorization}
         )
 
+        # Assert.
         body_str = rv.get_data(as_text=True)
         body = json.loads(body_str)
+
         self.assertEqual(rv.status_code, 401)
         self.assertEqual(
             body,
@@ -1515,7 +1558,6 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
         payload = {
             "email": self._u_r_1.email,
         }
-        payload_str = json.dumps(payload)
 
         rv = self.client.post(
             "/api/request-password-reset",
@@ -1679,10 +1721,12 @@ class Test_08_ResetPassword(TestBase):
 
     def test_1_expired_token(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
             mock_4_jwt_decode.side_effect = jwt.ExpiredSignatureError(
                 "forced via mocking/patching"
             )
 
+            # Act.
             data_dict = {
                 "new_password": "456",
             }
@@ -1691,9 +1735,13 @@ class Test_08_ResetPassword(TestBase):
                 json=data_dict,
             )
 
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
             self.assertEqual(rv.status_code, 401)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Unauthorized",
                     "message": "The provided token is invalid.",
@@ -1702,10 +1750,12 @@ class Test_08_ResetPassword(TestBase):
 
     def test_2_bad_signature(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
             mock_4_jwt_decode.side_effect = jwt.DecodeError(
                 "forced via mocking/patching"
             )
 
+            # Act.
             data_dict = {
                 "new_password": "456",
             }
@@ -1714,9 +1764,13 @@ class Test_08_ResetPassword(TestBase):
                 json=data_dict,
             )
 
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
             self.assertEqual(rv.status_code, 401)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Unauthorized",
                     "message": "The provided token is invalid.",
@@ -1809,6 +1863,7 @@ class Test_08_ResetPassword(TestBase):
 
     def test_5_incomplete_request_body(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
             expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
                 minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
             )
@@ -1818,6 +1873,7 @@ class Test_08_ResetPassword(TestBase):
                 "user_id": 1,
             }
 
+            # Act.
             data_dict = {
                 "not new_password": "456",
             }
@@ -1826,9 +1882,13 @@ class Test_08_ResetPassword(TestBase):
                 json=data_dict,
             )
 
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
             self.assertEqual(rv.status_code, 400)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "error": "Bad Request",
                     "message": (
@@ -1839,6 +1899,7 @@ class Test_08_ResetPassword(TestBase):
 
     def test_6_reset_password(self):
         with patch("src.auth.jwt.decode") as mock_4_jwt_decode:
+            # Arrange.
             expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
                 minutes=self.app.config["MINUTES_FOR_PASSWORD_RESET"]
             )
@@ -1848,6 +1909,7 @@ class Test_08_ResetPassword(TestBase):
                 "user_id": 1,
             }
 
+            # Act.
             data_dict = {
                 "new_password": "456",
             }
@@ -1856,9 +1918,13 @@ class Test_08_ResetPassword(TestBase):
                 json=data_dict,
             )
 
+            # Assert.
+            body_str = rv.get_data(as_text=True)
+            body = json.loads(body_str)
+
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(
-                json.loads(rv.get_data(as_text=True)),
+                body,
                 {
                     "message": "You have reset your password successfully.",
                 },
