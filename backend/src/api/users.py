@@ -666,7 +666,22 @@ def send_async_email(app, msg):
 @api_bp.route("/reset-password/<token>", methods=["POST"])
 def reset_password(token):
     # TODO: (2024/03/11, 06:55)
+    #       resolve v-t-i-83
+    #       :=
     #       consider whether this handler should begin by checking the "Content-Type"
+    if request.headers["Content-Type"] != "application/json":
+        r = jsonify(
+            {
+                "error": "Bad Request",
+                "message": (
+                    'Your request did not include a "Content-Type: application/json"'
+                    " header."
+                ),
+            }
+        )
+        r.status_code = 400
+        return r
+
     reject_token, response_or_token_payload = validate_token(token)
 
     if reject_token:
@@ -687,19 +702,6 @@ def reset_password(token):
 
     user_id = response_or_token_payload["user_id"]
     user = User.query.get(user_id)
-
-    if request.headers["Content-Type"] != "application/json":
-        r = jsonify(
-            {
-                "error": "Bad Request",
-                "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
-                ),
-            }
-        )
-        r.status_code = 400
-        return r
 
     new_password = request.json.get("new_password")
     if new_password is None:
