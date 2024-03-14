@@ -1117,7 +1117,12 @@ describe(
         requestInterceptionLayer.use(
           rest.get(
             "/api/examples",
-            createMockOneOrManyFailures("single failure")
+            createMockOneOrManyFailures(
+              "single failure",
+              401,
+              "[mocked] Unauthorized",
+              "[mocked] Authentication in the Basic Auth format is required."
+            )
           )
         );
 
@@ -1195,7 +1200,12 @@ describe(
         requestInterceptionLayer.use(
           rest.post(
             "/api/examples",
-            createMockOneOrManyFailures("single failure")
+            createMockOneOrManyFailures(
+              "single failure",
+              401,
+              "[mocked] Unauthorized",
+              "[mocked] Authentication in the Basic Auth format is required."
+            )
           )
         );
 
@@ -1267,7 +1277,12 @@ describe(
         requestInterceptionLayer.use(
           rest.delete(
             "/api/examples/:id",
-            createMockOneOrManyFailures("single failure")
+            createMockOneOrManyFailures(
+              "single failure",
+              401,
+              "[mocked] Unauthorized",
+              "[mocked] Authentication in the Basic Auth format is required."
+            )
           )
         );
 
@@ -1344,7 +1359,12 @@ describe(
         requestInterceptionLayer.use(
           rest.put(
             "/api/examples/:id",
-            createMockOneOrManyFailures("single failure")
+            createMockOneOrManyFailures(
+              "single failure",
+              401,
+              "[mocked] Unauthorized",
+              "[mocked] Authentication in the Basic Auth format is required."
+            )
           )
         );
 

@@ -11,7 +11,7 @@ import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
-import { rest } from "msw";
+import { rest, RestRequest } from "msw";
 import { setupServer, SetupServerApi } from "msw/node";
 import thunkMiddleware from "redux-thunk";
 
@@ -31,7 +31,12 @@ import { App } from "./App";
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 /* Create an MSW "request-interception layer". */
-const mockMultipleFailures = createMockOneOrManyFailures("multiple failures");
+const mockMultipleFailures = createMockOneOrManyFailures(
+  "multiple failures",
+  401,
+  "[mocked] Unauthorized",
+  "[mocked] Authentication in the Basic Auth format is required."
+);
 const requestHandlersToMock = [
   rest.post("/api/users", mockMultipleFailures),
 
@@ -90,7 +95,12 @@ test(
     requestInterceptionLayer.use(
       rest.get(
         "/api/user-profile",
-        createMockOneOrManyFailures("single failure")
+        createMockOneOrManyFailures(
+          "single failure",
+          401,
+          "[mocked] Unauthorized",
+          "[mocked] Authentication in the Basic Auth format is required."
+        )
       ),
 
       rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
@@ -299,6 +309,94 @@ test(
     expect(temp).toBeInTheDocument();
   }
 );
+
+test("a newly-created user confirms their email address", async () => {
+  /* Arrange. */
+  requestInterceptionLayer.use(
+    rest.post(
+      "/api/confirm-email-address/:token_for_confirming_email_address",
+      (req, res, ctx) => {
+        return res.once(
+          ctx.status(200),
+          ctx.json({
+            message:
+              "[mocked] You have confirmed your email address successfully." +
+              " You may now log in.",
+          })
+        );
+      }
+    )
+  );
+
+  const realStore = createStore(rootReducer, enhancer);
+
+  render(
+    <Provider store={realStore}>
+      <Router history={history}>
+        <App />
+      </Router>
+    </Provider>
+  );
+
+  /* Act. */
+  const tokenForConfirmingEmailAddress =
+    "mocked-correct-token-for-confirming-email-address";
+  history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+
+  const confirmEmailAddressButton = screen.getByRole("button", {
+    name: "Confirm my email address",
+  });
+  fireEvent.click(confirmEmailAddressButton);
+
+  /* Assert. */
+  const temp = await screen.findByText(
+    "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+  );
+  expect(temp).toBeInTheDocument();
+});
+
+test("a newly-created user attempts to confirm their email address", async () => {
+  /* Arrange. */
+  requestInterceptionLayer.use(
+    rest.post(
+      "/api/confirm-email-address/:token_for_confirming_email_address",
+      createMockOneOrManyFailures(
+        "single failure",
+        401,
+        "[mocked] Unauthorized,",
+        "[mocked] The provided token is invalid."
+      )
+    )
+  );
+
+  const realStore = createStore(rootReducer, enhancer);
+
+  render(
+    <Provider store={realStore}>
+      <Router history={history}>
+        <App />
+      </Router>
+    </Provider>
+  );
+
+  /* Act. */
+  const tokenForConfirmingEmailAddress =
+    "mocked-incorrect-token-for-confirming-email-address";
+  history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+
+  const confirmMyEmailAddressButton = screen.getByRole("button", {
+    name: "Confirm my email address",
+  });
+  fireEvent.click(confirmMyEmailAddressButton);
+
+  /* Assert. */
+  const temp = await screen.findByText(
+    "[mocked] The provided token is invalid." +
+      " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
+      " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS."
+  );
+  expect(temp).toBeInTheDocument();
+});
 
 test("the user clicks the navigation-controlling button for 'Next page'", async () => {
   /* Arrange. */
@@ -1048,7 +1146,12 @@ test(
 
       rest.delete(
         "/api/examples/:id",
-        createMockOneOrManyFailures("single failure")
+        createMockOneOrManyFailures(
+          "single failure",
+          401,
+          "[mocked] Unauthorized",
+          "[mocked] Authentication in the Basic Auth format is required."
+        )
       )
     );
 
@@ -1204,8 +1307,6 @@ test(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples())
-
-      // rest.put("/api/examples/:id", createMockOneOrManyFailures("single failure"))
     );
 
     render(
@@ -1271,7 +1372,12 @@ test(
 
       rest.put(
         "/api/examples/:id",
-        createMockOneOrManyFailures("single failure")
+        createMockOneOrManyFailures(
+          "single failure",
+          401,
+          "[mocked] Unauthorized",
+          "[mocked] Authentication in the Basic Auth format is required."
+        )
       )
     );
 
@@ -1398,7 +1504,15 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.get("/api/examples", createMockOneOrManyFailures("single failure"))
+      rest.get(
+        "/api/examples",
+        createMockOneOrManyFailures(
+          "single failure",
+          401,
+          "[mocked] Unauthorized",
+          "[mocked] Authentication in the Basic Auth format is required."
+        )
+      )
     );
 
     render(
@@ -1496,7 +1610,12 @@ test(
     requestInterceptionLayer.use(
       rest.get(
         "/api/user-profile",
-        createMockOneOrManyFailures("single failure")
+        createMockOneOrManyFailures(
+          "single failure",
+          401,
+          "[mocked] Unauthorized",
+          "[mocked] Authentication in the Basic Auth format is required."
+        )
       ),
       rest.post(
         "/api/request-password-reset",

@@ -47,16 +47,12 @@ export const ConfirmEmailAddress = () => {
         pathname: "/login",
       };
       history.push(locationDescriptor);
-    } catch (err) {
-      if (err.response.status == 401) {
-        const message =
-          err.response.data.message +
-          " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
-          " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS.";
-        dispatch(alertsCreate(id, message));
-      } else {
-        dispatch(alertsCreate(id, "UNKNOWN ERROR ENCOUNTERED"));
-      }
+    } catch (thunkActionError) {
+      const message =
+        thunkActionError +
+        " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
+        " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS.";
+      dispatch(alertsCreate(id, message));
     }
   };
 

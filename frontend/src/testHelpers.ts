@@ -18,11 +18,16 @@ Mock handlers for HTTP requests.
 Each of these mock handlers is "lone-standing",
 i.e. independent of the other ones.
 */
-export const createMockOneOrManyFailures = (description: string) => {
-  const statusCode: number = 401;
-  const error: string = "[mocked] Unauthorized";
-  const message: string =
-    "[mocked] Authentication in the Basic Auth format is required.";
+export const createMockOneOrManyFailures = (
+  description: string,
+  statusCode: number,
+  error: string,
+  message: string
+) => {
+  // const statusCode: number = 401;
+  // const error: string = "[mocked] Unauthorized";
+  // const message: string =
+  //   "[mocked] Authentication in the Basic Auth format is required.";
 
   switch (description) {
     case "single failure": {

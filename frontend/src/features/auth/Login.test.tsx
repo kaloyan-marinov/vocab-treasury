@@ -173,7 +173,15 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       const realStore = createStore(rootReducer, enhancer);
 
       requestInterceptionLayer.use(
-        rest.post("/api/tokens", createMockOneOrManyFailures("single failure"))
+        rest.post(
+          "/api/tokens",
+          createMockOneOrManyFailures(
+            "single failure",
+            401,
+            "[mocked] Unauthorized",
+            "[mocked] Authentication in the Basic Auth format is required."
+          )
+        )
       );
 
       render(
