@@ -760,6 +760,82 @@ describe(
     );
 
     test(
+      "confirmEmailAddress(tokenForConfirmingEmailAddress)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        /* Arrange. */
+        requestInterceptionLayer.use(
+          rest.post(
+            "/api/confirm-email-address/:token_for_confirming_email_address",
+            requestHandlers.mockConfirmEmailAddress
+          )
+        );
+
+        /* Act. */
+        const confirmEmailAddressPromise = storeMock.dispatch(
+          confirmEmailAddress("mocked-token-for-confirming-email-address")
+        );
+
+        /* Assert. */
+        await expect(confirmEmailAddressPromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/confirmEmailAddress/pending",
+          },
+          {
+            type: "auth/confirmEmailAddress/fulfilled",
+            payload: {
+              message:
+                "[mocked] You have confirmed your email address successfully." +
+                " You may now log in.",
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "confirmEmailAddress(tokenForConfirmingEmailAddress)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        /* Arrange. */
+        requestInterceptionLayer.use(
+          rest.post(
+            "/api/confirm-email-address/:token_for_confirming_email_address",
+            (req, res, ctx) => {
+              return res(
+                ctx.status(401),
+                ctx.json({
+                  error: "[mocked] Unauthorized",
+                  message: "[mocked] The provided token is invalid.",
+                })
+              );
+            }
+          )
+        );
+
+        /* Act. */
+        const confirmEmailAddressPromise = storeMock.dispatch(
+          confirmEmailAddress("mocked-token-for-confirming-email-address")
+        );
+
+        /* Assert. */
+        await expect(confirmEmailAddressPromise).rejects.toEqual(
+          "[mocked] The provided token is invalid."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/confirmEmailAddress/pending",
+          },
+          {
+            type: "auth/confirmEmailAddress/rejected",
+            error: "[mocked] The provided token is invalid.",
+          },
+        ]);
+      }
+    );
+
+    test(
       "issueJWSToken(email, password)" +
         " + the HTTP request issued by that thunk-action is mocked to succeed",
       async () => {

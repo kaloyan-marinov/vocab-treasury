@@ -36,6 +36,6 @@
     
     "jest.rootPath": "frontend",
     "jest.jestCommandLine": "npm run test --",
-    "jest.autoRun": "off" //,
-    // "jest.runMode": "on-demand"
+    // "jest.autoRun": "off" //,
+    "jest.runMode": "on-demand"
 }

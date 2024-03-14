@@ -160,7 +160,7 @@ export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
         err.response.data.message ||
         "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
       dispatch(confirmEmailAddressRejected(responseBodyMessage));
-      return Promise.reject(err);
+      return Promise.reject(responseBodyMessage);
     }
   };
 };

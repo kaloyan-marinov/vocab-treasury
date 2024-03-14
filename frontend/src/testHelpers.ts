@@ -80,6 +80,21 @@ const mockCreateUser = (
   );
 };
 
+const mockConfirmEmailAddress = (
+  req: RestRequest<DefaultRequestBody, RequestParams>,
+  res: ResponseComposition<any>,
+  ctx: RestContext
+) => {
+  return res.once(
+    ctx.status(200),
+    ctx.json({
+      message:
+        "[mocked] You have confirmed your email address successfully." +
+        " You may now log in.",
+    })
+  );
+};
+
 const mockIssueJWSToken = (
   req: RestRequest<DefaultRequestBody, RequestParams>,
   res: ResponseComposition<any>,
@@ -346,6 +361,7 @@ export class RequestHandlingFacilitator {
 
 export const requestHandlers = {
   mockCreateUser,
+  mockConfirmEmailAddress,
   mockIssueJWSToken,
   mockFetchUserProfile,
   mockRequestPasswordReset,
