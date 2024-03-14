@@ -85,6 +85,86 @@ export const createUser = (
   };
 };
 
+/* "auth/confirmEmailAddress" action creators. */
+export enum ActionTypesConfirmEmailAddress {
+  PENDING = "auth/confirmEmailAddress/pending",
+  REJECTED = "auth/confirmEmailAddress/rejected",
+  FULFILLED = "auth/confirmEmailAddress/fulfilled",
+}
+
+export interface IActionConfirmEmailAddressPending {
+  type: typeof ActionTypesConfirmEmailAddress.PENDING;
+}
+
+export interface IActionConfirmEmailAddressRejected {
+  type: typeof ActionTypesConfirmEmailAddress.REJECTED;
+  error: string;
+}
+
+export interface IActionConfirmEmailAddressFulfilled {
+  type: typeof ActionTypesConfirmEmailAddress.FULFILLED;
+  payload: {
+    message: string;
+  };
+}
+
+export const confirmEmailAddressPending =
+  (): IActionConfirmEmailAddressPending => ({
+    type: ActionTypesConfirmEmailAddress.PENDING,
+  });
+
+export const confirmEmailAddressRejected = (
+  error: string
+): IActionConfirmEmailAddressRejected => ({
+  type: ActionTypesConfirmEmailAddress.REJECTED,
+  error,
+});
+
+export const confirmEmailAddressFulfilled = (
+  message: string
+): IActionConfirmEmailAddressFulfilled => ({
+  type: ActionTypesConfirmEmailAddress.FULFILLED,
+  payload: {
+    message,
+  },
+});
+
+export type ActionConfirmEmailAddress =
+  | IActionConfirmEmailAddressPending
+  | IActionConfirmEmailAddressRejected
+  | IActionConfirmEmailAddressFulfilled;
+
+/* "auth/confirmEmailAddress" thunk-action creator */
+export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
+  /*
+  TODO: (2024/03/13, 08:25)
+        fix the indentation in the following comment,
+        as well as in all other comments that contain the string "Create a thunk-action."
+  */
+  /*
+    Create a thunk-action.
+    When dispatched, it issues an HTTP request
+    to the backend's endpoint for confirming a (newly-created) User's email address.
+    */
+
+  return async (dispatch: Dispatch<ActionConfirmEmailAddress>) => {
+    dispatch(confirmEmailAddressPending());
+    try {
+      const response = await axios.post(
+        `/api/confirm-email-address/${tokenForConfirmingEmailAddress}`
+      );
+      dispatch(confirmEmailAddressFulfilled(response.data.message));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBodyMessage =
+        err.response.data.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(confirmEmailAddressRejected(responseBodyMessage));
+      return Promise.reject(err);
+    }
+  };
+};
+
 /* "auth/issueJWSToken/" action creators */
 export enum ActionTypesIssueJWSToken {
   PENDING = "auth/issueJWSToken/pending",

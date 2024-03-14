@@ -1,4 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
+import { useDispatch } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+
+import { IState } from "../../types";
+import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
+import { ActionConfirmEmailAddress, confirmEmailAddress } from "./authSlice";
 
 export const ConfirmEmailAddress = () => {
   console.log(
@@ -10,13 +17,58 @@ export const ConfirmEmailAddress = () => {
     `${new Date().toISOString()} - inspecting the \`params\` passed in to <ConfirmEmailAddress>`
   );
 
+  const history = useHistory();
+
+  const dispatch: ThunkDispatch<
+    IState,
+    unknown,
+    IActionAlertsCreate | ActionConfirmEmailAddress
+  > = useDispatch();
+
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    console.log("    clicking <ConfirmEmailAddress>'s button");
+
+    const id: string = uuidv4();
+    try {
+      await dispatch(
+        confirmEmailAddress(params.token_for_confirming_email_address)
+      );
+
+      dispatch(
+        alertsCreate(
+          id,
+          "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+        )
+      );
+
+      const locationDescriptor = {
+        pathname: "/login",
+      };
+      history.push(locationDescriptor);
+    } catch (err) {
+      if (err.response.status == 401) {
+        const message =
+          err.response.data.message +
+          " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
+          " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS.";
+        dispatch(alertsCreate(id, message));
+      } else {
+        dispatch(alertsCreate(id, "UNKNOWN ERROR ENCOUNTERED"));
+      }
+    }
+  };
+
   return (
     <>
       {process.env.NODE_ENV === "development" && "<ConfirmEmailAddress>"}
-      <div className="mx-auto col-md-6">
-        token_for_confirming_email_address:{" "}
-        {params.token_for_confirming_email_address}
-      </div>
+      <button
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+        className="btn btn-primary"
+      >
+        Confirm my email address
+      </button>
     </>
   );
 };

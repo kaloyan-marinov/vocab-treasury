@@ -91,7 +91,7 @@ export const SingleExample = () => {
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    console.log("    submitting <SingleExample>'s form");
+    console.log("    clicking <SingleExample>'s button");
 
     const id: string = uuidv4();
     try {
@@ -103,16 +103,16 @@ export const SingleExample = () => {
         await dispatch(fetchExamples(examplesLinks.self));
       } else {
         /*
-          It _should_ be impossible for this block of code to ever be executed.
-  
-          Why?
-  
-          Because this component may only be rendered
-          after the user's browser has loaded the /own-vocabtreasury URL,
-          which causes React
-          to first render <OwnVocabTreasury>
-          and to then run its effect function.
-          */
+        It _should_ be impossible for this block of code to ever be executed.
+
+        Why?
+
+        Because this component may only be rendered
+        after the user's browser has loaded the /own-vocabtreasury URL,
+        which causes React
+        to first render <OwnVocabTreasury>
+        and to then run its effect function.
+        */
         await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
       }
 
