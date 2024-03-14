@@ -428,6 +428,7 @@ export const authReducer = (
   state: IStateAuth = INITIAL_STATE_AUTH,
   action:
     | ActionCreateUser
+    | ActionConfirmEmailAddress
     | ActionIssueJWSToken
     | ActionFetchProfile
     | ActionRequestPasswordReset
@@ -449,6 +450,27 @@ export const authReducer = (
       };
 
     case ActionTypesCreateUser.FULFILLED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      };
+
+    case ActionTypesConfirmEmailAddress.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesConfirmEmailAddress.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesConfirmEmailAddress.FULFILLED:
       return {
         ...state,
         requestStatus: RequestStatus.SUCCEEDED,

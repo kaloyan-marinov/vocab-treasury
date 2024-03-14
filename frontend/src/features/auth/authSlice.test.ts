@@ -19,6 +19,14 @@ import {
   createUserRejected,
   createUserFulfilled,
   createUser,
+  ActionTypesConfirmEmailAddress,
+  IActionConfirmEmailAddressPending,
+  IActionConfirmEmailAddressRejected,
+  IActionConfirmEmailAddressFulfilled,
+  confirmEmailAddressPending,
+  confirmEmailAddressRejected,
+  confirmEmailAddressFulfilled,
+  confirmEmailAddress,
   ActionTypesIssueJWSToken,
   IActionIssueJWSTokenPending,
   IActionIssueJWSTokenRejected,
@@ -72,6 +80,38 @@ describe("action creators", () => {
 
     expect(action).toEqual({
       type: "auth/createUser/fulfilled",
+    });
+  });
+
+  test("confirmEmailAddressPending", () => {
+    const action = confirmEmailAddressPending();
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/pending",
+    });
+  });
+
+  test("confirmEmailAddressRejected", () => {
+    const action = confirmEmailAddressRejected(
+      "auth-confirmEmailAddress-rejected"
+    );
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/rejected",
+      error: "auth-confirmEmailAddress-rejected",
+    });
+  });
+
+  test("confirmEmailAddressFulfilled", () => {
+    const action = confirmEmailAddressFulfilled(
+      "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+    );
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/fulfilled",
+      payload: {
+        message: "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN.",
+      },
     });
   });
 
@@ -243,6 +283,84 @@ describe("reducer", () => {
     };
     const action: IActionCreateUserFulfilled = {
       type: ActionTypesCreateUser.FULFILLED,
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/pending", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "auth-confirmEmailAddress-rejected",
+    };
+    const action: IActionConfirmEmailAddressPending = {
+      type: ActionTypesConfirmEmailAddress.PENDING,
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/rejected", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionConfirmEmailAddressRejected = {
+      type: ActionTypesConfirmEmailAddress.REJECTED,
+      error: "auth-confirmEmailAddress-rejected",
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.FAILED,
+      requestError: "auth-confirmEmailAddress-rejected",
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/fulfilled", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionConfirmEmailAddressFulfilled = {
+      type: ActionTypesConfirmEmailAddress.FULFILLED,
+      payload: {
+        message:
+          "You have confirmed your email address successfully." +
+          " You may now log in.",
+      },
     };
 
     /* Act. */
