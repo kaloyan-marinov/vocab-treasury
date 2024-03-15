@@ -25,10 +25,6 @@ export const RequestPasswordReset = () => {
     ActionRequestPasswordReset | IActionAlertsCreate
   > = useDispatch();
 
-  /*
-  TODO: (2024/03/14, 13:47)
-        consider incorporating this same logic into `<ConfirmEmailAddress>`
-  */
   if (hasValidToken === true) {
     const nextURL: string = "/home";
     console.log(

@@ -1677,3 +1677,42 @@ test(
     expect(history.location.pathname).toEqual("/home");
   }
 );
+
+test(
+  "if a logged-in user manually changes" +
+    " the URL in her browser's address bar to" +
+    " /confirm-email-address/let-us-pretend-this-part-is-a-valid-token ," +
+    " the frontend application should redirect the user to /home",
+  async () => {
+    /* Arrange. */
+    const realStore = createStore(rootReducer, enhancer);
+
+    requestInterceptionLayer.use(
+      rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+    );
+
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
+
+    let temp: HTMLElement;
+
+    temp = await screen.findByText("Log out");
+    expect(temp).toBeInTheDocument();
+
+    expect(history.location.pathname).toEqual("/");
+
+    /* Act. */
+    /* Simulate the user's manually changing the URL in her browser's address bar. */
+    history.push(
+      "/confirm-email-address/let-us-pretend-this-part-is-a-valid-token"
+    );
+
+    /* Assert. */
+    expect(history.location.pathname).toEqual("/home");
+  }
+);

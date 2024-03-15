@@ -1,9 +1,11 @@
 import { useParams, useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import { Redirect } from "react-router-dom";
 
 import { IState } from "../../types";
+import { selectHasValidToken } from "../../store";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 import { ActionConfirmEmailAddress, confirmEmailAddress } from "./authSlice";
 
@@ -17,6 +19,9 @@ export const ConfirmEmailAddress = () => {
     `${new Date().toISOString()} - inspecting the \`params\` passed in to <ConfirmEmailAddress>`
   );
 
+  const hasValidToken: boolean | null = useSelector(selectHasValidToken);
+  console.log(`    hasValidToken: ${hasValidToken}`);
+
   const history = useHistory();
 
   const dispatch: ThunkDispatch<
@@ -24,6 +29,14 @@ export const ConfirmEmailAddress = () => {
     unknown,
     IActionAlertsCreate | ActionConfirmEmailAddress
   > = useDispatch();
+
+  if (hasValidToken === true) {
+    const nextURL: string = "/home";
+    console.log(
+      `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
+    );
+    return <Redirect to={nextURL} />;
+  }
 
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
