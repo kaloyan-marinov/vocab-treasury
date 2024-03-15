@@ -8,7 +8,10 @@ import { AnyAction } from "redux";
 import { RequestStatus, IProfile, IStateAuth, IState } from "../../types";
 import { INITIAL_STATE_AUTH, VOCAB_TREASURY_APP_TOKEN } from "../../constants";
 import { MOCK_PROFILE } from "../../mockPiecesOfData";
-import { requestHandlers } from "../../testHelpers";
+import {
+  requestHandlers,
+  createMockOneOrManyFailures,
+} from "../../testHelpers";
 import { logOut, INITIAL_STATE } from "../../store";
 import {
   ActionTypesCreateUser,
@@ -799,18 +802,18 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized,",
+            message: "[mocked] The provided token is invalid.",
+          }
+        );
         requestInterceptionLayer.use(
           rest.post(
             "/api/confirm-email-address/:token_for_confirming_email_address",
-            (req, res, ctx) => {
-              return res(
-                ctx.status(401),
-                ctx.json({
-                  error: "[mocked] Unauthorized",
-                  message: "[mocked] The provided token is invalid.",
-                })
-              );
-            }
+            mockSingleFailure
           )
         );
 

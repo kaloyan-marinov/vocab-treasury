@@ -306,93 +306,101 @@ test(
   }
 );
 
-test("a newly-created user confirms their email address", async () => {
-  /* Arrange. */
-  requestInterceptionLayer.use(
-    rest.post(
-      "/api/confirm-email-address/:token_for_confirming_email_address",
-      (req, res, ctx) => {
-        return res.once(
-          ctx.status(200),
-          ctx.json({
-            message:
-              "[mocked] You have confirmed your email address successfully." +
-              " You may now log in.",
-          })
-        );
-      }
-    )
-  );
+test(
+  "a newly-created user clicks the button for confirming their email address" +
+    " and the request is processed succesfully by the backend",
+  async () => {
+    /* Arrange. */
+    requestInterceptionLayer.use(
+      rest.post(
+        "/api/confirm-email-address/:token_for_confirming_email_address",
+        (req, res, ctx) => {
+          return res.once(
+            ctx.status(200),
+            ctx.json({
+              message:
+                "[mocked] You have confirmed your email address successfully." +
+                " You may now log in.",
+            })
+          );
+        }
+      )
+    );
 
-  const realStore = createStore(rootReducer, enhancer);
+    const realStore = createStore(rootReducer, enhancer);
 
-  render(
-    <Provider store={realStore}>
-      <Router history={history}>
-        <App />
-      </Router>
-    </Provider>
-  );
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
 
-  /* Act. */
-  const tokenForConfirmingEmailAddress =
-    "mocked-correct-token-for-confirming-email-address";
-  history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+    /* Act. */
+    const tokenForConfirmingEmailAddress =
+      "mocked-correct-token-for-confirming-email-address";
+    history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
 
-  const confirmEmailAddressButton = screen.getByRole("button", {
-    name: "Confirm my email address",
-  });
-  fireEvent.click(confirmEmailAddressButton);
+    const confirmEmailAddressButton = screen.getByRole("button", {
+      name: "Confirm my email address",
+    });
+    fireEvent.click(confirmEmailAddressButton);
 
-  /* Assert. */
-  const temp = await screen.findByText(
-    "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
-  );
-  expect(temp).toBeInTheDocument();
-});
+    /* Assert. */
+    const temp = await screen.findByText(
+      "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+    );
+    expect(temp).toBeInTheDocument();
+  }
+);
 
-test("a newly-created user attempts to confirm their email address", async () => {
-  /* Arrange. */
-  const mockSingleFailure = createMockOneOrManyFailures("single failure", {
-    statusCode: 401,
-    error: "[mocked] Unauthorized,",
-    message: "[mocked] The provided token is invalid.",
-  });
-  requestInterceptionLayer.use(
-    rest.post(
-      "/api/confirm-email-address/:token_for_confirming_email_address",
-      mockSingleFailure
-    )
-  );
+test(
+  "a newly-created user clicks the button for confirming their email address" +
+    " but the request is rejected by the backend",
+  async () => {
+    /* Arrange. */
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized,",
+      message: "[mocked] The provided token is invalid.",
+    });
+    requestInterceptionLayer.use(
+      rest.post(
+        "/api/confirm-email-address/:token_for_confirming_email_address",
+        mockSingleFailure
+      )
+    );
 
-  const realStore = createStore(rootReducer, enhancer);
+    const realStore = createStore(rootReducer, enhancer);
 
-  render(
-    <Provider store={realStore}>
-      <Router history={history}>
-        <App />
-      </Router>
-    </Provider>
-  );
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
 
-  /* Act. */
-  const tokenForConfirmingEmailAddress =
-    "mocked-incorrect-token-for-confirming-email-address";
-  history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+    /* Act. */
+    const tokenForConfirmingEmailAddress =
+      "mocked-incorrect-token-for-confirming-email-address";
+    history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
 
-  const confirmMyEmailAddressButton = screen.getByRole("button", {
-    name: "Confirm my email address",
-  });
-  fireEvent.click(confirmMyEmailAddressButton);
+    const confirmMyEmailAddressButton = screen.getByRole("button", {
+      name: "Confirm my email address",
+    });
+    fireEvent.click(confirmMyEmailAddressButton);
 
-  /* Assert. */
-  const temp = await screen.findByText(
-    "[mocked] The provided token is invalid." +
-      " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
-      " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS."
-  );
-  expect(temp).toBeInTheDocument();
-});
+    /* Assert. */
+    const temp = await screen.findByText(
+      "[mocked] The provided token is invalid." +
+        " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
+        " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS."
+    );
+    expect(temp).toBeInTheDocument();
+  }
+);
 
 test("the user clicks the navigation-controlling button for 'Next page'", async () => {
   /* Arrange. */

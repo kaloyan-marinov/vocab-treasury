@@ -18,6 +18,9 @@ export const ConfirmEmailAddress = () => {
   console.log(
     `${new Date().toISOString()} - inspecting the \`params\` passed in to <ConfirmEmailAddress>`
   );
+  console.log(params);
+  const tokenForConfirmingEmailAddress: string =
+    params.token_for_confirming_email_address;
 
   const hasValidToken: boolean | null = useSelector(selectHasValidToken);
   console.log(`    hasValidToken: ${hasValidToken}`);
@@ -52,9 +55,7 @@ export const ConfirmEmailAddress = () => {
 
     const id: string = uuidv4();
     try {
-      await dispatch(
-        confirmEmailAddress(params.token_for_confirming_email_address)
-      );
+      await dispatch(confirmEmailAddress(tokenForConfirmingEmailAddress));
 
       dispatch(
         alertsCreate(
