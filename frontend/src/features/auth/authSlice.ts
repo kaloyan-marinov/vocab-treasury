@@ -51,10 +51,10 @@ export const createUser = (
   password: string
 ) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for creating a new User resource.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for creating a new User resource.
+  */
 
   return async (dispatch: Dispatch<ActionCreateUser>) => {
     const config = {
@@ -137,15 +137,10 @@ export type ActionConfirmEmailAddress =
 /* "auth/confirmEmailAddress" thunk-action creator */
 export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
   /*
-  TODO: (2024/03/13, 08:25)
-        fix the indentation in the following comment,
-        as well as in all other comments that contain the string "Create a thunk-action."
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for confirming a (newly-created) User's email address.
   */
-  /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for confirming a (newly-created) User's email address.
-    */
 
   return async (dispatch: Dispatch<ActionConfirmEmailAddress>) => {
     dispatch(confirmEmailAddressPending());
@@ -216,10 +211,10 @@ export type ActionIssueJWSToken =
 /* "auth/issueJWSToken" thunk-action creator */
 export const issueJWSToken = (email: string, password: string) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for issuing a JSON Web Signature token.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for issuing a JSON Web Signature token.
+  */
 
   return async (dispatch: Dispatch<ActionIssueJWSToken>) => {
     const config = {
@@ -302,10 +297,10 @@ export type ActionFetchProfile =
 /* "auth/fetchProfile" thunk-action creator */
 export const fetchProfile = () => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for fetching the Profile of a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for fetching the Profile of a specific User.
+  */
 
   return async (dispatch: Dispatch<ActionFetchProfile>) => {
     const config = {
@@ -376,10 +371,10 @@ export type ActionRequestPasswordReset =
 /* "auth/requestPasswordReset" thunk-action creator */
 export const requestPasswordReset = (email: string) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for requesting a password reset.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for requesting a password reset.
+  */
 
   return async (dispatch: Dispatch<ActionRequestPasswordReset>) => {
     const config = {

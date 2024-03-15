@@ -91,11 +91,11 @@ export type ActionFetchExamples =
 /* "examples/fetchExamples" thunk-action creator */
 export const fetchExamples = (urlForOnePageOfExamples: string) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for fetching Example resources,
-    which are associated with a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for fetching Example resources,
+  which are associated with a specific User.
+  */
 
   return async (dispatch: Dispatch<ActionFetchExamples>) => {
     const config = {
@@ -188,11 +188,11 @@ export const createExample = (
   contentTranslation: string | null
 ) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for creating a new Example resource,
-    which will be associated with a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for creating a new Example resource,
+  which will be associated with a specific User.
+  */
   return async (dispatch: Dispatch<ActionCreateExample>) => {
     const config = {
       headers: {
@@ -283,11 +283,11 @@ export type ActionDeleteExample =
 /* "examples/deleteExample" thunk-action creator */
 export const deleteExample = (exampleId: number) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for deleting an existing Example resource,
-    which must be associated with a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for deleting an existing Example resource,
+  which must be associated with a specific User.
+  */
   return async (dispatch: Dispatch<ActionDeleteExample>) => {
     const config = {
       headers: {
@@ -376,11 +376,11 @@ export const editExample = (
   }
 ) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for editing an existing Example resource,
-    which must be associated with a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for editing an existing Example resource,
+  which must be associated with a specific User.
+  */
   return async (dispatch: Dispatch<ActionEditExample>) => {
     const config = {
       headers: {

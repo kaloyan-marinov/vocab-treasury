@@ -51,10 +51,10 @@ export const alertsReducer = (
       // For the sake of keeping track of mistakes,
       // the commented-out code-block below contains a mistake.
       /*
-        const newState: IStateAlerts = { ...state };
-        newState.ids.push(alert.id);
-        newState.entities[alert.id] = alert;
-        */
+      const newState: IStateAlerts = { ...state };
+      newState.ids.push(alert.id);
+      newState.entities[alert.id] = alert;
+      */
 
       // The following code-block fixes the commented-out code-block's mistake.
       const newAlertsIds: string[] = [alert.id, ...state.ids];

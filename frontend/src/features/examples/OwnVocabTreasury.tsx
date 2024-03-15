@@ -66,10 +66,10 @@ export const OwnVocabTreasury = () => {
     examplesLinks.self !== null
   ) {
     /*
-      Arrange for the user to be shown
-      either the most-recently visited page of her Own VocabTreasury
-      or the last page thereof.
-      */
+    Arrange for the user to be shown
+    either the most-recently visited page of her Own VocabTreasury
+    or the last page thereof.
+    */
     console.log("    from /examples/:id (i.e. <SingleExample>)");
 
     if (
@@ -79,12 +79,12 @@ export const OwnVocabTreasury = () => {
       examplesLinks.last !== null
     ) {
       /*
-        Handle the case, where
-        (a) the most-recently visited page of the user's Own VocabTreasury used to
-            the last page thereof;
-        (b) that page used to contain a single example;
-        and (c) the user used the frontend UI to delete that example.
-        */
+      Handle the case, where
+      (a) the most-recently visited page of the user's Own VocabTreasury used to
+          the last page thereof;
+      (b) that page used to contain a single example;
+      and (c) the user used the frontend UI to delete that example.
+      */
       initialExamplesUrl = examplesLinks.last;
     } else {
       initialExamplesUrl = examplesLinks.self;
@@ -169,13 +169,15 @@ export const OwnVocabTreasury = () => {
     console.log("    examplesMeta.page !== null");
 
     /*
-      TODO: find out why
-            this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
-            despite the fact this block appears to be in line with the recommendation on
-            https://stackoverflow.com/a/46915314
-  
-            the "Non-null Assertion Operator (Postfix !)" is described on
-            https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
+    TODO: (2023/10/29, 15:06)
+    
+          find out why
+          this block requires the Non-null Assertion Operator (Postfix !) to be used twice,
+          despite the fact this block appears to be in line with the recommendation on
+          https://stackoverflow.com/a/46915314
+
+          the "Non-null Assertion Operator (Postfix !)" is described on
+          https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#strictnullchecks-on
       */
     const paginationCtrlBtnPrev: JSX.Element =
       examplesLinks.prev !== null ? (
