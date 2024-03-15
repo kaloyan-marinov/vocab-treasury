@@ -21,10 +21,14 @@
       "editor.formatOnSave": true
     },
 
-    // Controls if suggestions should be accepted 'Enter' - in addition to 'Tab'.
+    // Controls if suggestions should be accepted the 'Enter' key
+    // - in addition to via the 'Tab' key.
     // Helps to avoid ambiguity between inserting new lines or accepting suggestions.
     "editor.acceptSuggestionOnEnter": "off",
+    // Controls if suggestions should be accepted via the ';' and ')' keys
+    // - in addition to via the 'Tab' key.
     "editor.acceptSuggestionOnCommitCharacter": false,
+
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
@@ -36,6 +40,5 @@
     
     "jest.rootPath": "frontend",
     "jest.jestCommandLine": "npm run test --",
-    // "jest.autoRun": "off" //,
     "jest.runMode": "on-demand"
 }
