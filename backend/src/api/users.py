@@ -480,6 +480,11 @@ def send_email_requesting_that_email_address_should_be_confirmed(user):
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
+    link_to_frontend_for_email_address_confirmation = url_for(
+        "api_blueprint.confirm_email_address",
+        token=email_address_confirmation_token,
+        _external=True,
+    ).replace("localhost:5000/api", "localhost:3000")
 
     msg_sender = current_app.config["ADMINS"][0]
     msg_recipients = [user.email]
@@ -493,19 +498,10 @@ Please confirm your email address
 in order to be able to log in and start using VocabTreasury.
 
 To confirm your email address,
-launch a terminal instance and issue the following request:
-```
-$ curl \\
-    -i \\
-    -L \\
-    -H "Content-Type: application/json" \\
-    -X POST \\
-    {url_for(
-        'api_blueprint.confirm_email_address',
-        token=email_address_confirmation_token,
-        _external=True,
-    )}
-```
+open the following link in your web browser
+and click on the 'Confirm my email address' button:
+
+{link_to_frontend_for_email_address_confirmation}
 
 Sincerely,
 The VocabTreasury Team

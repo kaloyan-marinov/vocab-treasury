@@ -12,6 +12,12 @@
       "module": "flask",
       "env": {
         "FLASK_APP": "src",
+        // TODO: (2024/03/15, 05:57)
+        //       update the following line
+        //       according to the following deprecation warning:
+        //       ```
+        //       'FLASK_ENV' is deprecated and will not be used in Flask 2.3. Use 'FLASK_DEBUG' instead.
+        //       ```
         "FLASK_ENV": "development"
       },
       "args": ["run", "--no-debugger"],
