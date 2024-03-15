@@ -11,7 +11,7 @@ import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
-import { rest, RestRequest } from "msw";
+import { rest } from "msw";
 import { setupServer, SetupServerApi } from "msw/node";
 import thunkMiddleware from "redux-thunk";
 
