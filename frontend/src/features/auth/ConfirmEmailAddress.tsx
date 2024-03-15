@@ -57,14 +57,16 @@ export const ConfirmEmailAddress = () => {
   };
 
   return (
-    <>
-      {process.env.NODE_ENV === "development" && "<ConfirmEmailAddress>"}
+    <div className="mx-auto w-50 d-grid">
+      {process.env.NODE_ENV === "development" && (
+        <p>&lt; ConfirmEmailAddress &gt;</p>
+      )}
       <button
         onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
         className="btn btn-primary"
       >
         Confirm my email address
       </button>
-    </>
+    </div>
   );
 };
