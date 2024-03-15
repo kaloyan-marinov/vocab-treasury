@@ -91,16 +91,13 @@ test(
     /* Arrange. */
     const realStore = createStore(rootReducer, initState, enhancer);
 
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
-      rest.get(
-        "/api/user-profile",
-        createMockOneOrManyFailures("single failure", {
-          statusCode: 401,
-          error: "[mocked] Unauthorized",
-          message:
-            "[mocked] Authentication in the Basic Auth format is required.",
-        })
-      ),
+      rest.get("/api/user-profile", mockSingleFailure),
 
       rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
@@ -356,14 +353,15 @@ test("a newly-created user confirms their email address", async () => {
 
 test("a newly-created user attempts to confirm their email address", async () => {
   /* Arrange. */
+  const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+    statusCode: 401,
+    error: "[mocked] Unauthorized,",
+    message: "[mocked] The provided token is invalid.",
+  });
   requestInterceptionLayer.use(
     rest.post(
       "/api/confirm-email-address/:token_for_confirming_email_address",
-      createMockOneOrManyFailures("single failure", {
-        statusCode: 401,
-        error: "[mocked] Unauthorized,",
-        message: "[mocked] The provided token is invalid.",
-      })
+      mockSingleFailure
     )
   );
 
@@ -1137,20 +1135,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.delete(
-        "/api/examples/:id",
-        createMockOneOrManyFailures("single failure", {
-          statusCode: 401,
-          error: "[mocked] Unauthorized",
-          message:
-            "[mocked] Authentication in the Basic Auth format is required.",
-        })
-      )
+      rest.delete("/api/examples/:id", mockSingleFailure)
     );
 
     render(
@@ -1362,21 +1357,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
-
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.put(
-        "/api/examples/:id",
-        createMockOneOrManyFailures("single failure", {
-          statusCode: 401,
-          error: "[mocked] Unauthorized",
-          message:
-            "[mocked] Authentication in the Basic Auth format is required.",
-        })
-      )
+      rest.put("/api/examples/:id", mockSingleFailure)
     );
 
     render(
@@ -1497,20 +1488,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.get(
-        "/api/examples",
-        createMockOneOrManyFailures("single failure", {
-          statusCode: 401,
-          error: "[mocked] Unauthorized",
-          message:
-            "[mocked] Authentication in the Basic Auth format is required.",
-        })
-      )
+      rest.get("/api/examples", mockSingleFailure)
     );
 
     render(
@@ -1605,16 +1593,13 @@ test(
     " an alert should be created",
   async () => {
     /* Arrange. */
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
-      rest.get(
-        "/api/user-profile",
-        createMockOneOrManyFailures("single failure", {
-          statusCode: 401,
-          error: "[mocked] Unauthorized",
-          message:
-            "[mocked] Authentication in the Basic Auth format is required.",
-        })
-      ),
+      rest.get("/api/user-profile", mockSingleFailure),
       rest.post(
         "/api/request-password-reset",
         requestHandlers.mockRequestPasswordReset

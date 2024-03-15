@@ -1108,16 +1108,17 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized",
+            message:
+              "[mocked] Authentication in the Basic Auth format is required.",
+          }
+        );
         requestInterceptionLayer.use(
-          rest.get(
-            "/api/examples",
-            createMockOneOrManyFailures("single failure", {
-              statusCode: 401,
-              error: "[mocked] Unauthorized",
-              message:
-                "[mocked] Authentication in the Basic Auth format is required.",
-            })
-          )
+          rest.get("/api/examples", mockSingleFailure)
         );
 
         /* Act. */
@@ -1191,16 +1192,17 @@ describe(
         "+ the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized",
+            message:
+              "[mocked] Authentication in the Basic Auth format is required.",
+          }
+        );
         requestInterceptionLayer.use(
-          rest.post(
-            "/api/examples",
-            createMockOneOrManyFailures("single failure", {
-              statusCode: 401,
-              error: "[mocked] Unauthorized",
-              message:
-                "[mocked] Authentication in the Basic Auth format is required.",
-            })
-          )
+          rest.post("/api/examples", mockSingleFailure)
         );
 
         /* Act. */
@@ -1268,16 +1270,17 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized",
+            message:
+              "[mocked] Authentication in the Basic Auth format is required.",
+          }
+        );
         requestInterceptionLayer.use(
-          rest.delete(
-            "/api/examples/:id",
-            createMockOneOrManyFailures("single failure", {
-              statusCode: 401,
-              error: "[mocked] Unauthorized",
-              message:
-                "[mocked] Authentication in the Basic Auth format is required.",
-            })
-          )
+          rest.delete("/api/examples/:id", mockSingleFailure)
         );
 
         /* Act. */
@@ -1350,16 +1353,17 @@ describe(
         " + the HTTP request issued by that thunk-action is mocked to fail",
       async () => {
         /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized",
+            message:
+              "[mocked] Authentication in the Basic Auth format is required.",
+          }
+        );
         requestInterceptionLayer.use(
-          rest.put(
-            "/api/examples/:id",
-            createMockOneOrManyFailures("single failure", {
-              statusCode: 401,
-              error: "[mocked] Unauthorized",
-              message:
-                "[mocked] Authentication in the Basic Auth format is required.",
-            })
-          )
+          rest.put("/api/examples/:id", mockSingleFailure)
         );
 
         /* Act. */
