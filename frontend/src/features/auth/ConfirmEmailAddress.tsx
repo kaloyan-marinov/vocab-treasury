@@ -36,6 +36,13 @@ export const ConfirmEmailAddress = () => {
       `    hasValidToken: ${hasValidToken} > redirecting to ${nextURL} ...`
     );
     return <Redirect to={nextURL} />;
+    /*
+    It is interesting to note that
+    it is possible to replace the following statement with
+    ```
+    history.push(nextURL);
+    ```
+    */
   }
 
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
