@@ -268,52 +268,6 @@ export class RequestHandlingFacilitator {
       res: ResponseComposition<PutResponseBody>,
       ctx: RestContext
     ) => {
-      /*
-      const { id: exampleIdStr } = req.params;
-      const exampleId: number = parseInt(exampleIdStr);
-
-      const edited_source_language = (req!.body as Record<string, any>)
-        .source_language;
-      const edited_new_word = (req!.body as Record<string, any>).new_word;
-      const edited_content = (req!.body as Record<string, any>).content;
-      const edited_content_translation = (req!.body as Record<string, any>)
-        .content_translation;
-
-      this.mockExamples = this.mockExamples.map(
-        (example: IExampleFromBackend) => {
-          if (example.id !== exampleId) {
-            return example;
-          }
-
-          // Emulate the backend's route-handling function for
-          // PUT requests to /api/examples/:id .
-          const editedExample: IExampleFromBackend = {
-            ...example,
-          };
-          if (edited_source_language !== undefined) {
-            editedExample.source_language = edited_source_language;
-          }
-          if (edited_new_word !== undefined) {
-            editedExample.new_word = edited_new_word;
-          }
-          if (edited_content !== undefined) {
-            editedExample.content = edited_content;
-          }
-          if (edited_content_translation !== undefined) {
-            editedExample.content_translation = edited_content_translation;
-          }
-
-          return editedExample;
-        }
-      );
-
-      const editedExample = this.mockExamples.filter(
-        (entry: IExampleFromBackend) => entry.id === exampleId
-      )[0];
-
-      return res.once(ctx.status(200), ctx.json(editedExample));
-      */
-
       const exampleId: number = parseInt(req.params.id);
       const exampleIndex: number = this.mockExamples.findIndex(
         (e: IExampleFromBackend) => e.id === exampleId

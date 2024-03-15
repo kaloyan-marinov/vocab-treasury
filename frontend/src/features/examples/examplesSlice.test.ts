@@ -997,12 +997,6 @@ const createStoreMock = configureMockStore<
   IState,
   ThunkDispatch<IState, any, AnyAction>
 >([thunkMiddleware]);
-/*
-MockStoreEnhanced<
-    IState,
-    ThunkDispatch<IState, any, AnyAction>
->
-*/
 
 describe(
   "dispatching of async thunk-actions," +
