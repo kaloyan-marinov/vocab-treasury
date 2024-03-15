@@ -31,12 +31,11 @@ import { App } from "./App";
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 /* Create an MSW "request-interception layer". */
-const mockMultipleFailures = createMockOneOrManyFailures(
-  "multiple failures",
-  401,
-  "[mocked] Unauthorized",
-  "[mocked] Authentication in the Basic Auth format is required."
-);
+const mockMultipleFailures = createMockOneOrManyFailures("multiple failures", {
+  statusCode: 401,
+  error: "[mocked] Unauthorized",
+  message: "[mocked] Authentication in the Basic Auth format is required.",
+});
 const requestHandlersToMock = [
   rest.post("/api/users", mockMultipleFailures),
 
@@ -95,12 +94,12 @@ test(
     requestInterceptionLayer.use(
       rest.get(
         "/api/user-profile",
-        createMockOneOrManyFailures(
-          "single failure",
-          401,
-          "[mocked] Unauthorized",
-          "[mocked] Authentication in the Basic Auth format is required."
-        )
+        createMockOneOrManyFailures("single failure", {
+          statusCode: 401,
+          error: "[mocked] Unauthorized",
+          message:
+            "[mocked] Authentication in the Basic Auth format is required.",
+        })
       ),
 
       rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
@@ -360,12 +359,11 @@ test("a newly-created user attempts to confirm their email address", async () =>
   requestInterceptionLayer.use(
     rest.post(
       "/api/confirm-email-address/:token_for_confirming_email_address",
-      createMockOneOrManyFailures(
-        "single failure",
-        401,
-        "[mocked] Unauthorized,",
-        "[mocked] The provided token is invalid."
-      )
+      createMockOneOrManyFailures("single failure", {
+        statusCode: 401,
+        error: "[mocked] Unauthorized,",
+        message: "[mocked] The provided token is invalid.",
+      })
     )
   );
 
@@ -1146,12 +1144,12 @@ test(
 
       rest.delete(
         "/api/examples/:id",
-        createMockOneOrManyFailures(
-          "single failure",
-          401,
-          "[mocked] Unauthorized",
-          "[mocked] Authentication in the Basic Auth format is required."
-        )
+        createMockOneOrManyFailures("single failure", {
+          statusCode: 401,
+          error: "[mocked] Unauthorized",
+          message:
+            "[mocked] Authentication in the Basic Auth format is required.",
+        })
       )
     );
 
@@ -1372,12 +1370,12 @@ test(
 
       rest.put(
         "/api/examples/:id",
-        createMockOneOrManyFailures(
-          "single failure",
-          401,
-          "[mocked] Unauthorized",
-          "[mocked] Authentication in the Basic Auth format is required."
-        )
+        createMockOneOrManyFailures("single failure", {
+          statusCode: 401,
+          error: "[mocked] Unauthorized",
+          message:
+            "[mocked] Authentication in the Basic Auth format is required.",
+        })
       )
     );
 
@@ -1506,12 +1504,12 @@ test(
 
       rest.get(
         "/api/examples",
-        createMockOneOrManyFailures(
-          "single failure",
-          401,
-          "[mocked] Unauthorized",
-          "[mocked] Authentication in the Basic Auth format is required."
-        )
+        createMockOneOrManyFailures("single failure", {
+          statusCode: 401,
+          error: "[mocked] Unauthorized",
+          message:
+            "[mocked] Authentication in the Basic Auth format is required.",
+        })
       )
     );
 
@@ -1610,12 +1608,12 @@ test(
     requestInterceptionLayer.use(
       rest.get(
         "/api/user-profile",
-        createMockOneOrManyFailures(
-          "single failure",
-          401,
-          "[mocked] Unauthorized",
-          "[mocked] Authentication in the Basic Auth format is required."
-        )
+        createMockOneOrManyFailures("single failure", {
+          statusCode: 401,
+          error: "[mocked] Unauthorized",
+          message:
+            "[mocked] Authentication in the Basic Auth format is required.",
+        })
       ),
       rest.post(
         "/api/request-password-reset",

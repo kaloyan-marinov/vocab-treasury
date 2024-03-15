@@ -23,12 +23,12 @@ const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
   [
     rest.get(
       "/api/examples",
-      createMockOneOrManyFailures(
-        "multiple failures",
-        401,
-        "[mocked] Unauthorized",
-        "[mocked] Authentication in the Basic Auth format is required."
-      )
+      createMockOneOrManyFailures("multiple failures", {
+        statusCode: 401,
+        error: "[mocked] Unauthorized",
+        message:
+          "[mocked] Authentication in the Basic Auth format is required.",
+      })
     ),
   ];
 

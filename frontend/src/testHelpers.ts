@@ -6,7 +6,7 @@ import {
   RestRequest,
 } from "msw";
 
-import { IExampleFromBackend } from "./types";
+import { IExampleFromBackend, IOptionsForCreatingMockHandler } from "./types";
 import {
   MOCK_PROFILE,
   MOCK_EXAMPLES,
@@ -20,15 +20,8 @@ i.e. independent of the other ones.
 */
 export const createMockOneOrManyFailures = (
   description: string,
-  statusCode: number,
-  error: string,
-  message: string
+  options: IOptionsForCreatingMockHandler
 ) => {
-  // const statusCode: number = 401;
-  // const error: string = "[mocked] Unauthorized";
-  // const message: string =
-  //   "[mocked] Authentication in the Basic Auth format is required.";
-
   switch (description) {
     case "single failure": {
       const mockSingleFailure = (
@@ -37,10 +30,10 @@ export const createMockOneOrManyFailures = (
         ctx: RestContext
       ) => {
         return res.once(
-          ctx.status(statusCode),
+          ctx.status(options.statusCode),
           ctx.json({
-            error,
-            message,
+            error: options.error,
+            message: options.message,
           })
         );
       };
@@ -55,10 +48,10 @@ export const createMockOneOrManyFailures = (
         ctx: RestContext
       ) => {
         return res(
-          ctx.status(statusCode),
+          ctx.status(options.statusCode),
           ctx.json({
-            error,
-            message,
+            error: options.error,
+            message: options.message,
           })
         );
       };

@@ -175,12 +175,12 @@ describe("multiple components + mocking of HTTP requests to the backend", () => 
       requestInterceptionLayer.use(
         rest.post(
           "/api/tokens",
-          createMockOneOrManyFailures(
-            "single failure",
-            401,
-            "[mocked] Unauthorized",
-            "[mocked] Authentication in the Basic Auth format is required."
-          )
+          createMockOneOrManyFailures("single failure", {
+            statusCode: 401,
+            error: "[mocked] Unauthorized",
+            message:
+              "[mocked] Authentication in the Basic Auth format is required.",
+          })
         )
       );
 
