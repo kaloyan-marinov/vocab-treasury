@@ -8,6 +8,8 @@ import sqlalchemy
 import datetime as dt
 import jwt
 
+import os
+
 from src import db, flsk_bcrpt, mail
 from src.models import User, EmailAddressChange
 from src.auth import basic_auth, token_auth, validate_token
@@ -480,14 +482,26 @@ def send_email_requesting_that_email_address_should_be_confirmed(user):
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
+
     link_to_backend_for_email_address_confirmation = url_for(
         "api_blueprint.confirm_email_address",
         token=email_address_confirmation_token,
         _external=True,
     )
-    link_to_frontend_for_email_address_confirmation = (
-        link_to_backend_for_email_address_confirmation.replace(":5000/api/", ":3000/")
-    )
+    if os.environ.get("CONFIGURATION_4_BACKEND") == "development":
+        link_to_frontend_for_email_address_confirmation = (
+            link_to_backend_for_email_address_confirmation.replace(
+                ":5000/api/",
+                ":3000/",
+            )
+        )
+    else:
+        link_to_frontend_for_email_address_confirmation = (
+            link_to_backend_for_email_address_confirmation.replace(
+                "/api/",
+                "/",
+            )
+        )
 
     msg_sender = current_app.config["ADMINS"][0]
     msg_recipients = [user.email]
