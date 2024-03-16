@@ -117,10 +117,23 @@ export const fetchExamples = (urlForOnePageOfExamples: string) => {
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(fetchExamplesRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(fetchExamplesRejected(responseBodyMessage));
+        } else {
+          // https://axios-http.com/docs/handling_errors
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -223,10 +236,26 @@ export const createExample = (
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(createExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // https://bobbyhadz.com/blog/typescript-http-request-axios
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(createExampleRejected(responseBodyMessage));
+        } else {
+          // https://axios-http.com/docs/handling_errors
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -302,10 +331,26 @@ export const deleteExample = (exampleId: number) => {
       dispatch(deleteExampleFulfilled(exampleId));
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(deleteExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // https://bobbyhadz.com/blog/typescript-http-request-axios
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(deleteExampleRejected(responseBodyMessage));
+        } else {
+          // https://axios-http.com/docs/handling_errors
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -427,10 +472,26 @@ export const editExample = (
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(editExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // https://bobbyhadz.com/blog/typescript-http-request-axios
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(editExampleRejected(responseBodyMessage));
+        } else {
+          // https://axios-http.com/docs/handling_errors
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };

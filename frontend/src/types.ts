@@ -29,6 +29,27 @@ export interface IStateAuth {
   loggedInUserProfile: IProfile | null;
 }
 
+/*
+TODO: (2024/03/11, 06:51)
+
+      (1)
+      learn about the difference between a `type` and an `interface`
+
+      (2)
+      EITHER change the following symbols to `interface`s,
+      OR rename each by removing the `I` at the start of its name
+*/
+export type IUserFromBackend = {
+  id: number;
+  username: string;
+};
+
+export type ITokenFromBackend = {
+  token: string;
+};
+
+export type IProfileFromBackend = IProfile;
+
 export interface IExampleFromBackend {
   id: number;
   source_language: string;

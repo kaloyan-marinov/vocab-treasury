@@ -3,6 +3,7 @@ import { useHistory, useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 import { IExample, IState } from "../../types";
 import { URL_FOR_FIRST_PAGE_OF_EXAMPLES } from "../../constants";
@@ -119,13 +120,23 @@ export const SingleExample = () => {
       console.log(`    re-directing to ${locationDescriptor.pathname}`);
       history.push(locationDescriptor);
     } catch (err) {
-      if (err.response.status === 401) {
-        dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // https://bobbyhadz.com/blog/typescript-http-request-axios
+          console.log("error message: ", err.message);
+
+          if (err.response.status === 401) {
+            dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+          } else {
+            const message: string =
+              err.response.data.message ||
+              "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+            dispatch(alertsCreate(id, message));
+          }
+        }
       } else {
-        const message: string =
-          err.response.data.message ||
-          "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-        dispatch(alertsCreate(id, message));
+        console.log("unexpected error: ", err);
+        return "An unexpected error occurred";
       }
     }
   };
