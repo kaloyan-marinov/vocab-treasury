@@ -55,9 +55,12 @@ export const Search = () => {
         try {
           await dispatch(fetchExamples(filteredExamplesUrl));
         } catch (err) {
+          // The following if-else block is based on the code example at
+          // https://bobbyhadz.com/blog/typescript-http-request-axios .
           if (axios.isAxiosError(err)) {
+            // The following if-else block is based on the code example at
+            // https://axios-http.com/docs/handling_errors .
             if (err.response) {
-              // https://bobbyhadz.com/blog/typescript-http-request-axios
               console.log("error message: ", err.message);
 
               if (err.response.status === 401) {

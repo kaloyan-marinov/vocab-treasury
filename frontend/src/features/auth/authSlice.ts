@@ -88,9 +88,12 @@ export const createUser = (
     } catch (err) {
       let responseBodyMessage: string;
 
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           const responseBody = err.response.data;
@@ -99,7 +102,6 @@ export const createUser = (
             "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
           dispatch(createUserRejected(responseBodyMessage));
         } else {
-          // https://axios-http.com/docs/handling_errors
           responseBodyMessage = "no response was received";
         }
       } else {
@@ -180,9 +182,12 @@ export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
     } catch (err) {
       let responseBodyMessage: string;
 
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           const responseBody = err.response.data;
@@ -191,7 +196,6 @@ export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
             "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
           dispatch(confirmEmailAddressRejected(responseBodyMessage));
         } else {
-          // https://axios-http.com/docs/handling_errors
           responseBodyMessage = "no response was received";
         }
       } else {
@@ -285,9 +289,12 @@ export const issueJWSToken = (email: string, password: string) => {
     } catch (err) {
       let responseBodyMessage: string;
 
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           const responseBody = err.response.data;
@@ -296,7 +303,6 @@ export const issueJWSToken = (email: string, password: string) => {
             "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
           dispatch(issueJWSTokenRejected(responseBodyMessage));
         } else {
-          // https://axios-http.com/docs/handling_errors
           responseBodyMessage = "no response was received";
         }
       } else {
@@ -384,9 +390,12 @@ export const fetchProfile = () => {
     } catch (err) {
       let responseBodyMessage: string;
 
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           const responseBody = err.response.data;
@@ -395,7 +404,6 @@ export const fetchProfile = () => {
             "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
           dispatch(fetchProfileRejected(responseBodyMessage));
         } else {
-          // https://axios-http.com/docs/handling_errors
           responseBodyMessage = "no response was received";
         }
       } else {
@@ -481,9 +489,12 @@ export const requestPasswordReset = (email: string) => {
     } catch (err) {
       let responseBodyMessage: string;
 
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           const responseBody = err.response.data;
@@ -492,7 +503,6 @@ export const requestPasswordReset = (email: string) => {
             "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
           dispatch(requestPasswordResetRejected(responseBodyMessage));
         } else {
-          // https://axios-http.com/docs/handling_errors
           responseBodyMessage = "no response was received";
         }
       } else {

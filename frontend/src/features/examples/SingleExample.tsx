@@ -120,9 +120,12 @@ export const SingleExample = () => {
       console.log(`    re-directing to ${locationDescriptor.pathname}`);
       history.push(locationDescriptor);
     } catch (err) {
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
       if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
         if (err.response) {
-          // https://bobbyhadz.com/blog/typescript-http-request-axios
           console.log("error message: ", err.message);
 
           if (err.response.status === 401) {
