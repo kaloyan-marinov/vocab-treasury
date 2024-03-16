@@ -49,8 +49,8 @@ class Test_01_CreateUser(TestBase):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             },
         )
@@ -825,8 +825,8 @@ class Test_05_EditUser(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    "Your request did not include"
-                    ' a "Content-Type: application/json" header.'
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             },
         )
@@ -1577,8 +1577,8 @@ class Test_07_RequestPasswordReset(TestBasePlusUtilities):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             },
         )
@@ -1855,8 +1855,8 @@ class Test_08_ResetPassword(TestBase):
                 {
                     "error": "Bad Request",
                     "message": (
-                        'Your request did not include a "Content-Type: application/json"'
-                        " header."
+                        'Your request set the "Content-Type" header'
+                        ' to a value different from "application/json".'
                     ),
                 },
             )

@@ -3,6 +3,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 import { IExample, IState } from "../../types";
 import {
@@ -113,13 +114,26 @@ export const EditExample = () => {
         console.log(`    re-directing to ${locationDescriptor.pathname}`);
         history.push(locationDescriptor);
       } catch (err) {
-        if (err.response.status === 401) {
-          dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+        // The following if-else block is based on the code example at
+        // https://bobbyhadz.com/blog/typescript-http-request-axios .
+        if (axios.isAxiosError(err)) {
+          // The following if-else block is based on the code example at
+          // https://axios-http.com/docs/handling_errors .
+          if (err.response) {
+            console.log("error message: ", err.message);
+
+            if (err.response.status === 401) {
+              dispatch(logOut("TO CONTINUE, PLEASE LOG IN"));
+            } else {
+              const message: string =
+                err.response.data.message ||
+                "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+              dispatch(alertsCreate(id, message));
+            }
+          }
         } else {
-          const message: string =
-            err.response.data.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(alertsCreate(id, message));
+          console.log("unexpected error: ", err);
+          return "An unexpected error occurred";
         }
       }
     }

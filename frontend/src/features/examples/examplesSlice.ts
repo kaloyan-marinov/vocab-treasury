@@ -117,10 +117,23 @@ export const fetchExamples = (urlForOnePageOfExamples: string) => {
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(fetchExamplesRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(fetchExamplesRejected(responseBodyMessage));
+        } else {
+          // https://axios-http.com/docs/handling_errors
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -223,10 +236,28 @@ export const createExample = (
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(createExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(createExampleRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -302,10 +333,28 @@ export const deleteExample = (exampleId: number) => {
       dispatch(deleteExampleFulfilled(exampleId));
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(deleteExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(deleteExampleRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };
@@ -427,10 +476,28 @@ export const editExample = (
       );
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(editExampleRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          responseBodyMessage =
+            err.response.data.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(editExampleRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(err);
     }
   };

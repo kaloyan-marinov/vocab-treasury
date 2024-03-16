@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLocation, Link } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 import {
   IProfile,
@@ -121,18 +122,30 @@ export const OwnVocabTreasury = () => {
       try {
         await dispatch(fetchExamples(examplesUrl));
       } catch (err) {
-        if (err.response.status === 401) {
-          dispatch(
-            logOut(
-              "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
-            )
-          );
+        // The following if-else block is based on the code example at
+        // https://bobbyhadz.com/blog/typescript-http-request-axios .
+        if (axios.isAxiosError(err)) {
+          // The following if-else block is based on the code example at
+          // https://axios-http.com/docs/handling_errors .
+          if (err.response) {
+            console.log("error message: ", err.message);
+            if (err.response.status === 401) {
+              dispatch(
+                logOut(
+                  "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
+                )
+              );
+            } else {
+              const id: string = uuidv4();
+              const message: string =
+                err.response.data.message ||
+                "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+              dispatch(alertsCreate(id, message));
+            }
+          }
         } else {
-          const id: string = uuidv4();
-          const message: string =
-            err.response.data.message ||
-            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-          dispatch(alertsCreate(id, message));
+          console.log("unexpected error: ", err);
+          return "An unexpected error occurred";
         }
       }
     };

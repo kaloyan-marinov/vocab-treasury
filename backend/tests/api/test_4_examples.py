@@ -128,8 +128,8 @@ class Test_01_CreateExample(TestBaseForExampleResources_1):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             },
         )
@@ -1102,8 +1102,8 @@ class Test_04_EditExample(TestBaseForExampleResources_2):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             },
         )

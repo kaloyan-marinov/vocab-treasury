@@ -163,3 +163,17 @@ v2.4.1 (2023/11/19)
 - make the forms
   (a) have full width on viewports below Bootstrap's ``md`` breakpoint, and
   (b) have smaller width on larger viewports
+
+v2.4.2 (2024/03/16)
+-------------------
+
+- re-configure the workflow's job called ``run-tests-for-backend``
+  to compute branch coverage
+  
+- get the workflow to post comments with coverage percentages
+
+- update some third-party dependencies
+
+- enable every newly-created user to confirm their email address through the frontend
+
+- fix TypeScript errros

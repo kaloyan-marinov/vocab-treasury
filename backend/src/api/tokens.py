@@ -14,13 +14,13 @@ def issue_token():
     expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
         minutes=current_app.config["MINUTES_FOR_TOKEN_VALIDITY"]
     )
-    token_payload = {
+    token_dict = {
         "exp": expiration_timestamp_for_token,
         "purpose": ACCESS,
         "user_id": basic_auth.current_user().id,
     }
     token = jwt.encode(
-        token_payload,
+        token_dict,
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )

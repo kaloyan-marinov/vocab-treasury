@@ -1,7 +1,14 @@
 import { Dispatch } from "redux";
 import axios from "axios";
 
-import { RequestStatus, IProfile, IStateAuth } from "../../types";
+import {
+  RequestStatus,
+  IProfile,
+  IStateAuth,
+  IUserFromBackend,
+  ITokenFromBackend,
+  IProfileFromBackend,
+} from "../../types";
 import { VOCAB_TREASURY_APP_TOKEN, INITIAL_STATE_AUTH } from "../../constants";
 
 /* "auth/createUser/" action creators */
@@ -71,15 +78,37 @@ export const createUser = (
 
     dispatch(createUserPending());
     try {
-      const response = await axios.post("/api/users", body, config);
+      const response = await axios.post<IUserFromBackend>(
+        "/api/users",
+        body,
+        config
+      );
       dispatch(createUserFulfilled());
       return Promise.resolve();
     } catch (err) {
-      const responseBody = err.response.data;
-      const responseBodyMessage =
-        responseBody.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(createUserRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          const responseBody = err.response.data;
+          responseBodyMessage =
+            responseBody.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(createUserRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -151,10 +180,28 @@ export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
       dispatch(confirmEmailAddressFulfilled(response.data.message));
       return Promise.resolve();
     } catch (err) {
-      const responseBodyMessage =
-        err.response.data.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(confirmEmailAddressRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          const responseBody = err.response.data;
+          responseBodyMessage =
+            responseBody.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(confirmEmailAddressRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -231,16 +278,38 @@ export const issueJWSToken = (email: string, password: string) => {
 
     dispatch(issueJWSTokenPending());
     try {
-      const response = await axios.post("/api/tokens", body, config);
+      const response = await axios.post<ITokenFromBackend>(
+        "/api/tokens",
+        body,
+        config
+      );
       localStorage.setItem(VOCAB_TREASURY_APP_TOKEN, response.data.token);
       dispatch(issueJWSTokenFulfilled(response.data.token));
       return Promise.resolve();
     } catch (err) {
-      const responseBody = err.response.data;
-      const responseBodyMessage =
-        responseBody.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(issueJWSTokenRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          const responseBody = err.response.data;
+          responseBodyMessage =
+            responseBody.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(issueJWSTokenRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -312,15 +381,36 @@ export const fetchProfile = () => {
 
     dispatch(fetchProfilePending());
     try {
-      const response = await axios.get("/api/user-profile", config);
+      const response = await axios.get<IProfileFromBackend>(
+        "/api/user-profile",
+        config
+      );
       dispatch(fetchProfileFulfilled(response.data));
       return Promise.resolve();
     } catch (err) {
-      const responseBody = err.response.data;
-      const responseBodyMessage =
-        responseBody.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(fetchProfileRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          const responseBody = err.response.data;
+          responseBodyMessage =
+            responseBody.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(fetchProfileRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -397,11 +487,29 @@ export const requestPasswordReset = (email: string) => {
       dispatch(requestPasswordResetFulfilled());
       return Promise.resolve();
     } catch (err) {
-      const responseBody = err.response.data;
-      const responseBodyMessage =
-        responseBody.message ||
-        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
-      dispatch(requestPasswordResetRejected(responseBodyMessage));
+      let responseBodyMessage: string;
+
+      // The following if-else block is based on the code example at
+      // https://bobbyhadz.com/blog/typescript-http-request-axios .
+      if (axios.isAxiosError(err)) {
+        // The following if-else block is based on the code example at
+        // https://axios-http.com/docs/handling_errors .
+        if (err.response) {
+          console.log("error message: ", err.message);
+
+          const responseBody = err.response.data;
+          responseBodyMessage =
+            responseBody.message ||
+            "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+          dispatch(requestPasswordResetRejected(responseBodyMessage));
+        } else {
+          responseBodyMessage = "no response was received";
+        }
+      } else {
+        responseBodyMessage = `unexpected error: ${err}`;
+        console.log(responseBodyMessage);
+      }
+
       return Promise.reject(responseBodyMessage);
     }
   };

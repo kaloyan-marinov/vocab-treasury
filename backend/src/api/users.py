@@ -23,7 +23,10 @@ def create_user():
         r = jsonify(
             {
                 "error": "Bad Request",
-                "message": 'Your request did not include a "Content-Type: application/json" header.',
+                "message": (
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
+                ),
             }
         )
         r.status_code = 400
@@ -87,8 +90,8 @@ def create_user():
 
     send_email_requesting_that_email_address_should_be_confirmed(user)
 
-    payload = user.to_dict()
-    r = jsonify(payload)
+    u_dict = user.to_dict()
+    r = jsonify(u_dict)
     r.status_code = 201
     r.headers["Location"] = url_for("api_blueprint.get_user", user_id=user.id)
     return r
@@ -105,12 +108,14 @@ def confirm_email_address(token):
     but who is following up
     on an initiated request (of theirs) for an email-address change.
     """
-    reject_token, response_or_token_payload = validate_token(token)
+    reject_token, response_or_payload_within_token = validate_token(token)
 
     if reject_token:
-        return response_or_token_payload
+        # In this case, `response_or_payload_within_token` is a response.
+        return response_or_payload_within_token
 
-    if response_or_token_payload["purpose"] != EMAIL_ADDRESS_CONFIRMATION:
+    # In this case, `response_or_payload_within_token` is the payload within `token`.
+    if response_or_payload_within_token["purpose"] != EMAIL_ADDRESS_CONFIRMATION:
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -123,7 +128,7 @@ def confirm_email_address(token):
         r.status_code = 400
         return r
 
-    user_id = response_or_token_payload["user_id"]
+    user_id = response_or_payload_within_token["user_id"]
     user = User.query.get(user_id)
 
     if user.is_confirmed is False:
@@ -143,7 +148,10 @@ def confirm_email_address(token):
         most_recent_e_a_c = initiated_email_address_changes.order_by(
             EmailAddressChange.id.desc()
         ).first()
-        if response_or_token_payload["email_address_change_id"] != most_recent_e_a_c.id:
+        if (
+            response_or_payload_within_token["email_address_change_id"]
+            != most_recent_e_a_c.id
+        ):
             r = jsonify(
                 {
                     "error": "Unauthorized",
@@ -252,8 +260,8 @@ def edit_user(user_id):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -411,8 +419,8 @@ def request_password_reset():
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -472,13 +480,13 @@ def send_email_requesting_that_email_address_should_be_confirmed(user):
     expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
         days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
     )
-    token_payload = {
+    payload_within_token = {
         "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
     }
     email_address_confirmation_token = jwt.encode(
-        token_payload,
+        payload_within_token,
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
@@ -541,13 +549,13 @@ def send_password_reset_email(user):
     expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
         minutes=current_app.config["MINUTES_FOR_PASSWORD_RESET"]
     )
-    token_payload = {
+    payload_within_token = {
         "exp": expiration_timestamp_for_token,
         "purpose": PASSWORD_RESET,
         "user_id": user.id,
     }
     password_reset_token = jwt.encode(
-        token_payload,
+        payload_within_token,
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
@@ -609,14 +617,14 @@ def send_email_requesting_that_change_of_email_address_should_be_confirmed(
     expiration_timestamp_for_token = dt.datetime.utcnow() + dt.timedelta(
         days=current_app.config["DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION"]
     )
-    token_payload = {
+    payload_within_token = {
         "exp": expiration_timestamp_for_token,
         "purpose": EMAIL_ADDRESS_CONFIRMATION,
         "user_id": user.id,
         "email_address_change_id": email_address_change.id,
     }
     email_address_confirmation_token = jwt.encode(
-        token_payload,
+        payload_within_token,
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
@@ -683,20 +691,22 @@ def reset_password(token):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
         r.status_code = 400
         return r
 
-    reject_token, response_or_token_payload = validate_token(token)
+    reject_token, payload_within_token = validate_token(token)
 
     if reject_token:
-        return response_or_token_payload
+        # In this case, `response_or_payload_within_token` is a response.
+        return payload_within_token
 
-    if response_or_token_payload["purpose"] != PASSWORD_RESET:
+    # In this case, `response_or_payload_within_token` is the payload within `token`.
+    if payload_within_token["purpose"] != PASSWORD_RESET:
         r = jsonify(
             {
                 "error": "Bad Request",
@@ -709,7 +719,7 @@ def reset_password(token):
         r.status_code = 400
         return r
 
-    user_id = response_or_token_payload["user_id"]
+    user_id = payload_within_token["user_id"]
     user = User.query.get(user_id)
 
     new_password = request.json.get("new_password")

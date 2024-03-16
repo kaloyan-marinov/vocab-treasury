@@ -14,8 +14,8 @@ def create_example():
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -53,8 +53,8 @@ def create_example():
     db.session.add(e)
     db.session.commit()
 
-    payload = e.to_dict()
-    r = jsonify(payload)
+    e_dict = e.to_dict()
+    r = jsonify(e_dict)
     r.status_code = 201
     r.headers["Location"] = url_for("api_blueprint.get_example", example_id=e.id)
     return r
@@ -139,8 +139,8 @@ def edit_example(example_id):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
