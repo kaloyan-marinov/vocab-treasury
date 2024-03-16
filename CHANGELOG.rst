@@ -164,7 +164,7 @@ v2.4.1 (2023/11/19)
   (a) have full width on viewports below Bootstrap's ``md`` breakpoint, and
   (b) have smaller width on larger viewports
 
-v2.4.2 (2024/HH/MM)
+v2.4.2 (2024/03/16)
 -------------------
 
 - re-configure the workflow's job called ``run-tests-for-backend``
