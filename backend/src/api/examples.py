@@ -14,8 +14,8 @@ def create_example():
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -139,8 +139,8 @@ def edit_example(example_id):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )

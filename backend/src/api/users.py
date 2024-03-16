@@ -23,7 +23,10 @@ def create_user():
         r = jsonify(
             {
                 "error": "Bad Request",
-                "message": 'Your request did not include a "Content-Type: application/json" header.',
+                "message": (
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
+                ),
             }
         )
         r.status_code = 400
@@ -257,8 +260,8 @@ def edit_user(user_id):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -416,8 +419,8 @@ def request_password_reset():
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
@@ -688,8 +691,8 @@ def reset_password(token):
             {
                 "error": "Bad Request",
                 "message": (
-                    'Your request did not include a "Content-Type: application/json"'
-                    " header."
+                    'Your request set the "Content-Type" header'
+                    ' to a value different from "application/json".'
                 ),
             }
         )
