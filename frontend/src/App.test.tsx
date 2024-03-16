@@ -31,7 +31,11 @@ import { App } from "./App";
 // jest.setTimeout(BIG_VALUE_FOR_TIMEOUT_OF_ASYNCHRONOUS_OPERATIONS);
 
 /* Create an MSW "request-interception layer". */
-const mockMultipleFailures = createMockOneOrManyFailures("multiple failures");
+const mockMultipleFailures = createMockOneOrManyFailures("multiple failures", {
+  statusCode: 401,
+  error: "[mocked] Unauthorized",
+  message: "[mocked] Authentication in the Basic Auth format is required.",
+});
 const requestHandlersToMock = [
   rest.post("/api/users", mockMultipleFailures),
 
@@ -87,11 +91,13 @@ test(
     /* Arrange. */
     const realStore = createStore(rootReducer, initState, enhancer);
 
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
-      rest.get(
-        "/api/user-profile",
-        createMockOneOrManyFailures("single failure")
-      ),
+      rest.get("/api/user-profile", mockSingleFailure),
 
       rest.post("/api/tokens", requestHandlers.mockIssueJWSToken),
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
@@ -296,6 +302,102 @@ test(
     expect(history.location.pathname).toEqual("/login");
 
     temp = await screen.findByText("TO CONTINUE, PLEASE LOG IN");
+    expect(temp).toBeInTheDocument();
+  }
+);
+
+test(
+  "a newly-created user clicks the button for confirming their email address" +
+    " and the request is processed succesfully by the backend",
+  async () => {
+    /* Arrange. */
+    requestInterceptionLayer.use(
+      rest.post(
+        "/api/confirm-email-address/:token_for_confirming_email_address",
+        (req, res, ctx) => {
+          return res.once(
+            ctx.status(200),
+            ctx.json({
+              message:
+                "[mocked] You have confirmed your email address successfully." +
+                " You may now log in.",
+            })
+          );
+        }
+      )
+    );
+
+    const realStore = createStore(rootReducer, enhancer);
+
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
+
+    /* Act. */
+    const tokenForConfirmingEmailAddress =
+      "mocked-correct-token-for-confirming-email-address";
+    history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+
+    const confirmEmailAddressButton = screen.getByRole("button", {
+      name: "Confirm my email address",
+    });
+    fireEvent.click(confirmEmailAddressButton);
+
+    /* Assert. */
+    const temp = await screen.findByText(
+      "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+    );
+    expect(temp).toBeInTheDocument();
+  }
+);
+
+test(
+  "a newly-created user clicks the button for confirming their email address" +
+    " but the request is rejected by the backend",
+  async () => {
+    /* Arrange. */
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized,",
+      message: "[mocked] The provided token is invalid.",
+    });
+    requestInterceptionLayer.use(
+      rest.post(
+        "/api/confirm-email-address/:token_for_confirming_email_address",
+        mockSingleFailure
+      )
+    );
+
+    const realStore = createStore(rootReducer, enhancer);
+
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
+
+    /* Act. */
+    const tokenForConfirmingEmailAddress =
+      "mocked-incorrect-token-for-confirming-email-address";
+    history.push(`/confirm-email-address/${tokenForConfirmingEmailAddress}`);
+
+    const confirmMyEmailAddressButton = screen.getByRole("button", {
+      name: "Confirm my email address",
+    });
+    fireEvent.click(confirmMyEmailAddressButton);
+
+    /* Assert. */
+    const temp = await screen.findByText(
+      "[mocked] The provided token is invalid." +
+        " PLEASE DOUBLE-CHECK YOUR EMAIL INBOX FOR A MESSAGE" +
+        " WITH INSTRUCTIONS ON HOW TO CONFIRM YOUR EMAIL ADDRESS."
+    );
     expect(temp).toBeInTheDocument();
   }
 );
@@ -1041,15 +1143,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.delete(
-        "/api/examples/:id",
-        createMockOneOrManyFailures("single failure")
-      )
+      rest.delete("/api/examples/:id", mockSingleFailure)
     );
 
     render(
@@ -1204,8 +1308,6 @@ test(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples())
-
-      // rest.put("/api/examples/:id", createMockOneOrManyFailures("single failure"))
     );
 
     render(
@@ -1263,16 +1365,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
-
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.put(
-        "/api/examples/:id",
-        createMockOneOrManyFailures("single failure")
-      )
+      rest.put("/api/examples/:id", mockSingleFailure)
     );
 
     render(
@@ -1393,12 +1496,17 @@ test(
     const realStore = createStore(rootReducer, enhancer);
 
     const rhf: RequestHandlingFacilitator = new RequestHandlingFacilitator();
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
       rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile),
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.get("/api/examples", createMockOneOrManyFailures("single failure"))
+      rest.get("/api/examples", mockSingleFailure)
     );
 
     render(
@@ -1493,11 +1601,13 @@ test(
     " an alert should be created",
   async () => {
     /* Arrange. */
+    const mockSingleFailure = createMockOneOrManyFailures("single failure", {
+      statusCode: 401,
+      error: "[mocked] Unauthorized",
+      message: "[mocked] Authentication in the Basic Auth format is required.",
+    });
     requestInterceptionLayer.use(
-      rest.get(
-        "/api/user-profile",
-        createMockOneOrManyFailures("single failure")
-      ),
+      rest.get("/api/user-profile", mockSingleFailure),
       rest.post(
         "/api/request-password-reset",
         requestHandlers.mockRequestPasswordReset
@@ -1542,7 +1652,7 @@ test(
 
 test(
   "if a logged-in user manually changes" +
-    " the URL in her browser's address bar to /request_password_reset ," +
+    " the URL in her browser's address bar to /request-password-reset ," +
     " the frontend application should redirect the user to /home",
   async () => {
     /* Arrange. */
@@ -1569,7 +1679,46 @@ test(
 
     /* Act. */
     /* Simulate the user's manually changing the URL in her browser's address bar. */
-    history.push("/request_password_reset");
+    history.push("/request-password-reset");
+
+    /* Assert. */
+    expect(history.location.pathname).toEqual("/home");
+  }
+);
+
+test(
+  "if a logged-in user manually changes" +
+    " the URL in her browser's address bar to" +
+    " /confirm-email-address/let-us-pretend-this-part-is-a-valid-token ," +
+    " the frontend application should redirect the user to /home",
+  async () => {
+    /* Arrange. */
+    const realStore = createStore(rootReducer, enhancer);
+
+    requestInterceptionLayer.use(
+      rest.get("/api/user-profile", requestHandlers.mockFetchUserProfile)
+    );
+
+    render(
+      <Provider store={realStore}>
+        <Router history={history}>
+          <App />
+        </Router>
+      </Provider>
+    );
+
+    let temp: HTMLElement;
+
+    temp = await screen.findByText("Log out");
+    expect(temp).toBeInTheDocument();
+
+    expect(history.location.pathname).toEqual("/");
+
+    /* Act. */
+    /* Simulate the user's manually changing the URL in her browser's address bar. */
+    history.push(
+      "/confirm-email-address/let-us-pretend-this-part-is-a-valid-token"
+    );
 
     /* Assert. */
     expect(history.location.pathname).toEqual("/home");

@@ -51,10 +51,10 @@ export const createUser = (
   password: string
 ) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for creating a new User resource.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for creating a new User resource.
+  */
 
   return async (dispatch: Dispatch<ActionCreateUser>) => {
     const config = {
@@ -80,6 +80,81 @@ export const createUser = (
         responseBody.message ||
         "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
       dispatch(createUserRejected(responseBodyMessage));
+      return Promise.reject(responseBodyMessage);
+    }
+  };
+};
+
+/* "auth/confirmEmailAddress" action creators. */
+export enum ActionTypesConfirmEmailAddress {
+  PENDING = "auth/confirmEmailAddress/pending",
+  REJECTED = "auth/confirmEmailAddress/rejected",
+  FULFILLED = "auth/confirmEmailAddress/fulfilled",
+}
+
+export interface IActionConfirmEmailAddressPending {
+  type: typeof ActionTypesConfirmEmailAddress.PENDING;
+}
+
+export interface IActionConfirmEmailAddressRejected {
+  type: typeof ActionTypesConfirmEmailAddress.REJECTED;
+  error: string;
+}
+
+export interface IActionConfirmEmailAddressFulfilled {
+  type: typeof ActionTypesConfirmEmailAddress.FULFILLED;
+  payload: {
+    message: string;
+  };
+}
+
+export const confirmEmailAddressPending =
+  (): IActionConfirmEmailAddressPending => ({
+    type: ActionTypesConfirmEmailAddress.PENDING,
+  });
+
+export const confirmEmailAddressRejected = (
+  error: string
+): IActionConfirmEmailAddressRejected => ({
+  type: ActionTypesConfirmEmailAddress.REJECTED,
+  error,
+});
+
+export const confirmEmailAddressFulfilled = (
+  message: string
+): IActionConfirmEmailAddressFulfilled => ({
+  type: ActionTypesConfirmEmailAddress.FULFILLED,
+  payload: {
+    message,
+  },
+});
+
+export type ActionConfirmEmailAddress =
+  | IActionConfirmEmailAddressPending
+  | IActionConfirmEmailAddressRejected
+  | IActionConfirmEmailAddressFulfilled;
+
+/* "auth/confirmEmailAddress" thunk-action creator */
+export const confirmEmailAddress = (tokenForConfirmingEmailAddress: string) => {
+  /*
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for confirming a (newly-created) User's email address.
+  */
+
+  return async (dispatch: Dispatch<ActionConfirmEmailAddress>) => {
+    dispatch(confirmEmailAddressPending());
+    try {
+      const response = await axios.post(
+        `/api/confirm-email-address/${tokenForConfirmingEmailAddress}`
+      );
+      dispatch(confirmEmailAddressFulfilled(response.data.message));
+      return Promise.resolve();
+    } catch (err) {
+      const responseBodyMessage =
+        err.response.data.message ||
+        "ERROR NOT FROM BACKEND BUT FROM FRONTEND THUNK-ACTION";
+      dispatch(confirmEmailAddressRejected(responseBodyMessage));
       return Promise.reject(responseBodyMessage);
     }
   };
@@ -136,10 +211,10 @@ export type ActionIssueJWSToken =
 /* "auth/issueJWSToken" thunk-action creator */
 export const issueJWSToken = (email: string, password: string) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for issuing a JSON Web Signature token.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for issuing a JSON Web Signature token.
+  */
 
   return async (dispatch: Dispatch<ActionIssueJWSToken>) => {
     const config = {
@@ -222,10 +297,10 @@ export type ActionFetchProfile =
 /* "auth/fetchProfile" thunk-action creator */
 export const fetchProfile = () => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for fetching the Profile of a specific User.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for fetching the Profile of a specific User.
+  */
 
   return async (dispatch: Dispatch<ActionFetchProfile>) => {
     const config = {
@@ -296,10 +371,10 @@ export type ActionRequestPasswordReset =
 /* "auth/requestPasswordReset" thunk-action creator */
 export const requestPasswordReset = (email: string) => {
   /*
-    Create a thunk-action.
-    When dispatched, it issues an HTTP request
-    to the backend's endpoint for requesting a password reset.
-    */
+  Create a thunk-action.
+  When dispatched, it issues an HTTP request
+  to the backend's endpoint for requesting a password reset.
+  */
 
   return async (dispatch: Dispatch<ActionRequestPasswordReset>) => {
     const config = {
@@ -348,6 +423,7 @@ export const authReducer = (
   state: IStateAuth = INITIAL_STATE_AUTH,
   action:
     | ActionCreateUser
+    | ActionConfirmEmailAddress
     | ActionIssueJWSToken
     | ActionFetchProfile
     | ActionRequestPasswordReset
@@ -369,6 +445,27 @@ export const authReducer = (
       };
 
     case ActionTypesCreateUser.FULFILLED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.SUCCEEDED,
+        requestError: null,
+      };
+
+    case ActionTypesConfirmEmailAddress.PENDING:
+      return {
+        ...state,
+        requestStatus: RequestStatus.LOADING,
+        requestError: null,
+      };
+
+    case ActionTypesConfirmEmailAddress.REJECTED:
+      return {
+        ...state,
+        requestStatus: RequestStatus.FAILED,
+        requestError: action.error,
+      };
+
+    case ActionTypesConfirmEmailAddress.FULFILLED:
       return {
         ...state,
         requestStatus: RequestStatus.SUCCEEDED,

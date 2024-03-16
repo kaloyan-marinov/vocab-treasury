@@ -86,3 +86,9 @@ export interface IState {
   auth: IStateAuth;
   examples: IStateExamples;
 }
+
+export interface IOptionsForCreatingMockHandler {
+  statusCode: number;
+  error: string;
+  message: string;
+}

@@ -6,32 +6,32 @@
   "configurations": [
     {
       "name": "[new way] Python: Flask",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}/backend",
       "module": "flask",
       "env": {
         "FLASK_APP": "src",
-        "FLASK_ENV": "development"
+        "FLASK_DEBUG": "True"
       },
       "args": ["run", "--no-debugger"],
       "jinja": true
     },
     {
       "name": "[old way] Python: Flask",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}/backend",
       "module": "run_dev_server",
       "env": {
-        "FLASK_ENV": "development"
+        "FLASK_DEBUG": "True"
       },
       "jinja": true,
       "justMyCode": false
     },
     {
       "name": "Python: Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "env": {
         "CONFIGURATION_4_BACKEND": "development",

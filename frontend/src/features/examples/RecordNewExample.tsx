@@ -73,11 +73,11 @@ export const RecordNewExample = () => {
         dispatch(alertsCreate(id, "EXAMPLE CREATION SUCCESSFUL"));
 
         /*
-          Force
-          the contents within the "meta" and "links" sub-slices
-          of the app-level state's "examples" slice
-          to be updated.
-          */
+        Force
+        the contents within the "meta" and "links" sub-slices
+        of the app-level state's "examples" slice
+        to be updated.
+        */
         await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
 
         const locationDescriptor = {

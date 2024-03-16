@@ -8,7 +8,10 @@ import { AnyAction } from "redux";
 import { RequestStatus, IProfile, IStateAuth, IState } from "../../types";
 import { INITIAL_STATE_AUTH, VOCAB_TREASURY_APP_TOKEN } from "../../constants";
 import { MOCK_PROFILE } from "../../mockPiecesOfData";
-import { requestHandlers } from "../../testHelpers";
+import {
+  requestHandlers,
+  createMockOneOrManyFailures,
+} from "../../testHelpers";
 import { logOut, INITIAL_STATE } from "../../store";
 import {
   ActionTypesCreateUser,
@@ -19,6 +22,14 @@ import {
   createUserRejected,
   createUserFulfilled,
   createUser,
+  ActionTypesConfirmEmailAddress,
+  IActionConfirmEmailAddressPending,
+  IActionConfirmEmailAddressRejected,
+  IActionConfirmEmailAddressFulfilled,
+  confirmEmailAddressPending,
+  confirmEmailAddressRejected,
+  confirmEmailAddressFulfilled,
+  confirmEmailAddress,
   ActionTypesIssueJWSToken,
   IActionIssueJWSTokenPending,
   IActionIssueJWSTokenRejected,
@@ -72,6 +83,38 @@ describe("action creators", () => {
 
     expect(action).toEqual({
       type: "auth/createUser/fulfilled",
+    });
+  });
+
+  test("confirmEmailAddressPending", () => {
+    const action = confirmEmailAddressPending();
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/pending",
+    });
+  });
+
+  test("confirmEmailAddressRejected", () => {
+    const action = confirmEmailAddressRejected(
+      "auth-confirmEmailAddress-rejected"
+    );
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/rejected",
+      error: "auth-confirmEmailAddress-rejected",
+    });
+  });
+
+  test("confirmEmailAddressFulfilled", () => {
+    const action = confirmEmailAddressFulfilled(
+      "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN."
+    );
+
+    expect(action).toEqual({
+      type: "auth/confirmEmailAddress/fulfilled",
+      payload: {
+        message: "EMAIL-ADDRESS CONFIRMATION SUCCESSFUL - YOU MAY NOW LOG IN.",
+      },
     });
   });
 
@@ -243,6 +286,84 @@ describe("reducer", () => {
     };
     const action: IActionCreateUserFulfilled = {
       type: ActionTypesCreateUser.FULFILLED,
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.SUCCEEDED,
+      requestError: null,
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/pending", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.FAILED,
+      requestError: "auth-confirmEmailAddress-rejected",
+    };
+    const action: IActionConfirmEmailAddressPending = {
+      type: ActionTypesConfirmEmailAddress.PENDING,
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/rejected", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionConfirmEmailAddressRejected = {
+      type: ActionTypesConfirmEmailAddress.REJECTED,
+      error: "auth-confirmEmailAddress-rejected",
+    };
+
+    /* Act. */
+    const newState: IStateAuth = authReducer(initStAuth, action);
+
+    /* Assert. */
+    expect(newState).toEqual({
+      requestStatus: RequestStatus.FAILED,
+      requestError: "auth-confirmEmailAddress-rejected",
+      token: null,
+      hasValidToken: null,
+      loggedInUserProfile: null,
+    });
+  });
+
+  test("auth/confirmEmailAddress/fulfilled", () => {
+    /* Arrange. */
+    initStAuth = {
+      ...INITIAL_STATE_AUTH,
+      requestStatus: RequestStatus.LOADING,
+      requestError: null,
+    };
+    const action: IActionConfirmEmailAddressFulfilled = {
+      type: ActionTypesConfirmEmailAddress.FULFILLED,
+      payload: {
+        message:
+          "You have confirmed your email address successfully." +
+          " You may now log in.",
+      },
     };
 
     /* Act. */
@@ -636,6 +757,82 @@ describe(
           {
             type: "auth/createUser/rejected",
             error: "[mocked] The provided email is already taken.",
+          },
+        ]);
+      }
+    );
+
+    test(
+      "confirmEmailAddress(tokenForConfirmingEmailAddress)" +
+        " + the HTTP request issued by that thunk-action is mocked to succeed",
+      async () => {
+        /* Arrange. */
+        requestInterceptionLayer.use(
+          rest.post(
+            "/api/confirm-email-address/:token_for_confirming_email_address",
+            requestHandlers.mockConfirmEmailAddress
+          )
+        );
+
+        /* Act. */
+        const confirmEmailAddressPromise = storeMock.dispatch(
+          confirmEmailAddress("mocked-token-for-confirming-email-address")
+        );
+
+        /* Assert. */
+        await expect(confirmEmailAddressPromise).resolves.toEqual(undefined);
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/confirmEmailAddress/pending",
+          },
+          {
+            type: "auth/confirmEmailAddress/fulfilled",
+            payload: {
+              message:
+                "[mocked] You have confirmed your email address successfully." +
+                " You may now log in.",
+            },
+          },
+        ]);
+      }
+    );
+
+    test(
+      "confirmEmailAddress(tokenForConfirmingEmailAddress)" +
+        " + the HTTP request issued by that thunk-action is mocked to fail",
+      async () => {
+        /* Arrange. */
+        const mockSingleFailure = createMockOneOrManyFailures(
+          "single failure",
+          {
+            statusCode: 401,
+            error: "[mocked] Unauthorized,",
+            message: "[mocked] The provided token is invalid.",
+          }
+        );
+        requestInterceptionLayer.use(
+          rest.post(
+            "/api/confirm-email-address/:token_for_confirming_email_address",
+            mockSingleFailure
+          )
+        );
+
+        /* Act. */
+        const confirmEmailAddressPromise = storeMock.dispatch(
+          confirmEmailAddress("mocked-token-for-confirming-email-address")
+        );
+
+        /* Assert. */
+        await expect(confirmEmailAddressPromise).rejects.toEqual(
+          "[mocked] The provided token is invalid."
+        );
+        expect(storeMock.getActions()).toEqual([
+          {
+            type: "auth/confirmEmailAddress/pending",
+          },
+          {
+            type: "auth/confirmEmailAddress/rejected",
+            error: "[mocked] The provided token is invalid.",
           },
         ]);
       }

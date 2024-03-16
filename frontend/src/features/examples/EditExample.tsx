@@ -94,12 +94,12 @@ export const EditExample = () => {
           await dispatch(fetchExamples(examplesLinks.self));
         } else {
           /*
-            It _should_ be impossible for this block of code to ever be executed.
-  
-            Why?
-  
-            For the same reason as in the analogous block within <SingleExample>.
-            */
+          It _should_ be impossible for this block of code to ever be executed.
+
+          Why?
+
+          For the same reason as in the analogous block within <SingleExample>.
+          */
           await dispatch(fetchExamples(URL_FOR_FIRST_PAGE_OF_EXAMPLES));
         }
 

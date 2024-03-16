@@ -19,8 +19,13 @@ import { Alerts } from "../alerts/Alerts";
 import { OwnVocabTreasury } from "./OwnVocabTreasury";
 
 /* Create an MSW "request-interception layer". */
+const mockMultipleFailures = createMockOneOrManyFailures("multiple failures", {
+  statusCode: 401,
+  error: "[mocked] Unauthorized",
+  message: "[mocked] Authentication in the Basic Auth format is required.",
+});
 const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [rest.get("/api/examples", createMockOneOrManyFailures("multiple failures"))];
+  [rest.get("/api/examples", mockMultipleFailures)];
 
 const requestInterceptionLayer: SetupServerApi = setupServer(
   ...requestHandlersToMock

@@ -659,7 +659,7 @@ and use `localhost` to serve a frontend application.
 
 # Future plans
 
-- enable every newly-created user to confirm their email address
+- enable every newly-created user to reset their password
   through the frontend
 
 - allow each user to export their personal data in JSON format

@@ -6,7 +6,7 @@ import {
   RestRequest,
 } from "msw";
 
-import { IExampleFromBackend } from "./types";
+import { IExampleFromBackend, IOptionsForCreatingMockHandler } from "./types";
 import {
   MOCK_PROFILE,
   MOCK_EXAMPLES,
@@ -18,12 +18,10 @@ Mock handlers for HTTP requests.
 Each of these mock handlers is "lone-standing",
 i.e. independent of the other ones.
 */
-export const createMockOneOrManyFailures = (description: string) => {
-  const statusCode: number = 401;
-  const error: string = "[mocked] Unauthorized";
-  const message: string =
-    "[mocked] Authentication in the Basic Auth format is required.";
-
+export const createMockOneOrManyFailures = (
+  description: string,
+  options: IOptionsForCreatingMockHandler
+) => {
   switch (description) {
     case "single failure": {
       const mockSingleFailure = (
@@ -32,10 +30,10 @@ export const createMockOneOrManyFailures = (description: string) => {
         ctx: RestContext
       ) => {
         return res.once(
-          ctx.status(statusCode),
+          ctx.status(options.statusCode),
           ctx.json({
-            error,
-            message,
+            error: options.error,
+            message: options.message,
           })
         );
       };
@@ -50,10 +48,10 @@ export const createMockOneOrManyFailures = (description: string) => {
         ctx: RestContext
       ) => {
         return res(
-          ctx.status(statusCode),
+          ctx.status(options.statusCode),
           ctx.json({
-            error,
-            message,
+            error: options.error,
+            message: options.message,
           })
         );
       };
@@ -76,6 +74,21 @@ const mockCreateUser = (
     ctx.json({
       id: 17,
       username: "mocked-request-jd",
+    })
+  );
+};
+
+const mockConfirmEmailAddress = (
+  req: RestRequest<DefaultRequestBody, RequestParams>,
+  res: ResponseComposition<any>,
+  ctx: RestContext
+) => {
+  return res.once(
+    ctx.status(200),
+    ctx.json({
+      message:
+        "[mocked] You have confirmed your email address successfully." +
+        " You may now log in.",
     })
   );
 };
@@ -248,52 +261,6 @@ export class RequestHandlingFacilitator {
       res: ResponseComposition<PutResponseBody>,
       ctx: RestContext
     ) => {
-      /*
-      const { id: exampleIdStr } = req.params;
-      const exampleId: number = parseInt(exampleIdStr);
-
-      const edited_source_language = (req!.body as Record<string, any>)
-        .source_language;
-      const edited_new_word = (req!.body as Record<string, any>).new_word;
-      const edited_content = (req!.body as Record<string, any>).content;
-      const edited_content_translation = (req!.body as Record<string, any>)
-        .content_translation;
-
-      this.mockExamples = this.mockExamples.map(
-        (example: IExampleFromBackend) => {
-          if (example.id !== exampleId) {
-            return example;
-          }
-
-          // Emulate the backend's route-handling function for
-          // PUT requests to /api/examples/:id .
-          const editedExample: IExampleFromBackend = {
-            ...example,
-          };
-          if (edited_source_language !== undefined) {
-            editedExample.source_language = edited_source_language;
-          }
-          if (edited_new_word !== undefined) {
-            editedExample.new_word = edited_new_word;
-          }
-          if (edited_content !== undefined) {
-            editedExample.content = edited_content;
-          }
-          if (edited_content_translation !== undefined) {
-            editedExample.content_translation = edited_content_translation;
-          }
-
-          return editedExample;
-        }
-      );
-
-      const editedExample = this.mockExamples.filter(
-        (entry: IExampleFromBackend) => entry.id === exampleId
-      )[0];
-
-      return res.once(ctx.status(200), ctx.json(editedExample));
-      */
-
       const exampleId: number = parseInt(req.params.id);
       const exampleIndex: number = this.mockExamples.findIndex(
         (e: IExampleFromBackend) => e.id === exampleId
@@ -346,6 +313,7 @@ export class RequestHandlingFacilitator {
 
 export const requestHandlers = {
   mockCreateUser,
+  mockConfirmEmailAddress,
   mockIssueJWSToken,
   mockFetchUserProfile,
   mockRequestPasswordReset,
