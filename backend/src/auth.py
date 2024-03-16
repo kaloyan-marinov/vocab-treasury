@@ -160,9 +160,12 @@ def token_auth_error():
 
 
 def validate_token(token):
+    """
+    `token` is a JSON Web (Signature) Token.
+    """
     reject_token = False
     try:
-        token_payload = jwt.decode(
+        payload_within_token = jwt.decode(
             token,
             current_app.config["SECRET_KEY"],
             algorithms=["HS256"],
@@ -185,4 +188,4 @@ def validate_token(token):
         r.status_code = 401
         return reject_token, r
 
-    return reject_token, token_payload
+    return reject_token, payload_within_token

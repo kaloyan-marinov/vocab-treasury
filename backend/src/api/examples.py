@@ -53,8 +53,8 @@ def create_example():
     db.session.add(e)
     db.session.commit()
 
-    payload = e.to_dict()
-    r = jsonify(payload)
+    e_dict = e.to_dict()
+    r = jsonify(e_dict)
     r.status_code = 201
     r.headers["Location"] = url_for("api_blueprint.get_example", example_id=e.id)
     return r
