@@ -175,3 +175,5 @@ v2.4.2 (2024/HH/MM)
 - update some third-party dependencies
 
 - enable every newly-created user to confirm their email address through the frontend
+
+- fix TypeScript errros
