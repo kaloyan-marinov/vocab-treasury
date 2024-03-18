@@ -136,6 +136,20 @@ export interface PutRequestBody {
   content_translation: string | null;
 }
 
+// Describe the shape of the mocked response body.
+export interface PutResponseBody {
+  id: number;
+  source_language: string;
+  new_word: string;
+  content: string;
+  content_translation: string;
+}
+
+// Describe the shape of the "req.params".
+export interface PutRequestParams {
+  [id: string]: string;
+}
+
 export class RequestHandlingFacilitator {
   /*
   An instance of this class makes it possible
@@ -242,8 +256,8 @@ export class RequestHandlingFacilitator {
 
   createMockEditExample() {
     const mockEditExample = (
-      req: RestRequest<PutRequestBody, PathParams<string>>,
-      res: ResponseComposition<any>,
+      req: RestRequest<PutRequestBody, PutRequestParams>,
+      res: ResponseComposition<PutResponseBody>,
       ctx: RestContext
     ) => {
       let exampleIdStr: string;
