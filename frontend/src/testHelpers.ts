@@ -150,6 +150,8 @@ export interface PutRequestParams {
   [id: string]: string;
 }
 
+export interface DeleteRequestParams extends PutRequestParams {}
+
 export class RequestHandlingFacilitator {
   /*
   An instance of this class makes it possible
@@ -303,7 +305,7 @@ export class RequestHandlingFacilitator {
 
   createMockDeleteExample() {
     const mockDeleteExample = (
-      req: RestRequest<DefaultBodyType, PathParams<string>>,
+      req: RestRequest<DefaultBodyType, DeleteRequestParams>,
       res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
