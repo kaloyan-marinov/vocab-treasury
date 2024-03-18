@@ -1,6 +1,6 @@
 import {
-  DefaultRequestBody,
-  RequestParams,
+  DefaultBodyType,
+  PathParams,
   ResponseComposition,
   RestContext,
   RestRequest,
@@ -25,7 +25,7 @@ export const createMockOneOrManyFailures = (
   switch (description) {
     case "single failure": {
       const mockSingleFailure = (
-        req: RestRequest<DefaultRequestBody, RequestParams>,
+        req: RestRequest<DefaultBodyType, PathParams<string>>,
         res: ResponseComposition<any>,
         ctx: RestContext
       ) => {
@@ -43,7 +43,7 @@ export const createMockOneOrManyFailures = (
 
     case "multiple failures": {
       const mockMultipleFailures = (
-        req: RestRequest<DefaultRequestBody, RequestParams>,
+        req: RestRequest<DefaultBodyType, PathParams<string>>,
         res: ResponseComposition<any>,
         ctx: RestContext
       ) => {
@@ -65,7 +65,7 @@ export const createMockOneOrManyFailures = (
 };
 
 const mockCreateUser = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
+  req: RestRequest<DefaultBodyType, PathParams<string>>,
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
@@ -79,7 +79,7 @@ const mockCreateUser = (
 };
 
 const mockConfirmEmailAddress = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
+  req: RestRequest<DefaultBodyType, PathParams<string>>,
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
@@ -94,7 +94,7 @@ const mockConfirmEmailAddress = (
 };
 
 const mockIssueJWSToken = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
+  req: RestRequest<DefaultBodyType, PathParams<string>>,
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
@@ -107,7 +107,7 @@ const mockIssueJWSToken = (
 };
 
 const mockFetchUserProfile = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
+  req: RestRequest<DefaultBodyType, PathParams<string>>,
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
@@ -115,7 +115,7 @@ const mockFetchUserProfile = (
 };
 
 const mockRequestPasswordReset = (
-  req: RestRequest<DefaultRequestBody, RequestParams>,
+  req: RestRequest<DefaultBodyType, PathParams<string>>,
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => {
@@ -134,20 +134,6 @@ export interface PutRequestBody {
   new_word: string | null;
   content: string | null;
   content_translation: string | null;
-}
-
-// Describe the shape of the mocked response body.
-export interface PutResponseBody {
-  id: number;
-  source_language: string;
-  new_word: string;
-  content: string;
-  content_translation: string;
-}
-
-// Describe the shape of the "req.params".
-export interface PutRequestParams {
-  id: string;
 }
 
 export class RequestHandlingFacilitator {
@@ -169,7 +155,7 @@ export class RequestHandlingFacilitator {
 
   createMockFetchExamples() {
     const mockFetchExamples = (
-      req: RestRequest<DefaultRequestBody, RequestParams>,
+      req: RestRequest<DefaultBodyType, PathParams<string>>,
       res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
@@ -227,7 +213,7 @@ export class RequestHandlingFacilitator {
 
   createMockCreateExample() {
     const mockCreateExample = (
-      req: RestRequest<DefaultRequestBody, RequestParams>,
+      req: RestRequest<DefaultBodyType, PathParams<string>>,
       res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
@@ -256,12 +242,22 @@ export class RequestHandlingFacilitator {
 
   createMockEditExample() {
     const mockEditExample = (
-      req: RestRequest<PutRequestBody, PutRequestParams>,
+      req: RestRequest<PutRequestBody, PathParams<string>>,
       // res: ResponseComposition<any>,
-      res: ResponseComposition<PutResponseBody>,
+      res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
-      const exampleId: number = parseInt(req.params.id);
+      let exampleIdStr: string;
+      if (typeof req.params.id === "string") {
+        exampleIdStr = req.params.id;
+      } else {
+        throw TypeError(
+          `'typeof req.params.id' evaluates to ${typeof req.params.id}` +
+            ` but must instead evaluate to 'string'`
+        );
+      }
+      const exampleId: number = parseInt(exampleIdStr);
+
       const exampleIndex: number = this.mockExamples.findIndex(
         (e: IExampleFromBackend) => e.id === exampleId
       );
@@ -294,11 +290,20 @@ export class RequestHandlingFacilitator {
 
   createMockDeleteExample() {
     const mockDeleteExample = (
-      req: RestRequest<DefaultRequestBody, RequestParams>,
+      req: RestRequest<DefaultBodyType, PathParams<string>>,
       res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
-      const exampleId: number = parseInt(req.params.id);
+      let exampleIdStr: string;
+      if (typeof req.params.id === "string") {
+        exampleIdStr = req.params.id;
+      } else {
+        throw TypeError(
+          `'typeof req.params.id' evaluates to ${typeof req.params.id}` +
+            ` but must instead evaluate to 'string'`
+        );
+      }
+      const exampleId: number = parseInt(exampleIdStr);
 
       this.mockExamples = this.mockExamples.filter(
         (example: IExampleFromBackend) => example.id !== exampleId

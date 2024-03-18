@@ -1,8 +1,8 @@
-import { setupServer, SetupServerApi } from "msw/node";
+import { setupServer, SetupServer } from "msw/node";
 import { MockStoreEnhanced } from "redux-mock-store";
 import configureMockStore from "redux-mock-store";
 import thunkMiddleware, { ThunkDispatch } from "redux-thunk";
-import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
+import { rest } from "msw";
 import { AnyAction } from "redux";
 
 import { RequestStatus, IProfile, IStateAuth, IState } from "../../types";
@@ -638,10 +638,9 @@ describe("reducer", () => {
 });
 
 /* Create an MSW "request-interception layer". */
-const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [];
+const requestHandlersToMock: any[] = [];
 
-const requestInterceptionLayer: SetupServerApi = setupServer(
+const requestInterceptionLayer: SetupServer = setupServer(
   ...requestHandlersToMock
 );
 

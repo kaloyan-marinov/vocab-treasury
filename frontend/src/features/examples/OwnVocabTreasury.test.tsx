@@ -6,8 +6,8 @@ import { createStore } from "redux";
 import { Provider } from "react-redux";
 import { applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
-import { DefaultRequestBody, MockedRequest, rest, RestHandler } from "msw";
-import { setupServer, SetupServerApi } from "msw/node";
+import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
+import { setupServer, SetupServer } from "msw/node";
 
 import { IState } from "../../types";
 import { INITIAL_STATE, rootReducer, TEnhancer } from "../../store";
@@ -24,10 +24,11 @@ const mockMultipleFailures = createMockOneOrManyFailures("multiple failures", {
   error: "[mocked] Unauthorized",
   message: "[mocked] Authentication in the Basic Auth format is required.",
 });
-const requestHandlersToMock: RestHandler<MockedRequest<DefaultRequestBody>>[] =
-  [rest.get("/api/examples", mockMultipleFailures)];
+const requestHandlersToMock: RestHandler<MockedRequest<DefaultBodyType>>[] = [
+  rest.get("/api/examples", mockMultipleFailures),
+];
 
-const requestInterceptionLayer: SetupServerApi = setupServer(
+const requestInterceptionLayer: SetupServer = setupServer(
   ...requestHandlersToMock
 );
 
