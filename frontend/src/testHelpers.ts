@@ -243,7 +243,6 @@ export class RequestHandlingFacilitator {
   createMockEditExample() {
     const mockEditExample = (
       req: RestRequest<PutRequestBody, PathParams<string>>,
-      // res: ResponseComposition<any>,
       res: ResponseComposition<any>,
       ctx: RestContext
     ) => {
