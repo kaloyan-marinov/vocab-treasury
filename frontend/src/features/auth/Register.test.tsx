@@ -5,7 +5,7 @@ import thunkMiddleware from "redux-thunk";
 import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
-import { rest } from "msw";
+import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import { setupServer, SetupServer } from "msw/node";
 
 import { IState } from "../../types";
@@ -169,7 +169,7 @@ describe("<Register>", () => {
 });
 
 /* Create an MSW "request-interception layer". */
-const requestHandlersToMock: any[] = [];
+const requestHandlersToMock: RestHandler<MockedRequest<DefaultBodyType>>[] = [];
 
 const requestInterceptionLayer: SetupServer = setupServer(
   ...requestHandlersToMock
