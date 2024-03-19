@@ -12,7 +12,7 @@ import { Provider } from "react-redux";
 import { createMemoryHistory, MemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import { rest } from "msw";
-import { setupServer, SetupServerApi } from "msw/node";
+import { setupServer, SetupServer } from "msw/node";
 import thunkMiddleware from "redux-thunk";
 
 import { IState } from "./types";
@@ -21,9 +21,6 @@ import {
   createMockOneOrManyFailures,
   requestHandlers,
   RequestHandlingFacilitator,
-  PutRequestBody,
-  PutResponseBody,
-  PutRequestParams,
 } from "./testHelpers";
 import { App } from "./App";
 
@@ -51,7 +48,7 @@ const requestHandlersToMock = [
   rest.delete("/api/examples/:id", mockMultipleFailures),
 ];
 
-const requestInterceptionLayer: SetupServerApi = setupServer(
+const requestInterceptionLayer: SetupServer = setupServer(
   ...requestHandlersToMock
 );
 
@@ -1210,10 +1207,7 @@ test(
 
       rest.get("/api/examples", rhf.createMockFetchExamples()),
 
-      rest.put<PutRequestBody, PutResponseBody, PutRequestParams>(
-        "/api/examples/:id",
-        rhf.createMockEditExample()
-      ),
+      rest.put("/api/examples/:id", rhf.createMockEditExample()),
       rest.get("/api/examples", rhf.createMockFetchExamples()),
       rest.get("/api/examples", rhf.createMockFetchExamples())
     );
