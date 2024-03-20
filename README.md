@@ -659,6 +659,16 @@ and use `localhost` to serve a frontend application.
 
 # Future plans
 
+- remove `axios` from the frontend sub-project's dependencies,
+  and refactor the uses of `axios` to use the `fetch()` function
+  (which is available in all modern browsers);
+  the motivation for this is [the preference for `fetch()` over `axios`
+  in the React Mega-Tutorial by Miguel Grinberg](
+    https://blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-5-connecting-to-a-back-end
+  ) as well as [this comment](
+    https://github.com/axios/axios/issues/5026#issuecomment-1666588688
+  )
+
 - enable every newly-created user to reset their password
   through the frontend
 
