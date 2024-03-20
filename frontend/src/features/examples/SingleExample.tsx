@@ -78,6 +78,18 @@ export const SingleExample = () => {
       </table>
     );
 
+  const buttonToDeleteExample = (
+    <button
+      // onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+      onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        setIsDeleteInProgress(true)
+      }
+      className="btn btn-dark"
+    >
+      Delete this example
+    </button>
+  );
+
   const linkToOwnVocabTreasury =
     isDeleteInProgress === false ? (
       <Link to={locationDescriptor} className="btn btn-dark">
@@ -166,37 +178,30 @@ export const SingleExample = () => {
         by placing "Delete this example" at the top
         (which will hopefully make things safer)
   */
-  const controlsForDeletingExample =
-    isDeleteInProgress === false ? (
+  const controlsForDeletingExample = (
+    <>
+      <span className="text-danger text-center">
+        Are you sure that you want to delete this example?
+      </span>
+      <span className="text-danger text-center">
+        (This action is non-reversible.)
+      </span>
       <button
-        // onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-          setIsDeleteInProgress(true)
-        }
         className="btn btn-dark"
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setIsDeleteInProgress(false)
+        }
       >
-        Delete this example
+        No, retain example
       </button>
-    ) : (
-      <>
-        <hr />
-        <span className="text-danger">Do you want to delete this example?</span>
-        <button
-          className="btn btn-dark"
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-            setIsDeleteInProgress(false)
-          }
-        >
-          No, retain example
-        </button>
-        <button
-          className="btn btn-danger"
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
-        >
-          Yes, delete example
-        </button>
-      </>
-    );
+      <button
+        className="btn btn-danger"
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+      >
+        Yes, delete example
+      </button>
+    </>
+  );
   return (
     <React.Fragment>
       {process.env.NODE_ENV === "development" && "<SingleExample>"}
@@ -207,9 +212,15 @@ export const SingleExample = () => {
       {exampleTable}
 
       <div className="mx-auto w-50 d-grid gap-2">
-        {linkToOwnVocabTreasury}
-        {linkToEditExample}
-        {controlsForDeletingExample}
+        {isDeleteInProgress === false ? (
+          <>
+            {buttonToDeleteExample}
+            {linkToEditExample}
+            {linkToOwnVocabTreasury}
+          </>
+        ) : (
+          <>{controlsForDeletingExample}</>
+        )}
       </div>
     </React.Fragment>
   );
