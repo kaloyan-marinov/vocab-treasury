@@ -17,7 +17,6 @@ import { OwnVocabTreasury } from "./features/examples/OwnVocabTreasury";
 import { RecordNewExample } from "./features/examples/RecordNewExample";
 import { SingleExample } from "./features/examples/SingleExample";
 import { EditExample } from "./features/examples/EditExample";
-import { DeleteExample } from "./features/examples/DeleteExample";
 import { Search } from "./features/examples/Search";
 import { logOut } from "./store";
 
@@ -91,9 +90,6 @@ export const App = () => {
         </PrivateRoute>
         <PrivateRoute exact path="/example/:id/edit">
           <EditExample />
-        </PrivateRoute>
-        <PrivateRoute exact path="/example/:id/delete">
-          <DeleteExample />
         </PrivateRoute>
         <PrivateRoute exact path="/own-vocabtreasury/search">
           <Search />

@@ -43,6 +43,8 @@ export const SingleExample = () => {
 
   const history = useHistory();
 
+  const [isDeleteInProgress, setIsDeleteInProgress] = React.useState(false);
+
   const example: IExample = examplesEntities[exampleId];
 
   const locationDescriptor = {
@@ -76,35 +78,33 @@ export const SingleExample = () => {
       </table>
     );
 
-  const linkToOwnVocabTreasury = (
-    <Link to={locationDescriptor} className="btn btn-dark">
-      Return to this example within my Own VocabTreasury
-    </Link>
-  );
-
-  const linkToEditExample =
-    example === undefined ? null : (
-      <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
-        Edit this example
+  const linkToOwnVocabTreasury =
+    isDeleteInProgress === false ? (
+      <Link to={locationDescriptor} className="btn btn-dark">
+        Return to this example within my Own VocabTreasury
       </Link>
+    ) : (
+      <span className="btn btn-light">
+        Return to this example within my Own VocabTreasury
+      </span>
     );
 
-  const linkToDeleteExample = (
-    <Link to={`/example/${example.id}/delete`} className="btn btn-dark">
-      Delete this example
-    </Link>
-  );
-  /*
-  TODO: (2024/03/20, 08:09)
-        determine whether the former has to be replaced by the latter
-  */
-  // const linkToDeleteExample =
-  //   example === undefined ? null : (
-  //     <Link to={`/example/${example.id}/delete`} className="btn btn-dark">
-  //       Delete this example
-  //     </Link>
-  //   );
+  const linkToEditExample =
+    isDeleteInProgress == false ? (
+      example === undefined ? null : (
+        <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
+          Edit this example
+        </Link>
+      )
+    ) : (
+      <span className="btn btn-light">Edit this example</span>
+    );
 
+  /*
+  TODO: (2024/03/20, 08:40)
+
+        rename this function to something more suitable
+  */
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
@@ -160,6 +160,43 @@ export const SingleExample = () => {
     }
   };
 
+  /*
+  TODO: (2024/03/20, 18:00)
+        consider re-ordering the 3 initial buttons
+        by placing "Delete this example" at the top
+        (which will hopefully make things safer)
+  */
+  const controlsForDeletingExample =
+    isDeleteInProgress === false ? (
+      <button
+        // onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          setIsDeleteInProgress(true)
+        }
+        className="btn btn-dark"
+      >
+        Delete this example
+      </button>
+    ) : (
+      <>
+        <hr />
+        <span className="text-danger">Do you want to delete this example?</span>
+        <button
+          className="btn btn-dark"
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            setIsDeleteInProgress(false)
+          }
+        >
+          No, retain example
+        </button>
+        <button
+          className="btn btn-danger"
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+        >
+          Yes, delete example
+        </button>
+      </>
+    );
   return (
     <React.Fragment>
       {process.env.NODE_ENV === "development" && "<SingleExample>"}
@@ -172,13 +209,7 @@ export const SingleExample = () => {
       <div className="mx-auto w-50 d-grid gap-2">
         {linkToOwnVocabTreasury}
         {linkToEditExample}
-        {/* <button
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
-          className="btn btn-danger"
-        >
-          Delete this example
-        </button> */}
-        {linkToDeleteExample}
+        {controlsForDeletingExample}
       </div>
     </React.Fragment>
   );
