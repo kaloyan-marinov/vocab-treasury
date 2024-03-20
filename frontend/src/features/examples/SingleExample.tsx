@@ -89,6 +89,22 @@ export const SingleExample = () => {
       </Link>
     );
 
+  const linkToDeleteExample = (
+    <Link to={`/example/${example.id}/delete`} className="btn btn-dark">
+      Delete this example
+    </Link>
+  );
+  /*
+  TODO: (2024/03/20, 08:09)
+        determine whether the former has to be replaced by the latter
+  */
+  // const linkToDeleteExample =
+  //   example === undefined ? null : (
+  //     <Link to={`/example/${example.id}/delete`} className="btn btn-dark">
+  //       Delete this example
+  //     </Link>
+  //   );
+
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
@@ -156,12 +172,13 @@ export const SingleExample = () => {
       <div className="mx-auto w-50 d-grid gap-2">
         {linkToOwnVocabTreasury}
         {linkToEditExample}
-        <button
+        {/* <button
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
           className="btn btn-danger"
         >
           Delete this example
-        </button>
+        </button> */}
+        {linkToDeleteExample}
       </div>
     </React.Fragment>
   );
