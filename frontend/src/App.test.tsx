@@ -1002,10 +1002,19 @@ test(
     expect(anchorToExample1).toBeInTheDocument();
     fireEvent.click(anchorToExample1);
 
-    const buttonDeleteThisExample: HTMLElement = await screen.findByRole(
-      "button",
-      { name: "Delete this example" }
-    );
+    let temp: HTMLElement;
+    temp = screen.getByRole("button", {
+      name: "Delete this example",
+    });
+    fireEvent.click(temp);
+    temp = screen.getByRole("button", {
+      name: "No, retain example",
+    });
+    fireEvent.click(temp);
+
+    const buttonDeleteThisExample: HTMLElement = screen.getByRole("button", {
+      name: "Delete this example",
+    });
     fireEvent.click(buttonDeleteThisExample);
 
     const buttonYesDeleteExample: HTMLElement = screen.getByRole("button", {
