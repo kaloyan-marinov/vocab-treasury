@@ -80,7 +80,6 @@ export const SingleExample = () => {
 
   const buttonToDeleteExample = (
     <button
-      // onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
         setIsDeleteInProgress(true)
       }
@@ -90,34 +89,20 @@ export const SingleExample = () => {
     </button>
   );
 
-  const linkToOwnVocabTreasury =
-    isDeleteInProgress === false ? (
-      <Link to={locationDescriptor} className="btn btn-dark">
-        Return to this example within my Own VocabTreasury
-      </Link>
-    ) : (
-      <span className="btn btn-light">
-        Return to this example within my Own VocabTreasury
-      </span>
-    );
+  const linkToOwnVocabTreasury = (
+    <Link to={locationDescriptor} className="btn btn-dark">
+      Return to this example within my Own VocabTreasury
+    </Link>
+  );
 
   const linkToEditExample =
-    isDeleteInProgress == false ? (
-      example === undefined ? null : (
-        <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
-          Edit this example
-        </Link>
-      )
-    ) : (
-      <span className="btn btn-light">Edit this example</span>
+    example === undefined ? null : (
+      <Link to={`/example/${example.id}/edit`} className="btn btn-dark">
+        Edit this example
+      </Link>
     );
 
-  /*
-  TODO: (2024/03/20, 08:40)
-
-        rename this function to something more suitable
-  */
-  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClickOnYes = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     console.log("    clicking <SingleExample>'s button");
@@ -172,12 +157,6 @@ export const SingleExample = () => {
     }
   };
 
-  /*
-  TODO: (2024/03/20, 18:00)
-        consider re-ordering the 3 initial buttons
-        by placing "Delete this example" at the top
-        (which will hopefully make things safer)
-  */
   const controlsForDeletingExample = (
     <>
       <span className="text-danger text-center">
@@ -196,7 +175,9 @@ export const SingleExample = () => {
       </button>
       <button
         className="btn btn-danger"
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleClick(e)}
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+          handleClickOnYes(e)
+        }
       >
         Yes, delete example
       </button>
