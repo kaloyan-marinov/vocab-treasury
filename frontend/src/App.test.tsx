@@ -967,7 +967,7 @@ test(
   "if a logged-in user (a) clicks on 'Own VocabTreasury'," +
     " (b) navigates to the 1st page [of examples]," +
     " and (c) clicks on one of that page's examples," +
-    " then by clicking on 'Delete this example'" +
+    " then by requesting to delete the selected example" +
     " the user should be navigated back to the same page [of examples]",
   async () => {
     /* Arrange. */
@@ -1002,11 +1002,25 @@ test(
     expect(anchorToExample1).toBeInTheDocument();
     fireEvent.click(anchorToExample1);
 
-    const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
-      "button",
-      { name: "Delete this example" }
-    );
-    fireEvent.click(deleteThisExampleBtn);
+    let temp: HTMLElement;
+    temp = screen.getByRole("button", {
+      name: "Delete this example",
+    });
+    fireEvent.click(temp);
+    temp = screen.getByRole("button", {
+      name: "No, retain example",
+    });
+    fireEvent.click(temp);
+
+    const buttonDeleteThisExample: HTMLElement = screen.getByRole("button", {
+      name: "Delete this example",
+    });
+    fireEvent.click(buttonDeleteThisExample);
+
+    const buttonYesDeleteExample: HTMLElement = screen.getByRole("button", {
+      name: "Yes, delete example",
+    });
+    fireEvent.click(buttonYesDeleteExample);
 
     /* Assert. */
     let element: HTMLElement;
@@ -1089,11 +1103,18 @@ test(
     expect(anchorToExample11).toBeInTheDocument();
     fireEvent.click(anchorToExample11);
 
-    const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
+    const buttonDeleteThisExample: HTMLElement = await screen.findByRole(
       "button",
-      { name: "Delete this example" }
+      {
+        name: "Delete this example",
+      }
     );
-    fireEvent.click(deleteThisExampleBtn);
+    fireEvent.click(buttonDeleteThisExample);
+
+    const buttonYesDeleteExample: HTMLElement = screen.getByRole("button", {
+      name: "Yes, delete example",
+    });
+    fireEvent.click(buttonYesDeleteExample);
 
     /* Assert. */
     let element: HTMLElement;
@@ -1171,13 +1192,18 @@ test(
     expect(anchorToExample1).toBeInTheDocument();
     fireEvent.click(anchorToExample1);
 
-    const deleteThisExampleBtn: HTMLElement = await screen.findByRole(
+    const buttonDeleteThisExample: HTMLElement = await screen.findByRole(
       "button",
       {
         name: "Delete this example",
       }
     );
-    fireEvent.click(deleteThisExampleBtn);
+    fireEvent.click(buttonDeleteThisExample);
+
+    const buttonYesDeleteExample: HTMLElement = screen.getByRole("button", {
+      name: "Yes, delete example",
+    });
+    fireEvent.click(buttonYesDeleteExample);
 
     /* Assert. */
     let element: HTMLElement;
@@ -1532,7 +1558,7 @@ test(
     /* Assert. */
     let element: HTMLElement;
     element = await screen.findByText(
-      "[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN"
+      "[FROM <Search>'S useEffect HOOK] PLEASE LOG BACK IN"
     );
     expect(element).toBeInTheDocument();
   }

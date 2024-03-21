@@ -130,11 +130,12 @@ export const OwnVocabTreasury = () => {
           if (err.response) {
             console.log("error message: ", err.message);
             if (err.response.status === 401) {
-              dispatch(
-                logOut(
-                  "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
-                )
-              );
+              const message: string =
+                process.env.NODE_ENV === "development" ||
+                process.env.NODE_ENV === "test"
+                  ? "[FROM <OwnVocabTreasury>'S useEffect HOOK] PLEASE LOG BACK IN"
+                  : "PLEASE LOG BACK IN";
+              dispatch(logOut(message));
             } else {
               const id: string = uuidv4();
               const message: string =
