@@ -1558,7 +1558,7 @@ test(
     /* Assert. */
     let element: HTMLElement;
     element = await screen.findByText(
-      "[FROM <Search>'s useEffect HOOK] PLEASE LOG BACK IN"
+      "[FROM <Search>'S useEffect HOOK] PLEASE LOG BACK IN"
     );
     expect(element).toBeInTheDocument();
   }
