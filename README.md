@@ -46,6 +46,10 @@ Maintaining an organized approach can become cumbersome even for diligent learne
 
 # How to set up the project locally
 
+TODO: (2024/06/14, 07:35)
+replace all references to and uses of Docker
+with references to and uses of Podman
+
 In a nutshell, this section will explain how to
 use Docker to serve a persistence layer;
 use `localhost` (= the local network interface) to serve a backend application;
@@ -656,6 +660,79 @@ and use `localhost` to serve a frontend application.
       what the executed test writes to Standard Output (= to the console),
       you have to go to the "TERMINAL" tab instead
       and click on the appropriate terminal instance
+
+# Containerization
+
+https://github.com/kaloyan-marinov/mini-jira-private
+
+```
+podman run \
+    --name container-v-t-mysql \
+    --add-host host.docker.internal:host-gateway \
+    --mount source=volume-v-t-mysql,destination=/var/lib/mysql \
+    --env-file .env \
+    --publish 3306:3306 \
+    mysql:8.0.26 \
+    --default-authentication-plugin=mysql_native_password
+```
+
+```
+$ cd backend
+
+backend $ podman build \
+    --file Containerfile \
+    --tag image-v-t-backend \
+    .
+```
+
+https://github.com/kaloyan-marinov/mini-jira-2
+
+```
+$ podman network create network-vocab-treasury
+```
+
+```
+$ podman volume create volume-vocab-treasury-mysql
+
+$ MYSQL_HOST=vocab-treasury-database-server bash -c '
+    podman run \
+        --name container-vocab-treasury-mysql \
+        --network network-vocab-treasury \
+        --network-alias ${MYSQL_HOST} \
+        --mount type=volume,source=volume-vocab-treasury-mysql,destination=/var/lib/mysql \
+        --env-file=backend/.env \
+        --env 'MYSQL_HOST' \
+        --detach \
+        mysql:8.0.26 \
+    '
+```
+
+```
+$ export HYPHENATED_YYYY_MM_DD_HH_MM=2024-06-14-07-45
+```
+
+```
+$ podman build \
+    --file backend/Containerfile \
+    --tag image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM} \
+    ./backend
+```
+
+```
+$ CONFIGURATION_4_BACKEND='production' \
+  MYSQL_HOST='vocab-treasury-database-server' \
+  bash -c '
+    podman run \
+        --name container-vocab-treasury \
+        --network network-vocab-treasury \
+        --env-file backend/.env \
+        --env 'CONFIGURATION_4_BACKEND' \
+        --env 'MYSQL_HOST' \
+        --publish 8000:5000 \
+        --detach \
+        image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM}
+    '
+```
 
 # Future plans
 

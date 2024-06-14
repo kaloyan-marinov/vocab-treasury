@@ -1,0 +1,15 @@
+__pycache__
+htmlcov
+venv
+
+.coverage
+.env
+
+
+
+scripts
+tests
+
+.env.template
+clean-docker-artifacts.sh
+run_dev_server.py

@@ -34,6 +34,8 @@ def create_app(name_of_configuration=None):
 
         if CONFIGURATION_4_BACKEND is None:
             sys.exit(
+                # TODO (2024/06/14, 08:27)
+                #       fix the deprecated call below
                 datetime.datetime.utcnow().strftime("%Y-%m-%d, %H:%M:%S UTC")
                 + " - An environment variable called CONFIGURATION_4_BACKEND must be specified:"
                 + " crashing..."
