@@ -726,9 +726,9 @@ $ CONFIGURATION_4_BACKEND='production' \
         --name container-vocab-treasury \
         --network network-vocab-treasury \
         --env-file backend/.env \
-        --env 'CONFIGURATION_4_BACKEND' \
-        --env 'MYSQL_HOST' \
-        --publish 8000:5000 \
+        --env CONFIGURATION_4_BACKEND \
+        --env MYSQL_HOST \
+        --publish 5000:5000 \
         --detach \
         image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM}
     '
