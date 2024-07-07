@@ -1,0 +1,19 @@
+FROM python:3.8.19-slim
+
+COPY requirements.txt requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+RUN pip install gunicorn pymysql cryptography
+
+COPY src src
+COPY migrations migrations
+COPY configuration.py configuration.py
+
+COPY boot.sh ./
+RUN chmod a+x boot.sh
+
+ENV FLASK_APP src
+ENV CONFIGURATION_4_BACKEND production
+
+EXPOSE 5000
+ENTRYPOINT ["./boot.sh"]

@@ -14,7 +14,9 @@ The rest of this repository's documentation is organized as follows.
 
 3. [How to use VS Code to debug the project locally](#how-to-use-vs-code-to-debug-the-project-locally)
 
-4. [Future plans](#future-plans)
+4. [Containerization](#containerization)
+
+5. [Future plans](#future-plans)
 
 # Introduction
 
@@ -431,7 +433,7 @@ and use `localhost` to serve a frontend application.
         
         400
 
-        $ export EMAIL_2_2=MARY.SMITH@PROTONMAIL.COM
+        $ export EMAIL_2_2==<yet-another-real-email-address-that-you-have-access-to>
 
         $ curl -v \
             -X PUT \
@@ -656,6 +658,72 @@ and use `localhost` to serve a frontend application.
       what the executed test writes to Standard Output (= to the console),
       you have to go to the "TERMINAL" tab instead
       and click on the appropriate terminal instance
+
+# Containerization
+
+The commands, which are provided in this section,
+make it possible to launch a containerized version of the backend sub-project.
+
+Follow the instructions within (
+[the "How to set up the project locally" section](
+    #how-to-set-up-the-project-locally
+) >>
+step 2.
+).
+
+```
+$ docker network create network-vocab-treasury
+```
+
+```
+$ docker volume create volume-vocab-treasury-mysql
+
+$ MYSQL_HOST=vocab-treasury-database-server bash -c '
+    docker run \
+        --name container-vocab-treasury-mysql \
+        --network network-vocab-treasury \
+        --network-alias ${MYSQL_HOST} \
+        --mount source=volume-vocab-treasury-mysql,destination=/var/lib/mysql \
+        --env-file backend/.env \
+        --env 'MYSQL_HOST' \
+        --detach \
+        mysql:8.0.26 \
+        --default-authentication-plugin=mysql_native_password \
+        --character-set-server=utf8mb4 \
+        --collation-server=utf8mb4_bin \
+        --skip-character-set-client-handshake
+    '
+```
+
+```
+$ export HYPHENATED_YYYY_MM_DD_HH_MM=2024-07-03-21-12
+```
+
+```
+$ docker build \
+    --file backend/Containerfile \
+    --tag image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM} \
+    ./backend
+```
+
+```
+$ MYSQL_HOST='vocab-treasury-database-server' \
+  bash -c '
+    docker run \
+        --name container-vocab-treasury \
+        --network network-vocab-treasury \
+        --env-file backend/.env \
+        --env CONFIGURATION_4_BACKEND \
+        --env MYSQL_HOST \
+        --publish 5000:5000 \
+        --detach \
+        image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM}
+    '
+```
+
+```
+$ backend/clean-docker-artifacts.sh
+```
 
 # Future plans
 
