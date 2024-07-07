@@ -1,5 +1,3 @@
-# TODO: (2024/06/14, 07:09)
-#       fix a specific Python version here
 FROM python:3.8.19-slim
 
 COPY requirements.txt requirements.txt
@@ -14,11 +12,8 @@ COPY configuration.py configuration.py
 COPY boot.sh ./
 RUN chmod a+x boot.sh
 
-# ENV FLASK_APP src/__init__.py
 ENV FLASK_APP src
 ENV CONFIGURATION_4_BACKEND production
-
-# RUN apt-get update && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 5000
 ENTRYPOINT ["./boot.sh"]
