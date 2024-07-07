@@ -14,7 +14,9 @@ The rest of this repository's documentation is organized as follows.
 
 3. [How to use VS Code to debug the project locally](#how-to-use-vs-code-to-debug-the-project-locally)
 
-4. [Future plans](#future-plans)
+4. [Containerization](#containerization)
+
+5. [Future plans](#future-plans)
 
 # Introduction
 
@@ -431,7 +433,7 @@ and use `localhost` to serve a frontend application.
         
         400
 
-        $ export EMAIL_2_2=MARY.SMITH@PROTONMAIL.COM
+        $ export EMAIL_2_2==<yet-another-real-email-address-that-you-have-access-to>
 
         $ curl -v \
             -X PUT \
@@ -659,29 +661,15 @@ and use `localhost` to serve a frontend application.
 
 # Containerization
 
-https://github.com/kaloyan-marinov/mini-jira-private
+The commands, which are provided in this section,
+make it possible to launch a containerized version of the backend sub-project.
 
-```
-docker run \
-    --name container-v-t-mysql \
-    --add-host host.docker.internal:host-gateway \
-    --mount source=volume-v-t-mysql,destination=/var/lib/mysql \
-    --env-file .env \
-    --publish 3306:3306 \
-    mysql:8.0.26 \
-    --default-authentication-plugin=mysql_native_password
-```
-
-```
-$ cd backend
-
-backend $ docker build \
-    --file Containerfile \
-    --tag image-v-t-backend \
-    .
-```
-
-https://github.com/kaloyan-marinov/mini-jira-2
+Follow the instructions within (
+[the "How to set up the project locally" section](
+    #how-to-set-up-the-project-locally
+) >>
+step 2.
+).
 
 ```
 $ docker network create network-vocab-treasury
@@ -700,11 +688,15 @@ $ MYSQL_HOST=vocab-treasury-database-server bash -c '
         --env 'MYSQL_HOST' \
         --detach \
         mysql:8.0.26 \
+        --default-authentication-plugin=mysql_native_password \
+        --character-set-server=utf8mb4 \
+        --collation-server=utf8mb4_bin \
+        --skip-character-set-client-handshake
     '
 ```
 
 ```
-$ export HYPHENATED_YYYY_MM_DD_HH_MM=2024-06-14-07-45
+$ export HYPHENATED_YYYY_MM_DD_HH_MM=2024-07-03-21-12
 ```
 
 ```
@@ -715,8 +707,7 @@ $ docker build \
 ```
 
 ```
-$ CONFIGURATION_4_BACKEND='production' \
-  MYSQL_HOST='vocab-treasury-database-server' \
+$ MYSQL_HOST='vocab-treasury-database-server' \
   bash -c '
     docker run \
         --name container-vocab-treasury \
@@ -728,6 +719,10 @@ $ CONFIGURATION_4_BACKEND='production' \
         --detach \
         image-vocab-treasury:${HYPHENATED_YYYY_MM_DD_HH_MM}
     '
+```
+
+```
+$ backend/clean-docker-artifacts.sh
 ```
 
 # Future plans
