@@ -10,7 +10,7 @@ terraform {
 
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "=3.106.1"
+      version = "=3.111.0"
     }
   }
 }
@@ -33,6 +33,67 @@ provider "azurerm" {
 resource "azurerm_resource_group" "rg_vocab_treasury_backend" {
   name     = "rg-vocab-treasury-backend"
   location = "West Europe"
+}
+
+resource "azurerm_virtual_network" "v_n" {
+  name                = "v-n"
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.rg_vocab_treasury_backend.location
+}
+
+resource "azurerm_subnet" "s" {
+  name                 = "s"
+  resource_group_name  = azurerm_resource_group.rg_vocab_treasury_backend.name
+  virtual_network_name = azurerm_virtual_network.v_n.name
+  address_prefixes     = ["10.0.2.0/24"]
+
+  delegation {
+    name = "fs"
+
+    service_delegation {
+      name = "Microsoft.DBforMySQL/flexibleServers"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+      ]
+    }
+  }
+}
+
+resource "azurerm_mysql_flexible_server" "m_f_s" {
+  name                = "m-f-s"
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+  location            = azurerm_resource_group.rg_vocab_treasury_backend.location
+  version             = "8.0.21"
+
+  administrator_login    = var.mysql_server_administrator_login
+  administrator_password = var.mysql_server_administrator_password
+
+  storage {
+    size_gb = 20
+  }
+
+  backup_retention_days  = 7
+  sku_name               = "GP_Standard_D2ds_v4"
+
+  delegated_subnet_id = azurerm_subnet.s.id
+
+  tags = {
+    environment = "production"
+  }
+
+  zone = "3"
+}
+
+resource "azurerm_mysql_flexible_database" "m_f_s_d" {
+  # name                = "m-f-s-d"
+  name                = var.name_4_mysql_server_database
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+  server_name         = azurerm_mysql_flexible_server.m_f_s.name
+  # charset             = "utf-8"
+  # collation           = "uft8_unicode_ci"
+  charset             = "utf8mb4"
+  collation           = "utf8mb4_unicode_ci"
 }
 
 # resource "azurerm_service_plan" "s_p" {

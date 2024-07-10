@@ -725,6 +725,61 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
 $ backend/clean-docker-artifacts.sh
 ```
 
+```
+$ cp \
+    infrastructure-backend/terraform.tfvars.example \
+    infrastructure-backend/terraform.tfvars.sensitive
+# Edit the newly-created file according to the instructions therein.
+
+$ cd infrastructure
+
+# Follow the instructions on
+# https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/azure_cli :
+
+#   - log into the Azure CLI using a User:
+$ az login \
+    --allow-no-subscriptions
+
+#     (
+#       The AzureAD provider operates on tenants and not on subscriptions.
+#       We recommend always specifying `az login --allow-no-subscriptions`
+#       as it will force the Azure CLI to report tenants with no associated subscriptions,
+#       or where your user account does not have any roles assigned for a subscription.
+#     )
+
+#   - list the Subscriptions and Tenants associated with the account:
+$ az account list \
+    -o table \
+    --all \
+    --query "[].{TenantID: tenantId, Subscription: name, Default: isDefault}"
+
+# [For each of the subsequent commands,]
+# the provider will select the tenant ID from your default Azure CLI account.
+# If you have more than one tenant listed in the output of `az account list`
+# - for example if you are a guest user in other tenants -
+# you can specify the tenant to use.
+
+$ terraform init
+
+
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
+    -var-file=terraform.tfvars.sensitive
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
+    -var-file=terraform.tfvars.sensitive
+
+# Ensure that public access to the provisioned MySQL server works;
+# one way to do that is to use the `mycli` command-line tool:
+$ mycli \
+    --host <the-fully-qualified-domain-name-returned-by-the-preceding-command> \
+    --user <the-value-of-mysql_server_administrator_login-from-terraform.tfvars.sensitive> \
+    --port=3306
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform destroy \
+    -var-file=terraform.tfvars.sensitive
+```
+
 # Future plans
 
 - remove `axios` from the frontend sub-project's dependencies,
