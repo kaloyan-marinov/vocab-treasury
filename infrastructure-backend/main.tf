@@ -82,7 +82,16 @@ resource "azurerm_mysql_flexible_server" "m_f_s" {
     environment = "production"
   }
 
+  # zone = "3"
   zone = "3"
+}
+
+resource "azurerm_mysql_flexible_server_firewall_rule" "f_s_f_r" {
+  name                = "f-s-f_r"
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+  server_name         = azurerm_mysql_flexible_server.m_f_s.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
 }
 
 resource "azurerm_mysql_flexible_database" "m_f_s_d" {
