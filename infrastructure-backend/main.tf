@@ -35,30 +35,30 @@ resource "azurerm_resource_group" "rg_vocab_treasury_backend" {
   location = "West Europe"
 }
 
-resource "azurerm_virtual_network" "v_n" {
-  name                = "v-n"
-  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.rg_vocab_treasury_backend.location
-}
+# resource "azurerm_virtual_network" "v_n" {
+#   name                = "v-n"
+#   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+#   address_space       = ["10.0.0.0/16"]
+#   location            = azurerm_resource_group.rg_vocab_treasury_backend.location
+# }
 
-resource "azurerm_subnet" "s" {
-  name                 = "s"
-  resource_group_name  = azurerm_resource_group.rg_vocab_treasury_backend.name
-  virtual_network_name = azurerm_virtual_network.v_n.name
-  address_prefixes     = ["10.0.2.0/24"]
+# resource "azurerm_subnet" "s" {
+#   name                 = "s"
+#   resource_group_name  = azurerm_resource_group.rg_vocab_treasury_backend.name
+#   virtual_network_name = azurerm_virtual_network.v_n.name
+#   address_prefixes     = ["10.0.2.0/24"]
 
-  delegation {
-    name = "fs"
+#   delegation {
+#     name = "fs"
 
-    service_delegation {
-      name = "Microsoft.DBforMySQL/flexibleServers"
-      actions = [
-        "Microsoft.Network/virtualNetworks/subnets/join/action",
-      ]
-    }
-  }
-}
+#     service_delegation {
+#       name = "Microsoft.DBforMySQL/flexibleServers"
+#       actions = [
+#         "Microsoft.Network/virtualNetworks/subnets/join/action",
+#       ]
+#     }
+#   }
+# }
 
 resource "azurerm_mysql_flexible_server" "m_f_s" {
   name                = "m-f-s"
@@ -75,23 +75,23 @@ resource "azurerm_mysql_flexible_server" "m_f_s" {
 
   backup_retention_days  = 7
   sku_name               = "GP_Standard_D2ds_v4"
-
-  delegated_subnet_id = azurerm_subnet.s.id
+  
+  # Remove delegated_subnet_id to disable private access
+  # delegated_subnet_id = azurerm_subnet.s.id
 
   tags = {
     environment = "production"
   }
 
-  # zone = "3"
   zone = "3"
 }
 
 resource "azurerm_mysql_flexible_server_firewall_rule" "f_s_f_r" {
-  name                = "f-s-f_r"
+  name                = "f-s-f-r"
   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
   server_name         = azurerm_mysql_flexible_server.m_f_s.name
   start_ip_address    = "0.0.0.0"
-  end_ip_address      = "0.0.0.0"
+  end_ip_address      = "255.255.255.255"
 }
 
 resource "azurerm_mysql_flexible_database" "m_f_s_d" {

@@ -774,7 +774,13 @@ $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform a
 $ mycli \
     --host <the-fully-qualified-domain-name-returned-by-the-preceding-command> \
     --user <the-value-of-mysql_server_administrator_login-from-terraform.tfvars.sensitive> \
-    --port=3306
+    --port=3306 \
+    --ssl-ca=<path-to-mycli-s-/venvs/mycli/lib64/python3.12/site-packages/certifi/cacert.pem>
+# It should be noted that
+# the last command _might_ work
+# _only after_ you have appended
+# the contents of the Root CA Certificates from https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-networking-ssl-tls#downloading-root-ca-certificates-and-updating-application-clients-in-certificate-pinning-scenarios
+# to (the end of) the above-mentioned `cacert.pem` file.
 
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform destroy \
     -var-file=terraform.tfvars.sensitive

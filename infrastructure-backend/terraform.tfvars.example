@@ -1,15 +1,4 @@
-linode_personal_access_token = # Provide a personal access token for your Linode account. (Must be in double quotes.)
+mysql_server_administrator_login = # Choose a username for an admin in the to-be-provisioned MySQL server. (Must be in double quotes.)
+mysql_server_administrator_password = # Choose a password for an admin in the to-be-provisioned MySQL server. (Must be in double quotes.)
 
-docker_io_username = # Provide the username of your DockerHub account. (Must be in double quotes.)
-docker_io_access_token = # Provide an access token for your DockerHub account. (Must be in double quotes.)
-
-name_of_container_image = # Provide the name of the container image, which must be in your DockerHub account. (Must be in double quotes.)
-tag_for_container_image = # Provide a concrete tag for the specified container image. (Must be in double quotes.)
-
-# This repository assumes that you
-# own a domain;
-# have a Linode account;
-# and use the Domains section of your Linode account to manage the domain.
-custom_domain = # Provide your domain.
-linode_id_of_custom_domain = # Go to the Domains section of your Linode account, find out the ID of your domain, and provide that ID here.
-custom_subdomain = # Provide a custom subdomain, which the containerized web application is to be made available at (Must be in double quotes.)
+name_4_mysql_server_database = # Choose a name for a to-be-created database in the to-be-provisioned MySQL server. (Must be in double quotes.)
