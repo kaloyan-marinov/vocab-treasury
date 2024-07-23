@@ -2,3 +2,10 @@ mysql_server_administrator_login = # Choose a username for an admin in the to-be
 mysql_server_administrator_password = # Choose a password for an admin in the to-be-provisioned MySQL server. (Must be in double quotes.)
 
 name_4_mysql_server_database = # Choose a name for a to-be-created database in the to-be-provisioned MySQL server. (Must be in double quotes.)
+
+
+
+docker_io_username = # Provide the username of your DockerHub account. (Must be in double quotes.)
+
+name_of_container_image = # Provide the name of the container image, which must be in your DockerHub account. (Must be in double quotes.)
+tag_for_container_image = # Prodive a concrete tag for the specified container image. (Must be in double quotes.)
