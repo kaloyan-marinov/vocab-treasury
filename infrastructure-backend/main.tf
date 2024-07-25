@@ -164,9 +164,46 @@ resource "azurerm_linux_web_app" "l_w_a" {
     # For details, you can consult
     # https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings?tabs=kudu%2Cdotnet#custom-containers
     "WEBSITES_PORT" = "5000"
+
+
+
+    CONFIGURATION_4_BACKEND = "development"
+
+    SECRET_KEY = "${var.secret_key_for_backend_application}"
+
+    MYSQL_HOST = "${azurerm_mysql_flexible_server.m_f_s.fqdn}"
+    MYSQL_PORT = "3306"
+    # MYSQL_RANDOM_ROOT_PASSWORD = "yes"
+    MYSQL_USER = "${var.mysql_server_administrator_login}"
+    MYSQL_PASSWORD = "${var.mysql_server_administrator_password}"
+    MYSQL_DATABASE = "${var.name_4_mysql_server_database}"
+
+    MAIL_SERVER = "${var.mail_server_url}"
+    MAIL_PORT = "${var.mail_server_port}"
+    #MAIL_USE_TLS = ""
+    MAIL_USERNAME = "${var.mail_server_username}"
+    MAIL_PASSWORD = "${var.mail_server_password}"
+    # For a 'production' deployment,
+    # the following must be associated with a domain,
+    # which has been registered and properly verified with an SMTP service
+    # that you have an account for.
+    EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_SENDING = "${var.mail_server_email_address_of_administrator_for_sending}"
+    # The following must be an email address that you have access to.
+    EMAIL_ADDRESS_OF_ADMINISTRATOR_FOR_RECEIVING = "${var.mail_server_email_address_of_administrator_for_receiving}"
+
+    DAYS_FOR_EMAIL_ADDRESS_CONFIRMATION = "${var.days_for_email_address_confirmation}"
+    MINUTES_FOR_TOKEN_VALIDITY = "${var.minutes_for_token_validity}"
+    MINUTES_FOR_PASSWORD_RESET = "${var.minutes_for_password_reset}"
   }
 }
 
+# TODO: (2024/07/23, 07:26) get rid of this ASAP
+resource "azurerm_mysql_flexible_server_configuration" "example" {
+  name                = "require_secure_transport"
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+  server_name         = azurerm_mysql_flexible_server.m_f_s.name
+  value               = "OFF"
+}
 
 
 # resource "linode_domain_record" "l_d_r_1_txt" {

@@ -713,7 +713,7 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
         --name container-vocab-treasury \
         --network network-vocab-treasury \
         --env-file backend/.env \
-        --env CONFIGURATION_4_BACKEND \
+        --env CONFIGURATION_4_BACKEND \  # is this needed (or even correct)?
         --env MYSQL_HOST \
         --publish 5000:5000 \
         --detach \
