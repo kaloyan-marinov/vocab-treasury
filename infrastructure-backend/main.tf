@@ -35,31 +35,6 @@ resource "azurerm_resource_group" "rg_vocab_treasury_backend" {
   location = "West Europe"
 }
 
-# resource "azurerm_virtual_network" "v_n" {
-#   name                = "v-n"
-#   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
-#   address_space       = ["10.0.0.0/16"]
-#   location            = azurerm_resource_group.rg_vocab_treasury_backend.location
-# }
-
-# resource "azurerm_subnet" "s" {
-#   name                 = "s"
-#   resource_group_name  = azurerm_resource_group.rg_vocab_treasury_backend.name
-#   virtual_network_name = azurerm_virtual_network.v_n.name
-#   address_prefixes     = ["10.0.2.0/24"]
-
-#   delegation {
-#     name = "fs"
-
-#     service_delegation {
-#       name = "Microsoft.DBforMySQL/flexibleServers"
-#       actions = [
-#         "Microsoft.Network/virtualNetworks/subnets/join/action",
-#       ]
-#     }
-#   }
-# }
-
 resource "azurerm_mysql_flexible_server" "m_f_s" {
   name                = "m-f-s"
   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
@@ -75,9 +50,6 @@ resource "azurerm_mysql_flexible_server" "m_f_s" {
 
   backup_retention_days  = 7
   sku_name               = "GP_Standard_D2ds_v4"
-  
-  # Remove delegated_subnet_id to disable private access
-  # delegated_subnet_id = azurerm_subnet.s.id
 
   tags = {
     environment = "production"
@@ -95,7 +67,6 @@ resource "azurerm_mysql_flexible_server_firewall_rule" "f_s_f_r" {
 }
 
 resource "azurerm_mysql_flexible_database" "m_f_s_d" {
-  # name                = "m-f-s-d"
   name                = var.name_4_mysql_server_database
   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
   server_name         = azurerm_mysql_flexible_server.m_f_s.name
@@ -110,14 +81,12 @@ resource "azurerm_service_plan" "s_p" {
   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
   location            = azurerm_resource_group.rg_vocab_treasury_backend.location
   os_type             = "Linux"
-  # sku_name            = "P1v2"
   # (
   # According to the resource at
   # https://learn.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-custom-domain?tabs=root%2Cazurecli :
   # [To be able to] map an existing custom DNS name to an Azure App Service,
   # ... the web app's App Service plan must be a paid tier and not Free (F1).
   # )
-  # sku_name            = "F1"
   sku_name            = "B1"
 
   depends_on = [
@@ -139,8 +108,6 @@ resource "azurerm_linux_web_app" "l_w_a" {
     application_stack {
       docker_image_name        = "${var.docker_io_username}/${var.name_of_container_image}:${var.tag_for_container_image}"
       docker_registry_url      = "https://docker.io"
-      # docker_registry_username = var.docker_io_username
-      # docker_registry_password = var.docker_io_access_token
     }
   }
 
