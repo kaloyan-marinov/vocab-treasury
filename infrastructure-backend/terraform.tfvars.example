@@ -1,0 +1,40 @@
+linode_personal_access_token = # Provide a personal access token to your Linode account. (Must be in double quotes.)
+
+
+
+secret_key_for_backend_application = # Choose a secret key for the backend application. (Must be in double quotes.)
+
+
+
+mysql_server_administrator_login = # Choose a username for an admin in the to-be-provisioned MySQL server. (Must be in double quotes.)
+mysql_server_administrator_password = # Choose a password for an admin in the to-be-provisioned MySQL server. (Must be in double quotes.)
+
+name_4_mysql_server_database = # Choose a name for a to-be-created database in the to-be-provisioned MySQL server. (Must be in double quotes.)
+
+
+
+docker_io_username = # Provide the username of your DockerHub account. (Must be in double quotes.)
+
+name_of_container_image = # Provide the name of the container image, which must be in your DockerHub account. (Must be in double quotes.)
+tag_for_container_image = # Prodive a concrete tag for the specified container image. (Must be in double quotes.)
+
+mail_server_url = # Prodive the domain/URL for a mail server. (Must be in double quotes.)
+mail_server_port = # Prodive the port for the mail server. (Must be in double quotes.)
+mail_server_username = # Prodive your username for the mail server. (Must be in double quotes.)
+mail_server_password = # Prodive your password for the mail server. (Must be in double quotes.)
+
+mail_server_email_address_of_administrator_for_sending = # For a 'production' deployment, the value must be associated with a domain, which has been registered and properly verified with an SMTP service that you have an account for.
+mail_server_email_address_of_administrator_for_receiving = # The following must be an email address that you have access to.
+
+days_for_email_address_confirmation = # Choose within how many days a newly-created user has to confirm his/her email address. (Must be in double quotes.)
+minutes_for_token_validity = # Choose how many minutes each access token issued by the backend will be valid for. (Must be in double quotes.)
+minutes_for_password_reset = # Choose how many minutes a password-reset token/link issued by the backend will be valid for. (Must be in double quotes.)
+
+
+
+# Recall the assumptions, which are listed
+# in the "Use Terraform to deploy a containerized version of the backend" section
+# of `README.md`.
+custom_domain = # Provide your domain. (Must be in double quotes.)
+linode_id_of_custom_domain = # Go to the Domains section of your Linode account, find out the ID of your domain, and provide that ID here.
+custom_subdomain = # Provide a custom subdomain, which the containerized backend application is to be made available at. (Must be in double quotes.)

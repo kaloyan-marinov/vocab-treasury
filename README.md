@@ -16,7 +16,9 @@ The rest of this repository's documentation is organized as follows.
 
 4. [Containerization](#containerization)
 
-5. [Future plans](#future-plans)
+5. [Use Terraform to deploy a containerized version of the backend](#use-terraform-to-deploy-a-containerized-version-of-the-backend)
+
+6. [Future plans](#future-plans)
 
 # Introduction
 
@@ -713,7 +715,7 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
         --name container-vocab-treasury \
         --network network-vocab-treasury \
         --env-file backend/.env \
-        --env CONFIGURATION_4_BACKEND \
+        --env CONFIGURATION_4_BACKEND \  # TODO (2024/07/25; 22:18) is this needed (or even correct)?
         --env MYSQL_HOST \
         --publish 5000:5000 \
         --detach \
@@ -723,6 +725,124 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
 
 ```
 $ backend/clean-docker-artifacts.sh
+```
+
+# Use Terraform to deploy a containerized version of the backend
+
+This section assumes that you:
+
+- have a DockerHub account
+
+- have built a container image for the backend sub-project
+  (as explained in the preceding section)
+  and
+  have pushed that image
+  to a public (container-image) repository in your DockerHub account
+
+- have an Azure account
+
+- have installed the `mycli` command-line tool on your computer
+
+- have a Linode account
+
+- own a domain
+
+- use the Domains section of your Linode account to manage the domain
+
+---
+
+
+```
+$ cp \
+    infrastructure-backend/terraform.tfvars.example \
+    infrastructure-backend/terraform.tfvars.sensitive
+# Edit the newly-created file according to the instructions therein.
+```
+
+```
+$ cd infrastructure
+
+# Follow the instructions on
+# https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/azure_cli :
+
+#   - log into the Azure CLI using a User:
+$ az login \
+    --allow-no-subscriptions
+
+#     (
+#       The AzureAD provider operates on tenants and not on subscriptions.
+#       We recommend always specifying `az login --allow-no-subscriptions`
+#       as it will force the Azure CLI to report tenants with no associated subscriptions,
+#       or where your user account does not have any roles assigned for a subscription.
+#     )
+
+#   - list the Subscriptions and Tenants associated with the account:
+$ az account list \
+    -o table \
+    --all \
+    --query "[].{TenantID: tenantId, Subscription: name, Default: isDefault}"
+
+# [For each of the subsequent commands,]
+# the provider will select the tenant ID from your default Azure CLI account.
+# If you have more than one tenant listed in the output of `az account list`
+# - for example if you are a guest user in other tenants -
+# you can specify the tenant to use.
+```
+
+```
+$ terraform init
+```
+
+```
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
+    -var-file=terraform.tfvars.sensitive \
+    -target=azurerm_mysql_flexible_server_firewall_rule.f_s_f_r \
+    -target=azurerm_mysql_flexible_server_configuration.example \
+    -target=linode_domain_record.l_d_r_1_txt \
+    -target=linode_domain_record.l_d_r_2_cname \
+    -out=phase-1.terraform.plan
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
+    phase-1.terraform.plan
+
+
+
+# Ensure that public access to the provisioned MySQL server works;
+# one way to do that is to use the `mycli` command-line tool:
+$ mycli \
+    --host <the-fully-qualified-domain-name-returned-by-the-preceding-command> \
+    --user <the-value-of-mysql_server_administrator_login-from-terraform.tfvars.sensitive> \
+    --port=3306 \
+    --ssl-ca=<path-to-mycli-s-/venvs/mycli/lib64/python3.12/site-packages/certifi/cacert.pem>
+# It should be noted that
+# the last command _might_ work
+# _only after_ you have appended
+# the contents of the Root CA Certificates from https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-networking-ssl-tls#downloading-root-ca-certificates-and-updating-application-clients-in-certificate-pinning-scenarios
+# to (the end of) the above-mentioned `cacert.pem` file.
+
+
+
+# Check whether the deployed application is responsive
+# by issuing a `GET` request to the `/api/users` endpoint
+# of the Azure-generated hostname.
+```
+
+```
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
+    -var-file=terraform.tfvars.sensitive \
+    -out=phase-2.terraform.plan
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
+    phase-2.terraform.plan
+
+# Check whether the deployed application is responsive
+# by issuing a `GET` request to the `/api/users` endpoint
+# of your custom hostname.
+```
+
+```
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform destroy \
+    -var-file=terraform.tfvars.sensitive
 ```
 
 # Future plans
