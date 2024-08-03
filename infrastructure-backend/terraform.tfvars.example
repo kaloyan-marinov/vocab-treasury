@@ -32,10 +32,9 @@ minutes_for_password_reset = # Choose how many minutes a password-reset token/li
 
 
 
-# This repository assumes that you
-# own a domain;
-# have a Linode account;
-# and use the Domains section of your Linode account to manage the domain.
+# Recall the assumptions, which are listed
+# in the "Use Terraform to deploy a containerized version of the backend" section
+# of `README.md`.
 custom_domain = # Provide your domain. (Must be in double quotes.)
 linode_id_of_custom_domain = # Go to the Domains section of your Linode account, find out the ID of your domain, and provide that ID here.
 custom_subdomain = # Provide a custom subdomain, which the containerized backend application is to be made available at. (Must be in double quotes.)

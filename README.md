@@ -715,7 +715,7 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
         --name container-vocab-treasury \
         --network network-vocab-treasury \
         --env-file backend/.env \
-        --env CONFIGURATION_4_BACKEND \  # is this needed (or even correct)?
+        --env CONFIGURATION_4_BACKEND \  # TODO (2024/07/25; 22:18) is this needed (or even correct)?
         --env MYSQL_HOST \
         --publish 5000:5000 \
         --detach \
@@ -728,6 +728,29 @@ $ backend/clean-docker-artifacts.sh
 ```
 
 # Use Terraform to deploy a containerized version of the backend
+
+This section assumes that you:
+
+- have a DockerHub account
+
+- have built a container image for the backend sub-project
+  (as explained in the preceding section)
+  and
+  have pushed that image
+  to a public (container-image) repository in your DockerHub account
+
+- have an Azure account
+
+- have installed the `mycli` command-line tool on your computer
+
+- have a Linode account
+
+- own a domain
+
+- use the Domains section of your Linode account to manage the domain
+
+---
+
 
 ```
 $ cp \
