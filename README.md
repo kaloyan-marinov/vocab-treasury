@@ -16,7 +16,9 @@ The rest of this repository's documentation is organized as follows.
 
 4. [Containerization](#containerization)
 
-5. [Future plans](#future-plans)
+5. [Use Terraform to deploy a containerized version of the backend](#use-terraform-to-deploy-a-containerized-version-of-the-backend)
+
+6. [Future plans](#future-plans)
 
 # Introduction
 
@@ -725,12 +727,16 @@ $ MYSQL_HOST='vocab-treasury-database-server' \
 $ backend/clean-docker-artifacts.sh
 ```
 
+# Use Terraform to deploy a containerized version of the backend
+
 ```
 $ cp \
     infrastructure-backend/terraform.tfvars.example \
     infrastructure-backend/terraform.tfvars.sensitive
 # Edit the newly-created file according to the instructions therein.
+```
 
+```
 $ cd infrastructure
 
 # Follow the instructions on
@@ -758,11 +764,13 @@ $ az account list \
 # If you have more than one tenant listed in the output of `az account list`
 # - for example if you are a guest user in other tenants -
 # you can specify the tenant to use.
+```
 
+```
 $ terraform init
+```
 
-
-
+```
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
     -var-file=terraform.tfvars.sensitive \
     -target=azurerm_mysql_flexible_server_firewall_rule.f_s_f_r \
@@ -773,6 +781,8 @@ $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform p
 
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
     phase-1.terraform.plan
+
+
 
 # Ensure that public access to the provisioned MySQL server works;
 # one way to do that is to use the `mycli` command-line tool:
@@ -789,6 +799,12 @@ $ mycli \
 
 
 
+# Check whether the deployed application is responsive
+# by issuing a `GET` request to the `/api/users` endpoint
+# of the Azure-generated hostname.
+```
+
+```
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
     -var-file=terraform.tfvars.sensitive \
     -out=phase-2.terraform.plan
@@ -796,8 +812,12 @@ $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform p
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
     phase-2.terraform.plan
 
+# Check whether the deployed application is responsive
+# by issuing a `GET` request to the `/api/users` endpoint
+# of your custom hostname.
+```
 
-
+```
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform destroy \
     -var-file=terraform.tfvars.sensitive
 ```
