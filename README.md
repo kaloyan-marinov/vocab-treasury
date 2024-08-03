@@ -764,10 +764,15 @@ $ terraform init
 
 
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
-    -var-file=terraform.tfvars.sensitive
+    -var-file=terraform.tfvars.sensitive \
+    -target=azurerm_mysql_flexible_server_firewall_rule.f_s_f_r \
+    -target=azurerm_mysql_flexible_server_configuration.example \
+    -target=linode_domain_record.l_d_r_1_txt \
+    -target=linode_domain_record.l_d_r_2_cname \
+    -out=phase-1.terraform.plan
 
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
-    -var-file=terraform.tfvars.sensitive
+    phase-1.terraform.plan
 
 # Ensure that public access to the provisioned MySQL server works;
 # one way to do that is to use the `mycli` command-line tool:
@@ -781,6 +786,17 @@ $ mycli \
 # _only after_ you have appended
 # the contents of the Root CA Certificates from https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-networking-ssl-tls#downloading-root-ca-certificates-and-updating-application-clients-in-certificate-pinning-scenarios
 # to (the end of) the above-mentioned `cacert.pem` file.
+
+
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform plan \
+    -var-file=terraform.tfvars.sensitive \
+    -out=phase-2.terraform.plan
+
+$ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform apply \
+    phase-2.terraform.plan
+
+
 
 $ ARM_TENANT_ID=<provide-the-ID-of-the-tenant-you-wish-to-deploy-to> terraform destroy \
     -var-file=terraform.tfvars.sensitive

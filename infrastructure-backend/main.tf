@@ -17,10 +17,10 @@ terraform {
 
 
 
-# # Configure the Linode Provider.
-# provider "linode" {
-#   token = var.linode_personal_access_token
-# }
+# Configure the Linode Provider.
+provider "linode" {
+  token = var.linode_personal_access_token
+}
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
@@ -206,40 +206,40 @@ resource "azurerm_mysql_flexible_server_configuration" "example" {
 }
 
 
-# resource "linode_domain_record" "l_d_r_1_txt" {
-#   domain_id   = var.linode_id_of_custom_domain
+resource "linode_domain_record" "l_d_r_1_txt" {
+  domain_id   = var.linode_id_of_custom_domain
 
-#   record_type = "TXT"
-#   name        = "asuid.${var.custom_subdomain}"
-#   target      = azurerm_linux_web_app.l_w_a.custom_domain_verification_id
-# }
+  record_type = "TXT"
+  name        = "asuid.${var.custom_subdomain}"
+  target      = azurerm_linux_web_app.l_w_a.custom_domain_verification_id
+}
 
-# resource "linode_domain_record" "l_d_r_2_cname" {
-#   domain_id   = var.linode_id_of_custom_domain
+resource "linode_domain_record" "l_d_r_2_cname" {
+  domain_id   = var.linode_id_of_custom_domain
 
-#   record_type = "CNAME"
-#   name        = var.custom_subdomain
-#   target      = azurerm_linux_web_app.l_w_a.default_hostname
-# }
+  record_type = "CNAME"
+  name        = var.custom_subdomain
+  target      = azurerm_linux_web_app.l_w_a.default_hostname
+}
 
-# resource "azurerm_app_service_custom_hostname_binding" "a_s_c_h_b" {
-#   hostname            = "${var.custom_subdomain}.${var.custom_domain}"
-#   app_service_name    = azurerm_linux_web_app.l_w_a.name
-#   resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
+resource "azurerm_app_service_custom_hostname_binding" "a_s_c_h_b" {
+  hostname            = "${var.custom_subdomain}.${var.custom_domain}"
+  app_service_name    = azurerm_linux_web_app.l_w_a.name
+  resource_group_name = azurerm_resource_group.rg_vocab_treasury_backend.name
 
-#   # Ignore ssl_state and thumbprint as they are managed using
-#   # azurerm_app_service_certificate_binding.example
-#   lifecycle {
-#     ignore_changes = [ssl_state, thumbprint]
-#   }
-# }
+  # Ignore ssl_state and thumbprint as they are managed using
+  # azurerm_app_service_certificate_binding.example
+  lifecycle {
+    ignore_changes = [ssl_state, thumbprint]
+  }
+}
 
-# resource "azurerm_app_service_managed_certificate" "a_s_m_c" {
-#   custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.a_s_c_h_b.id
-# }
+resource "azurerm_app_service_managed_certificate" "a_s_m_c" {
+  custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.a_s_c_h_b.id
+}
 
-# resource "azurerm_app_service_certificate_binding" "a_s_c_b" {
-#   hostname_binding_id = azurerm_app_service_custom_hostname_binding.a_s_c_h_b.id
-#   certificate_id      = azurerm_app_service_managed_certificate.a_s_m_c.id
-#   ssl_state           = "SniEnabled"
-# }
+resource "azurerm_app_service_certificate_binding" "a_s_c_b" {
+  hostname_binding_id = azurerm_app_service_custom_hostname_binding.a_s_c_h_b.id
+  certificate_id      = azurerm_app_service_managed_certificate.a_s_m_c.id
+  ssl_state           = "SniEnabled"
+}

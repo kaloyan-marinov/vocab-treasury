@@ -1,3 +1,9 @@
+variable "linode_personal_access_token" {
+  description = "personal access token for Linode account"
+  type        = string
+  sensitive   = true
+}
+
 variable "secret_key_for_backend_application" {
   description = "secret key for the backend application"
   type        = string
@@ -106,4 +112,21 @@ variable "minutes_for_password_reset" {
   description = "number of minutes, which a password-reset token/link issued by the backend will be valid for"
   type        = string
   sensitive   = true
+}
+
+
+
+variable "custom_domain" {
+  description = "a domain that you own and that is managed via the Domains section of your Linode account"
+  type        = string
+}
+
+variable "linode_id_of_custom_domain" {
+  description = "Go to the Domains section of your Linode account, find out the ID of the domain, and provide that ID here."
+  type        = string
+}
+
+variable "custom_subdomain" {
+  description = "custom subdomain of `custom_domain`, which the containerized backend application is to be made available at"
+  type        = string
 }

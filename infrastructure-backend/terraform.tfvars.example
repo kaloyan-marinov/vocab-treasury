@@ -1,3 +1,7 @@
+linode_personal_access_token = # Provide a personal access token to your Linode account. (Must be in double quotes.)
+
+
+
 secret_key_for_backend_application = # Choose a secret key for the backend application. (Must be in double quotes.)
 
 
@@ -25,3 +29,13 @@ mail_server_email_address_of_administrator_for_receiving = # The following must 
 days_for_email_address_confirmation = # Choose within how many days a newly-created user has to confirm his/her email address. (Must be in double quotes.)
 minutes_for_token_validity = # Choose how many minutes each access token issued by the backend will be valid for. (Must be in double quotes.)
 minutes_for_password_reset = # Choose how many minutes a password-reset token/link issued by the backend will be valid for. (Must be in double quotes.)
+
+
+
+# This repository assumes that you
+# own a domain;
+# have a Linode account;
+# and use the Domains section of your Linode account to manage the domain.
+custom_domain = # Provide your domain. (Must be in double quotes.)
+linode_id_of_custom_domain = # Go to the Domains section of your Linode account, find out the ID of your domain, and provide that ID here.
+custom_subdomain = # Provide a custom subdomain, which the containerized backend application is to be made available at. (Must be in double quotes.)
