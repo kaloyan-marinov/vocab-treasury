@@ -727,6 +727,14 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
             )
 
         # Act.
+        # (
+        # Just as an FYI:
+        # The current test case works equally well
+        # if the URL in the next statement is changed
+        #   to "/api/examples?per_page=2&page=2&content=remainder+of+1"
+        #   or
+        #   to "/api/examples?per_page=2&page=2&content=remainder%20of%201" .
+        # )
         rv_2 = self.client.get(
             "/api/examples?per_page=2&page=2&content=remainder of 1",
             headers={
