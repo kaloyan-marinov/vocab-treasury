@@ -753,10 +753,10 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
                         "content_translation": None,
                     },
                     {
-                        "id": 8,
+                        "id": 4,
                         "source_language": "Finnish",
                         "new_word": "1",
-                        "content": "7",
+                        "content": "3",
                         "content_translation": None,
                     },
                 ],
