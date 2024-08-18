@@ -705,7 +705,17 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
 
         # Arrange.
         source_language = "Finnish"
-        list_of_example_data = [{"new_word": x % 2, "content": x} for x in range(11)]
+        list_of_example_data = [
+            {
+                "new_word": x,
+                "content": (
+                    f"Dividing {x} by 2 gives"
+                    f" a quotient of {x // 2}"
+                    f" _and_ a remainder of {x % 2}."
+                ),
+            }
+            for x in range(11)
+        ]
         content_translation = None
         for example_data in list_of_example_data:
             self.util_create_example(
@@ -717,8 +727,16 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
             )
 
         # Act.
+        # (
+        # Just as an FYI:
+        # The current test case works equally well
+        # if the URL in the next statement is changed
+        #   to "/api/examples?per_page=2&page=2&content=remainder+of+1"
+        #   or
+        #   to "/api/examples?per_page=2&page=2&content=remainder%20of%201" .
+        # )
         rv_2 = self.client.get(
-            "/api/examples?per_page=2&page=2&new_word=1",
+            "/api/examples?per_page=2&page=2&content=remainder of 1",
             headers={
                 "Authorization": "Bearer " + self._u_r_1.token,
             },
@@ -738,25 +756,25 @@ class Test_02_GetExamples(TestBaseForExampleResources_2):
                     "page": 2,
                 },
                 "_links": {
-                    "self": "/api/examples?per_page=2&page=2&new_word=1",
-                    "next": "/api/examples?per_page=2&page=3&new_word=1",
-                    "prev": "/api/examples?per_page=2&page=1&new_word=1",
-                    "first": "/api/examples?per_page=2&page=1&new_word=1",
-                    "last": "/api/examples?per_page=2&page=3&new_word=1",
+                    "self": "/api/examples?per_page=2&page=2&content=remainder+of+1",
+                    "next": "/api/examples?per_page=2&page=3&content=remainder+of+1",
+                    "prev": "/api/examples?per_page=2&page=1&content=remainder+of+1",
+                    "first": "/api/examples?per_page=2&page=1&content=remainder+of+1",
+                    "last": "/api/examples?per_page=2&page=3&content=remainder+of+1",
                 },
                 "items": [
                     {
                         "id": 6,
                         "source_language": "Finnish",
-                        "new_word": "1",
-                        "content": "5",
+                        "new_word": "5",
+                        "content": "Dividing 5 by 2 gives a quotient of 2 _and_ a remainder of 1.",
                         "content_translation": None,
                     },
                     {
-                        "id": 8,
+                        "id": 4,
                         "source_language": "Finnish",
-                        "new_word": "1",
-                        "content": "7",
+                        "new_word": "3",
+                        "content": "Dividing 3 by 2 gives a quotient of 1 _and_ a remainder of 1.",
                         "content_translation": None,
                     },
                 ],

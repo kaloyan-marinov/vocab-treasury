@@ -177,3 +177,13 @@ v2.4.2 (2024/03/16)
 - enable every newly-created user to confirm their email address through the frontend
 
 - fix TypeScript errros
+
+v2.4.3 (2024/08/18)
+-------------------
+
+- make it possible to launch a containerized version of the backend sub-project
+
+- make it possible to use Terraform
+  to deploy a containerized version of the backend
+
+- make the backend return ``Example`` resources in order of descending IDs
