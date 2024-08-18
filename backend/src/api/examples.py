@@ -96,12 +96,13 @@ def get_examples():
         )
         query_param_kwargs["content_translation"] = content_translation
 
+    examples_query = examples_query.order_by(Example.id.desc())
+
     per_page = min(
         100,
         request.args.get("per_page", default=10, type=int),
     )
     page = request.args.get("page", default=1, type=int)
-
     examples_collection = Example.to_collection_dict(
         examples_query,
         per_page,
