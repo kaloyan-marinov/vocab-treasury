@@ -54,14 +54,15 @@ export const OwnVocabTreasury = () => {
 
   let location = useLocation<LocationStateWithinOwnVocabTreasury>();
   let initialExamplesUrl: string;
+  // if (
+  //   location.state &&
+  //   location.state.fromRecordNewExample === true &&
+  //   examplesLinks.last !== null
+  // ) {
+  //   console.log("    from /example/new (i.e. <RecordNewExample>)");
+  //   initialExamplesUrl = examplesLinks.last;
+  // } else if (
   if (
-    location.state &&
-    location.state.fromRecordNewExample === true &&
-    examplesLinks.last !== null
-  ) {
-    console.log("    from /example/new (i.e. <RecordNewExample>)");
-    initialExamplesUrl = examplesLinks.last;
-  } else if (
     location.state &&
     location.state.fromSingleExample &&
     examplesLinks.self !== null
@@ -86,7 +87,7 @@ export const OwnVocabTreasury = () => {
       (b) that page used to contain a single example;
       and (c) the user used the frontend UI to delete that example.
       */
-      initialExamplesUrl = examplesLinks.last;
+      initialExamplesUrl = examplesLinks.last; // Action needed?
     } else {
       initialExamplesUrl = examplesLinks.self;
     }
