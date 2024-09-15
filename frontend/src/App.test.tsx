@@ -1272,13 +1272,13 @@ test(
       target: { value: "German" },
     });
     fireEvent.change(newWordInputElement, {
-      target: { value: "Wort numero-11" },
+      target: { value: "Wort Nummer-11" },
     });
     fireEvent.change(exampleInputElement, {
-      target: { value: "Satz numero-11" },
+      target: { value: "Satz Nummer-11" },
     });
     fireEvent.change(translationInputElement, {
-      target: { value: "Übersetzung numero-11" },
+      target: { value: "Übersetzung Nummer-11" },
     });
 
     const editExampleBtn: HTMLElement = screen.getByRole("button", {
@@ -1298,11 +1298,11 @@ test(
     element = await screen.findByText("Current page: 1");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("Wort numero-11");
+    element = screen.getByText("Wort Nummer-11");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("Satz numero-11");
+    element = screen.getByText("Satz Nummer-11");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("Übersetzung numero-11");
+    element = screen.getByText("Übersetzung Nummer-11");
     expect(element).toBeInTheDocument();
 
     element = screen.getByText("sana numero-10");

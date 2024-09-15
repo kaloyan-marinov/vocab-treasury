@@ -949,9 +949,9 @@ describe("reducer", () => {
       payload: {
         id: 9,
         sourceLanguage: "German",
-        newWord: "Wort numero-9",
-        content: "Satz numero-9",
-        contentTranslation: "Übersetzung numero-9",
+        newWord: "Wort Nummer-9",
+        content: "Satz Nummer-9",
+        contentTranslation: "Übersetzung Nummer-9",
       },
     };
 
@@ -969,9 +969,9 @@ describe("reducer", () => {
         "9": {
           id: 9,
           sourceLanguage: "German",
-          newWord: "Wort numero-9",
-          content: "Satz numero-9",
-          contentTranslation: "Übersetzung numero-9",
+          newWord: "Wort Nummer-9",
+          content: "Satz Nummer-9",
+          contentTranslation: "Übersetzung Nummer-9",
         },
         "8": {
           id: 8,
