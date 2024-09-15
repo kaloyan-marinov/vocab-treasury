@@ -187,3 +187,9 @@ v2.4.3 (2024/08/18)
   to deploy a containerized version of the backend
 
 - make the backend return ``Example`` resources in order of descending IDs
+
+v2.4.4 (2024/09/15)
+-------------------
+
+- make the frontend follow up on a successful creation of a new ``Example``
+  by rendering page 1 of the logged-in ``User``'s ``Example``s
