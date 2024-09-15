@@ -40,5 +40,7 @@
     
     "jest.rootPath": "frontend",
     "jest.jestCommandLine": "npm run test --",
-    "jest.runMode": "on-demand"
+    "jest.runMode": "on-demand",
+
+    "prettier.singleQuote": false
 }

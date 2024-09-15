@@ -248,7 +248,7 @@ export class RequestHandlingFacilitator {
         content_translation,
       };
 
-      this.mockExamples = [...this.mockExamples, newExample];
+      this.mockExamples = [newExample, ...this.mockExamples];
 
       return res.once(ctx.status(201), ctx.json(newExample));
     };
