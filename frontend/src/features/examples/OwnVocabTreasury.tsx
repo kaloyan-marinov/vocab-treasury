@@ -25,7 +25,6 @@ import { ActionFetchExamples, fetchExamples } from "./examplesSlice";
 import { IActionAlertsCreate, alertsCreate } from "../alerts/alertsSlice";
 
 interface LocationStateWithinOwnVocabTreasury {
-  fromRecordNewExample: null | boolean;
   fromSingleExample: null | boolean;
   fromEditExample: null | boolean;
 }
@@ -54,14 +53,6 @@ export const OwnVocabTreasury = () => {
 
   let location = useLocation<LocationStateWithinOwnVocabTreasury>();
   let initialExamplesUrl: string;
-  // if (
-  //   location.state &&
-  //   location.state.fromRecordNewExample === true &&
-  //   examplesLinks.last !== null
-  // ) {
-  //   console.log("    from /example/new (i.e. <RecordNewExample>)");
-  //   initialExamplesUrl = examplesLinks.last;
-  // } else if (
   if (
     location.state &&
     location.state.fromSingleExample &&

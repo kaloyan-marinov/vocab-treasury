@@ -83,9 +83,6 @@ export const RecordNewExample = () => {
 
         const locationDescriptor = {
           pathname: "/own-vocabtreasury",
-          state: {
-            fromRecordNewExample: true,
-          },
         };
         history.push(locationDescriptor);
       } catch (err) {
