@@ -123,29 +123,29 @@ describe("<OwnVocabTreasury> + mocking of HTTP requests to the backend", () => {
 
       /* - after the component's re-rendering: */
       /*    (a) [representations of] Example resources */
-      element = await screen.findByText("1");
+      element = await screen.findByText("11");
 
       console.log(`${new Date().toISOString()} - 2nd run of screen.debug()`);
       screen.debug();
 
       expect(element).toBeInTheDocument();
 
-      for (const textFromExample1 of [
-        "sana numero-1",
-        "lause numero-1",
-        "käännös numero-1",
+      for (const textFromExample11 of [
+        "sana numero-11",
+        "lause numero-11",
+        "käännös numero-11",
       ]) {
-        element = screen.getByText(textFromExample1);
+        element = screen.getByText(textFromExample11);
         expect(element).toBeInTheDocument();
       }
 
-      for (const textFromExample2 of [
-        "2",
-        "sana numero-2",
-        "lause numero-2",
-        "käännös numero-2",
+      for (const textFromExample10 of [
+        "10",
+        "sana numero-10",
+        "lause numero-10",
+        "käännös numero-10",
       ]) {
-        element = screen.getByText(textFromExample2);
+        element = screen.getByText(textFromExample10);
         expect(element).toBeInTheDocument();
       }
 

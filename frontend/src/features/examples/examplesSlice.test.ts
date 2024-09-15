@@ -20,7 +20,7 @@ import {
   mockPaginationFromBackend,
   MOCK_EXAMPLES,
   MOCK_EXAMPLE,
-  MOCK_EXAMPLE_AT_IDX_7,
+  MOCK_EXAMPLE_WITH_ID_OF_7,
 } from "../../mockPiecesOfData";
 import {
   createMockOneOrManyFailures,
@@ -130,18 +130,18 @@ describe("action creators", () => {
     });
     expect(examplesFromBackend).toEqual([
       {
-        id: 1,
+        id: 11,
         source_language: "Finnish",
-        new_word: "sana numero-1",
-        content: "lause numero-1",
-        content_translation: "käännös numero-1",
+        new_word: "sana numero-11",
+        content: "lause numero-11",
+        content_translation: "käännös numero-11",
       },
       {
-        id: 2,
+        id: 10,
         source_language: "Finnish",
-        new_word: "sana numero-2",
-        content: "lause numero-2",
-        content_translation: "käännös numero-2",
+        new_word: "sana numero-10",
+        content: "lause numero-10",
+        content_translation: "käännös numero-10",
       },
     ]);
   });
@@ -200,18 +200,18 @@ describe("action creators", () => {
         },
         items: [
           {
-            id: 1,
+            id: 11,
             sourceLanguage: "Finnish",
-            newWord: "sana numero-1",
-            content: "lause numero-1",
-            contentTranslation: "käännös numero-1",
+            newWord: "sana numero-11",
+            content: "lause numero-11",
+            contentTranslation: "käännös numero-11",
           },
           {
-            id: 2,
+            id: 10,
             sourceLanguage: "Finnish",
-            newWord: "sana numero-2",
-            content: "lause numero-2",
-            contentTranslation: "käännös numero-2",
+            newWord: "sana numero-10",
+            content: "lause numero-10",
+            contentTranslation: "käännös numero-10",
           },
         ],
       },
@@ -478,21 +478,21 @@ describe("reducer", () => {
         first: "/api/examples?per_page=2&page=1",
         last: "/api/examples?per_page=2&page=6",
       },
-      ids: [1, 2],
+      ids: [11, 10],
       entities: {
-        "1": {
-          id: 1,
+        "11": {
+          id: 11,
           sourceLanguage: "Finnish",
-          newWord: "sana numero-1",
-          content: "lause numero-1",
-          contentTranslation: "käännös numero-1",
+          newWord: "sana numero-11",
+          content: "lause numero-11",
+          contentTranslation: "käännös numero-11",
         },
-        "2": {
-          id: 2,
+        "10": {
+          id: 10,
           sourceLanguage: "Finnish",
-          newWord: "sana numero-2",
-          content: "lause numero-2",
-          contentTranslation: "käännös numero-2",
+          newWord: "sana numero-10",
+          content: "lause numero-10",
+          contentTranslation: "käännös numero-10",
         },
       },
     });
@@ -812,7 +812,7 @@ describe("reducer", () => {
     const action: IActionDeleteExampleFulfilled = {
       type: ActionTypesDeleteExample.FULFILLED,
       payload: {
-        id: 4,
+        id: 9,
       },
     };
 
@@ -828,14 +828,14 @@ describe("reducer", () => {
     }).toEqual({
       requestStatus: RequestStatus.SUCCEEDED,
       requestError: null,
-      ids: [3],
+      ids: [8],
       entities: {
-        "3": {
-          id: 3,
+        "8": {
+          id: 8,
           sourceLanguage: "Finnish",
-          newWord: "sana numero-3",
-          content: "lause numero-3",
-          contentTranslation: "käännös numero-3",
+          newWord: "sana numero-8",
+          content: "lause numero-8",
+          contentTranslation: "käännös numero-8",
         },
       },
     });
@@ -947,11 +947,11 @@ describe("reducer", () => {
     const action: IActionEditExampleFulfilled = {
       type: ActionTypesEditExample.FULFILLED,
       payload: {
-        id: 3,
+        id: 9,
         sourceLanguage: "German",
-        newWord: "Wort numero-4",
-        content: "Satz numero-4",
-        contentTranslation: "Übersetzung numero-4",
+        newWord: "Wort numero-9",
+        content: "Satz numero-9",
+        contentTranslation: "Übersetzung numero-9",
       },
     };
 
@@ -964,21 +964,21 @@ describe("reducer", () => {
       requestError: null,
       meta,
       links,
-      ids: [3, 4],
+      ids: [9, 8],
       entities: {
-        "3": {
-          id: 3,
+        "9": {
+          id: 9,
           sourceLanguage: "German",
-          newWord: "Wort numero-4",
-          content: "Satz numero-4",
-          contentTranslation: "Übersetzung numero-4",
+          newWord: "Wort numero-9",
+          content: "Satz numero-9",
+          contentTranslation: "Übersetzung numero-9",
         },
-        "4": {
-          id: 4,
+        "8": {
+          id: 8,
           sourceLanguage: "Finnish",
-          newWord: "sana numero-4",
-          content: "lause numero-4",
-          contentTranslation: "käännös numero-4",
+          newWord: "sana numero-8",
+          content: "lause numero-8",
+          contentTranslation: "käännös numero-8",
         },
       },
     });
@@ -1082,18 +1082,18 @@ describe(
               },
               items: [
                 {
-                  id: 1,
+                  id: 11,
                   sourceLanguage: "Finnish",
-                  newWord: "sana numero-1",
-                  content: "lause numero-1",
-                  contentTranslation: "käännös numero-1",
+                  newWord: "sana numero-11",
+                  content: "lause numero-11",
+                  contentTranslation: "käännös numero-11",
                 },
                 {
-                  id: 2,
+                  id: 10,
                   sourceLanguage: "Finnish",
-                  newWord: "sana numero-2",
-                  content: "lause numero-2",
-                  contentTranslation: "käännös numero-2",
+                  newWord: "sana numero-10",
+                  content: "lause numero-10",
+                  contentTranslation: "käännös numero-10",
                 },
               ],
             },
@@ -1318,7 +1318,7 @@ describe(
 
         /* Act. */
         const editExamplePromise = storeMock.dispatch(
-          editExample(MOCK_EXAMPLE_AT_IDX_7.id, {
+          editExample(MOCK_EXAMPLE_WITH_ID_OF_7.id, {
             sourceLanguage: MOCK_EXAMPLE.source_language,
             newWord: MOCK_EXAMPLE.new_word,
             content: MOCK_EXAMPLE.content,
@@ -1335,7 +1335,7 @@ describe(
           {
             type: "examples/editExample/fulfilled",
             payload: {
-              id: 8,
+              id: 7,
               sourceLanguage: "Finnish",
               newWord: "varjo",
               content: "Suomen ideaalisää on 24 astetta varjossa.",

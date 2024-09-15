@@ -61,7 +61,7 @@ test(
     const realStore = createStore(rootReducer, initState, enhancer);
 
     const history = createMemoryHistory();
-    history.push("/example/2");
+    history.push("/example/10");
 
     /* Act. */
     render(
@@ -97,20 +97,20 @@ test(
     expect(translationTableCellElement1).toBeInTheDocument();
 
     /* Second row. */
-    const idTableCellElement2 = screen.getByText("2");
-    expect(idTableCellElement2).toBeInTheDocument();
+    const idTableCellElement10 = screen.getByText("10");
+    expect(idTableCellElement10).toBeInTheDocument();
 
-    const sourceLanguageTableCellElement2 = screen.getByText("Finnish");
-    expect(sourceLanguageTableCellElement2).toBeInTheDocument();
+    const sourceLanguageTableCellElement10 = screen.getByText("Finnish");
+    expect(sourceLanguageTableCellElement10).toBeInTheDocument();
 
-    const newWordTableCellElement2 = screen.getByText("sana numero-2");
-    expect(newWordTableCellElement2).toBeInTheDocument();
+    const newWordTableCellElement10 = screen.getByText("sana numero-10");
+    expect(newWordTableCellElement10).toBeInTheDocument();
 
-    const exampleTableCellElement2 = screen.getByText("lause numero-2");
-    expect(exampleTableCellElement2).toBeInTheDocument();
+    const exampleTableCellElement10 = screen.getByText("lause numero-10");
+    expect(exampleTableCellElement10).toBeInTheDocument();
 
-    const translationTableCellElement2 = screen.getByText("käännös numero-2");
-    expect(translationTableCellElement2).toBeInTheDocument();
+    const translationTableCellElement10 = screen.getByText("käännös numero-10");
+    expect(translationTableCellElement10).toBeInTheDocument();
 
     // HTML elements that enable user interaction.
     const anchorForReturning = screen.getByText(

@@ -431,25 +431,25 @@ test("the user clicks the navigation-controlling button for 'Next page'", async 
   /* Assert. */
   /*    (a) [representations of] Example resources */
   let element: HTMLElement;
-  element = await screen.findByText("3");
+  element = await screen.findByText("9");
   expect(element).toBeInTheDocument();
 
-  for (const textFromExample3 of [
-    "sana numero-3",
-    "lause numero-3",
-    "käännös numero-3",
+  for (const textFromExample9 of [
+    "sana numero-9",
+    "lause numero-9",
+    "käännös numero-9",
   ]) {
-    element = screen.getByText(textFromExample3);
+    element = screen.getByText(textFromExample9);
     expect(element).toBeInTheDocument();
   }
 
-  for (const textFromExample4 of [
-    "4",
-    "sana numero-4",
-    "lause numero-4",
-    "käännös numero-4",
+  for (const textFromExample8 of [
+    "8",
+    "sana numero-8",
+    "lause numero-8",
+    "käännös numero-8",
   ]) {
-    element = screen.getByText(textFromExample4);
+    element = screen.getByText(textFromExample8);
     expect(element).toBeInTheDocument();
   }
 
@@ -490,15 +490,15 @@ test("the user clicks the navigation-controlling button for 'Last page: N'", asy
   /* Assert. */
   /*    (a) [representations of] Example resources */
   let element: HTMLElement;
-  element = await screen.findByText("11");
+  element = await screen.findByText("1");
   expect(element).toBeInTheDocument();
 
-  for (const textFromExample11 of [
-    "sana numero-11",
-    "lause numero-11",
-    "käännös numero-11",
+  for (const textFromExample1 of [
+    "sana numero-1",
+    "lause numero-1",
+    "käännös numero-1",
   ]) {
-    element = screen.getByText(textFromExample11);
+    element = screen.getByText(textFromExample1);
     expect(element).toBeInTheDocument();
   }
 
@@ -552,25 +552,25 @@ test(
 
     /* Assert. */
     /*    (a) [representations of] Example resources */
-    element = await screen.findByText("9");
+    element = await screen.findByText("2");
     expect(element).toBeInTheDocument();
 
-    for (const textFromExample9 of [
-      "sana numero-9",
-      "lause numero-9",
-      "käännös numero-9",
+    for (const textFromExample2 of [
+      "sana numero-2",
+      "lause numero-2",
+      "käännös numero-2",
     ]) {
-      element = screen.getByText(textFromExample9);
+      element = screen.getByText(textFromExample2);
       expect(element).toBeInTheDocument();
     }
 
-    for (const textFromExample10 of [
-      "10",
-      "sana numero-10",
-      "lause numero-10",
-      "käännös numero-10",
+    for (const textFromExample3 of [
+      "3",
+      "sana numero-3",
+      "lause numero-3",
+      "käännös numero-3",
     ]) {
-      element = screen.getByText(textFromExample10);
+      element = screen.getByText(textFromExample3);
       expect(element).toBeInTheDocument();
     }
 
@@ -625,25 +625,25 @@ test(
 
     /* Assert. */
     /*    (a) [representations of] Example resources */
-    element = await screen.findByText("1");
+    element = await screen.findByText("11");
     expect(element).toBeInTheDocument();
 
-    for (const textFromExample1 of [
-      "sana numero-1",
-      "lause numero-1",
-      "käännös numero-1",
+    for (const textFromExample11 of [
+      "sana numero-11",
+      "lause numero-11",
+      "käännös numero-11",
     ]) {
-      element = screen.getByText(textFromExample1);
+      element = screen.getByText(textFromExample11);
       expect(element).toBeInTheDocument();
     }
 
-    for (const textFromExample2 of [
-      "2",
-      "sana numero-2",
-      "lause numero-2",
-      "käännös numero-2",
+    for (const textFromExample10 of [
+      "10",
+      "sana numero-10",
+      "lause numero-10",
+      "käännös numero-10",
     ]) {
-      element = screen.getByText(textFromExample2);
+      element = screen.getByText(textFromExample10);
       expect(element).toBeInTheDocument();
     }
 
@@ -923,7 +923,7 @@ test(
     fireEvent.click(nextPageButtonElement);
 
     const exampleOnPage2AnchorElement: HTMLElement = await screen.findByText(
-      "4"
+      "9"
     );
     fireEvent.click(exampleOnPage2AnchorElement);
 
@@ -942,11 +942,11 @@ test(
     expect(currentPageSpanElement).toBeInTheDocument();
 
     const newWord3TableCellElement: HTMLElement =
-      screen.getByText("sana numero-3");
+      screen.getByText("sana numero-9");
     expect(newWord3TableCellElement).toBeInTheDocument();
 
     const newWord4TableCellElement: HTMLElement =
-      screen.getByText("sana numero-4");
+      screen.getByText("sana numero-8");
     expect(newWord4TableCellElement).toBeInTheDocument();
 
     /*
@@ -998,9 +998,9 @@ test(
     fireEvent.click(anchorToOwnVocabTreasury);
 
     /* Act. */
-    const anchorToExample1: HTMLElement = await screen.findByText("1");
-    expect(anchorToExample1).toBeInTheDocument();
-    fireEvent.click(anchorToExample1);
+    const anchorToExample11: HTMLElement = await screen.findByText("11");
+    expect(anchorToExample11).toBeInTheDocument();
+    fireEvent.click(anchorToExample11);
 
     let temp: HTMLElement;
     temp = screen.getByRole("button", {
@@ -1048,10 +1048,10 @@ test(
     element = await screen.findByText("Current page: 1");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("lause numero-2");
+    element = screen.getByText("lause numero-10");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("lause numero-3");
+    element = screen.getByText("lause numero-9");
     expect(element).toBeInTheDocument();
   }
 );
@@ -1099,9 +1099,9 @@ test(
     fireEvent.click(lastPageButton);
 
     /* Act. */
-    const anchorToExample11: HTMLElement = await screen.findByText("11");
-    expect(anchorToExample11).toBeInTheDocument();
-    fireEvent.click(anchorToExample11);
+    const anchorToExample1: HTMLElement = await screen.findByText("1");
+    expect(anchorToExample1).toBeInTheDocument();
+    fireEvent.click(anchorToExample1);
 
     const buttonDeleteThisExample: HTMLElement = await screen.findByRole(
       "button",
@@ -1142,10 +1142,10 @@ test(
     element = await screen.findByText("Current page: 5");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("lause numero-9");
+    element = screen.getByText("lause numero-3");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("lause numero-10");
+    element = screen.getByText("lause numero-2");
     expect(element).toBeInTheDocument();
   }
 );
@@ -1188,9 +1188,9 @@ test(
     fireEvent.click(anchorToOwnVocabTreasury);
 
     /* Act. */
-    const anchorToExample1: HTMLElement = await screen.findByText("1");
-    expect(anchorToExample1).toBeInTheDocument();
-    fireEvent.click(anchorToExample1);
+    const anchorToExample11: HTMLElement = await screen.findByText("11");
+    expect(anchorToExample11).toBeInTheDocument();
+    fireEvent.click(anchorToExample11);
 
     const buttonDeleteThisExample: HTMLElement = await screen.findByRole(
       "button",
@@ -1251,9 +1251,9 @@ test(
     );
     fireEvent.click(anchorToOwnVocabTreasury);
 
-    const anchorToExample1: HTMLElement = await screen.findByText("1");
-    expect(anchorToExample1).toBeInTheDocument();
-    fireEvent.click(anchorToExample1);
+    const anchorToExample11: HTMLElement = await screen.findByText("11");
+    expect(anchorToExample11).toBeInTheDocument();
+    fireEvent.click(anchorToExample11);
 
     const editThisExampleAnchor: HTMLElement = await screen.findByText(
       "Edit this example"
@@ -1272,13 +1272,13 @@ test(
       target: { value: "German" },
     });
     fireEvent.change(newWordInputElement, {
-      target: { value: "Wort numero-1" },
+      target: { value: "Wort numero-11" },
     });
     fireEvent.change(exampleInputElement, {
-      target: { value: "Satz numero-1" },
+      target: { value: "Satz numero-11" },
     });
     fireEvent.change(translationInputElement, {
-      target: { value: "Übersetzung numero-1" },
+      target: { value: "Übersetzung numero-11" },
     });
 
     const editExampleBtn: HTMLElement = screen.getByRole("button", {
@@ -1298,18 +1298,18 @@ test(
     element = await screen.findByText("Current page: 1");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("Wort numero-1");
+    element = screen.getByText("Wort numero-11");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("Satz numero-1");
+    element = screen.getByText("Satz numero-11");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("Übersetzung numero-1");
+    element = screen.getByText("Übersetzung numero-11");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("sana numero-2");
+    element = screen.getByText("sana numero-10");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("lause numero-2");
+    element = screen.getByText("lause numero-10");
     expect(element).toBeInTheDocument();
-    element = screen.getByText("käännös numero-2");
+    element = screen.getByText("käännös numero-10");
     expect(element).toBeInTheDocument();
   }
 );
@@ -1343,9 +1343,9 @@ test(
     );
     fireEvent.click(anchorToOwnVocabTreasury);
 
-    const anchorToExample1: HTMLElement = await screen.findByText("1");
-    expect(anchorToExample1).toBeInTheDocument();
-    fireEvent.click(anchorToExample1);
+    const anchorToExample11: HTMLElement = await screen.findByText("11");
+    expect(anchorToExample11).toBeInTheDocument();
+    fireEvent.click(anchorToExample11);
 
     const editThisExampleAnchor: HTMLElement = await screen.findByText(
       "Edit this example"
@@ -1411,9 +1411,9 @@ test(
     );
     fireEvent.click(anchorToOwnVocabTreasury);
 
-    const anchorToExample1: HTMLElement = await screen.findByText("1");
-    expect(anchorToExample1).toBeInTheDocument();
-    fireEvent.click(anchorToExample1);
+    const anchorToExample11: HTMLElement = await screen.findByText("11");
+    expect(anchorToExample11).toBeInTheDocument();
+    fireEvent.click(anchorToExample11);
 
     const editThisExampleAnchor: HTMLElement = await screen.findByText(
       "Edit this example"
@@ -1480,10 +1480,10 @@ test(
 
     /* Assert. */
     let element: HTMLElement;
-    element = await screen.findByText("sana numero-10");
+    element = await screen.findByText("sana numero-11");
     expect(element).toBeInTheDocument();
 
-    element = screen.getByText("sana numero-1");
+    element = screen.getByText("sana numero-10");
     expect(element).toBeInTheDocument();
 
     element = screen.getByText("Current page: 1");
@@ -1497,7 +1497,7 @@ test(
     /* Act. */
     fireEvent.click(lastPageButton);
 
-    element = await screen.findByText("sana numero-11");
+    element = await screen.findByText("sana numero-1");
     expect(element).toBeInTheDocument();
 
     element = screen.getByText("Current page: 2");

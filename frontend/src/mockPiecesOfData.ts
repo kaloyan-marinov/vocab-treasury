@@ -19,19 +19,21 @@ export const MOCK_EXAMPLE: IExampleFromBackend = {
   content_translation: "Finland's ideal weather is 24 degrees in the shade.",
 };
 
-export const MOCK_EXAMPLES: IExampleFromBackend[] = Array.from({
-  length: 11,
-}).map((_, index) => {
-  return {
+export const MOCK_EXAMPLES: IExampleFromBackend[] = [];
+for (let index = 10; index >= 0; index--) {
+  const mockExample = {
     id: index + 1,
     source_language: "Finnish",
     new_word: "sana numero-" + (index + 1).toString(),
     content: "lause numero-" + (index + 1).toString(),
     content_translation: "käännös numero-" + (index + 1).toString(),
   };
-});
 
-export const MOCK_EXAMPLE_AT_IDX_7 = MOCK_EXAMPLES[7];
+  MOCK_EXAMPLES.push(mockExample);
+}
+
+export const MOCK_EXAMPLE_WITH_ID_OF_7 =
+  MOCK_EXAMPLES[MOCK_EXAMPLES.length - 7];
 
 export const mockPaginationFromBackend = (
   examples: IExampleFromBackend[],
